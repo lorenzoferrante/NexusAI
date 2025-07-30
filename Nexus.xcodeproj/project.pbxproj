@@ -7,7 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		504D3C202E3A26C5007357E6 /* Glur in Frameworks */ = {isa = PBXBuildFile; productRef = 504D3C1F2E3A26C5007357E6 /* Glur */; };
 		504D3C232E3A27D3007357E6 /* VariableBlur in Frameworks */ = {isa = PBXBuildFile; productRef = 504D3C222E3A27D3007357E6 /* VariableBlur */; };
 /* End PBXBuildFile section */
 
@@ -28,7 +27,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				504D3C202E3A26C5007357E6 /* Glur in Frameworks */,
 				504D3C232E3A27D3007357E6 /* VariableBlur in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -72,7 +70,6 @@
 			);
 			name = Nexus;
 			packageProductDependencies = (
-				504D3C1F2E3A26C5007357E6 /* Glur */,
 				504D3C222E3A27D3007357E6 /* VariableBlur */,
 			);
 			productName = Nexus;
@@ -104,7 +101,6 @@
 			mainGroup = 50E00CFD2E391CEF00E5A35B;
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
-				504D3C1E2E3A26C5007357E6 /* XCRemoteSwiftPackageReference "Glur" */,
 				504D3C212E3A27D3007357E6 /* XCRemoteSwiftPackageReference "VariableBlur" */,
 			);
 			preferredProjectObjectVersion = 77;
@@ -355,14 +351,6 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
-		504D3C1E2E3A26C5007357E6 /* XCRemoteSwiftPackageReference "Glur" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/joogps/Glur";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 1.0.4;
-			};
-		};
 		504D3C212E3A27D3007357E6 /* XCRemoteSwiftPackageReference "VariableBlur" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/nikstar/VariableBlur";
@@ -374,11 +362,6 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		504D3C1F2E3A26C5007357E6 /* Glur */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 504D3C1E2E3A26C5007357E6 /* XCRemoteSwiftPackageReference "Glur" */;
-			productName = Glur;
-		};
 		504D3C222E3A27D3007357E6 /* VariableBlur */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 504D3C212E3A27D3007357E6 /* XCRemoteSwiftPackageReference "VariableBlur" */;
