@@ -11,7 +11,7 @@ import VariableBlur
 
 struct ProgressiveBlur: ViewModifier {
     func body(content: Content) -> some View {
-        content
+        content 
             .background(
                 Rectangle()
                     .fill(.clear)
