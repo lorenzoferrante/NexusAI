@@ -7,6 +7,7 @@
 
 import Foundation
 import SwiftUI
+import PhotosUI
 
 @Observable
 @MainActor
@@ -17,6 +18,14 @@ class OpenRouterAPI {
     private let API_KEY = "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"
     private let completionsURL = URL(string: "https://openrouter.ai/api/v1/chat/completions")!
     
+    var selectedImage: Image? = nil
+    var photoPickerItems: PhotosPickerItem? = nil {
+        didSet {
+            Task {
+                await loadImage()
+            }
+        }
+    }
     var output: String = ""
     var chat: [Message] = []
     var selectedModel: Models = DefaultsManager.shared.getModel()
@@ -108,6 +117,16 @@ class OpenRouterAPI {
                         print("[DEBUG] Parsing error...")
                     }
                 }
+            }
+        }
+    }
+    
+    private func loadImage() async {
+        guard let item = photoPickerItems else { return }
+        if let data = try? await item.loadTransferable(type: Data.self),
+           let uiImage = UIImage(data: data) {
+            await MainActor.run {
+                self.selectedImage = Image(uiImage: uiImage)
             }
         }
     }
