@@ -7,7 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		504D3C232E3A27D3007357E6 /* VariableBlur in Frameworks */ = {isa = PBXBuildFile; productRef = 504D3C222E3A27D3007357E6 /* VariableBlur */; };
+		50138E992E3A6A0000D17926 /* VariableBlur in Frameworks */ = {isa = PBXBuildFile; productRef = 50138E982E3A6A0000D17926 /* VariableBlur */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -27,7 +27,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				504D3C232E3A27D3007357E6 /* VariableBlur in Frameworks */,
+				50138E992E3A6A0000D17926 /* VariableBlur in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -70,7 +70,7 @@
 			);
 			name = Nexus;
 			packageProductDependencies = (
-				504D3C222E3A27D3007357E6 /* VariableBlur */,
+				50138E982E3A6A0000D17926 /* VariableBlur */,
 			);
 			productName = Nexus;
 			productReference = 50E00D062E391CEF00E5A35B /* Nexus.app */;
@@ -101,7 +101,7 @@
 			mainGroup = 50E00CFD2E391CEF00E5A35B;
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
-				504D3C212E3A27D3007357E6 /* XCRemoteSwiftPackageReference "VariableBlur" */,
+				50138E972E3A6A0000D17926 /* XCRemoteSwiftPackageReference "VariableBlur" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 50E00D072E391CEF00E5A35B /* Products */;
@@ -351,7 +351,7 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
-		504D3C212E3A27D3007357E6 /* XCRemoteSwiftPackageReference "VariableBlur" */ = {
+		50138E972E3A6A0000D17926 /* XCRemoteSwiftPackageReference "VariableBlur" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/nikstar/VariableBlur";
 			requirement = {
@@ -362,9 +362,9 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		504D3C222E3A27D3007357E6 /* VariableBlur */ = {
+		50138E982E3A6A0000D17926 /* VariableBlur */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 504D3C212E3A27D3007357E6 /* XCRemoteSwiftPackageReference "VariableBlur" */;
+			package = 50138E972E3A6A0000D17926 /* XCRemoteSwiftPackageReference "VariableBlur" */;
 			productName = VariableBlur;
 		};
 /* End XCSwiftPackageProductDependency section */

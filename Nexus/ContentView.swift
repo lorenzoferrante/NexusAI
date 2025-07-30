@@ -18,7 +18,6 @@ struct ContentView: View {
         NavigationStack {
             ZStack {
                 BackView()
-                
                 ChatView()
                     .safeAreaInset(edge: .bottom) {
                         bottomBar()

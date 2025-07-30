@@ -50,6 +50,13 @@
             ReferencedContainer = "container:Nexus.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
+      <EnvironmentVariables>
+         <EnvironmentVariable
+            key = "API_KEY"
+            value = "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"
+            isEnabled = "YES">
+         </EnvironmentVariable>
+      </EnvironmentVariables>
    </LaunchAction>
    <ProfileAction
       buildConfiguration = "Release"
