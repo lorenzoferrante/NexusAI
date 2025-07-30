@@ -1,0 +1,24 @@
+{
+  "originHash" : "60ddc38417bbbea7964dd3fb77ba16d5d802cb91746bb066466f030dd1bd28d8",
+  "pins" : [
+    {
+      "identity" : "glur",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/joogps/Glur",
+      "state" : {
+        "revision" : "9e00ff79da318f2c78b749b1027e54a9d4de2e33",
+        "version" : "1.0.4"
+      }
+    },
+    {
+      "identity" : "variableblur",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/nikstar/VariableBlur",
+      "state" : {
+        "branch" : "main",
+        "revision" : "c8dc0ada195dfd47354cec5994c2dd434aa6c146"
+      }
+    }
+  ],
+  "version" : 3
+}

@@ -25,6 +25,7 @@ struct MessageView: View {
                             )
                     } else {
                         Text(.init(message.content))
+                            .textSelection(.enabled)
                             .frame(
                                 maxWidth: .infinity,
                                 alignment: .leading
@@ -35,6 +36,7 @@ struct MessageView: View {
                 .glassEffect(in: .rect(cornerRadius: 16))
             case .user:
                 Text(.init(message.content))
+                    .textSelection(.enabled)
                     .padding(10)
                     .frame(
                         maxWidth: .infinity,

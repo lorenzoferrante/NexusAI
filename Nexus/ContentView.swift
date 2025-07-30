@@ -20,7 +20,9 @@ struct ContentView: View {
                 BackView()
                 
                 ChatView()
-                BottomBar(prompt: $prompt)
+                    .safeAreaInset(edge: .bottom) {
+                        bottomBar()
+                    }
             }
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
@@ -46,7 +48,6 @@ struct ContentView: View {
                         }
                         .onChange(of: openRouterAPI.selectedModel) { _, newValue in
                             DefaultsManager.shared.saveModel(newValue)
-                            reset()
                         }
                     }
                     .fixedSize()
@@ -63,8 +64,27 @@ struct ContentView: View {
         }
     }
     
-}
-    
-    #Preview {
-        ContentView()
+    private func bottomBar() -> some View {
+        ZStack {
+            BottomBar(prompt: $prompt)
+                .fixedSize(horizontal: false, vertical: true)
+                .progressiveBlur()
+        }
+        .ignoresSafeArea()
     }
+    
+}
+
+#Preview {
+    @Previewable @State var openRouterAPI = OpenRouterAPI.shared
+    let answer = """
+        Hello! I'm an AI language model here to assist you with a variety of questions and topics. How can I help you today?
+        """
+    ContentView()
+        .onAppear {
+            openRouterAPI.chat = [
+                .init(role: .user, content: "Hello, who are you?"),
+                .init(role: .assistant, content: answer),
+            ]
+        }
+}

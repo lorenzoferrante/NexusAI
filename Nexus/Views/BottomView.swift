@@ -9,7 +9,7 @@ import SwiftUI
 
 struct BottomBar: View {
     @State var vm = OpenRouterAPI.shared
-    @State var isWebSearch: Bool = true
+    @State var isWebSearch: Bool = false
     @Binding var prompt: String
     
     @FocusState private var isFocused: Bool
@@ -23,6 +23,7 @@ struct BottomBar: View {
             GlassEffectContainer {
                 VStack(alignment: .leading) {
                     TextField("Ask anything...", text: $prompt)
+                        .lineLimit(5)
                         .padding()
                         .focused($isFocused)
                         .onSubmit {

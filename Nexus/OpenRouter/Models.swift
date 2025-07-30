@@ -11,6 +11,13 @@ enum Models: String, CaseIterable, Codable {
     /// Auto Model
     case openrouter_auto = "openrouter/auto"
     
+    /// Perplexity Models
+    case sonar_deep_research = "perplexity/sonar-deep-research"
+    case sonar = "perplexity/sonar"
+    case sonar_pro = "perplexity/sonar-pro"
+    case sonar_reasoning = "perplexity/sonar-reasoning"
+    case sonar_reasoning_pro = "perplexity/sonar-reasoning-pro"
+    
     /// GML Models
     case glm_4_5 = "z-ai/glm-4.5"
     case glm_4_5_air = "z-ai/glm-4.5-air"
@@ -27,6 +34,6 @@ enum Models: String, CaseIterable, Codable {
     case gpt_4_1_mini = "openai/gpt-4.1-mini"
     case gpt_4_1 = "openai/gpt-4.1"
     case gpt_4o = "openai/gpt-4o"
-    case o3 = "openai/o3"
+    case o3_mini = "openai/o3-mini"
     case o4_mini_high = "openai/o4-mini-high"
 }

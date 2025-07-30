@@ -14,7 +14,7 @@ class OpenRouterAPI {
     
     static let shared = OpenRouterAPI()
     
-    private let API_KEY = "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"
+    private let API_KEY = ""
     private let completionsURL = URL(string: "https://openrouter.ai/api/v1/chat/completions")!
     
     var output: String = ""
@@ -28,15 +28,22 @@ class OpenRouterAPI {
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         
         let messageDicts = chat.map { $0.asDictionary() }
+        var payload: [String: Any] = [:]
         print(messageDicts)
-        let payload: [String: Any] = [
-            "model": selectedModel.rawValue,
-            "messages": messageDicts,
-            "plugins": [
-                isWebSearch ? ["id": "web"] : nil
-            ],
-            "stream": true
-        ]
+        if isWebSearch {
+            payload = [
+                "model": selectedModel.rawValue,
+                "messages": messageDicts,
+                "plugins": [["id": "web"]],
+                "stream": true
+            ]
+        } else {
+            payload = [
+                "model": selectedModel.rawValue,
+                "messages": messageDicts,
+                "stream": true
+            ]
+        }
         
         request.httpBody = try JSONSerialization.data(withJSONObject: payload)
         print(String(data: try! JSONSerialization.data(withJSONObject: payload, options: .prettyPrinted), encoding: .utf8)!)
