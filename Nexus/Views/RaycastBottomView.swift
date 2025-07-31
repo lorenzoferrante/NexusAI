@@ -38,10 +38,31 @@ struct RaycastBottomView: View {
     
     private var minimizedBar: some View {
         GlassEffectContainer {
-            TextField("Ask anything...", text: $prompt)
-                .lineLimit(1)
+            HStack {
+                Menu {
+                    Button("Attach photos", action: { photosPickerIsPresented.toggle() })
+                    Button("Attach files", action: { })
+                } label: {
+                    Image(systemName: "paperclip")
+                }
+                .tint(.secondary)
+                .menuStyle(.borderlessButton)
+                .padding([.leading])
+                
+                TextField("Ask anything...", text: $prompt)
+                    .lineLimit(1)
+                    .padding()
+                    .focused($isFocused)
+                
+                Button {
+                    
+                } label: {
+                    Image(systemName: "arrow.up")
+                }
+                .buttonStyle(.borderedProminent)
                 .padding()
-                .focused($isFocused)
+//                .disabled(prompt.isEmpty)
+            }
         }
     }
     
