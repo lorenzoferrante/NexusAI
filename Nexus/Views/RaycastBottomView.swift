@@ -11,9 +11,9 @@ struct RaycastBottomView: View {
     @State var vm = OpenRouterAPI.shared
     @State var isWebSearch: Bool = false
     @State var photosPickerIsPresented: Bool = false
-    @State var provider = OpenRouterAPI.shared.selectedModel.provider
+    @State var provider = DefaultsManager.shared.getModel().provider
     @State var models: [OpenRouterModel] = []
-    @State var selectedModel: OpenRouterModel = ModelsList.models.first!
+    @State var selectedModel: OpenRouterModel = DefaultsManager.shared.getModel()
     
     @Binding var prompt: String
     
@@ -89,10 +89,43 @@ struct RaycastBottomView: View {
     
     private var maximizedBar: some View {
         GlassEffectContainer {
-            TextField("Ask anything...", text: $prompt)
-                .lineLimit(5)
-                .padding()
-                .focused($isFocused)
+            VStack(alignment: .leading) {
+                HStack {
+                    providerPicker
+                    Spacer()
+                    modelPicker
+                }
+                
+                TextField("Ask anything...", text: $prompt)
+                    .lineLimit(5)
+                    .padding()
+                    .focused($isFocused)
+                
+                HStack {
+                    Menu {
+                        Button("Attach photos", action: {
+                            feedbackGenerator.impactOccurred()
+                            photosPickerIsPresented.toggle()
+                        })
+                        Button("Attach files", action: {
+                            feedbackGenerator.impactOccurred()
+                        })
+                    } label: {
+                        Image(systemName: "paperclip")
+                    }
+                    .tint(.secondary)
+                    .menuStyle(.borderlessButton)
+                    .padding([.leading])
+                    
+                    Button {
+                        feedbackGenerator.impactOccurred()
+                    } label: {
+                        Image(systemName: "paperplane.fill")
+                    }
+                    .padding()
+                    .disabled(prompt.isEmpty)
+                }
+            }
         }
     }
     
@@ -115,10 +148,14 @@ struct RaycastBottomView: View {
     
     private var modelPicker: some View {
         Picker("Model", selection: $selectedModel) {
-            ForEach(ModelsList.models, id: \.code) { model in
+            ForEach(models, id: \.code) { model in
                 Text(model.name)
-                    .tag(model.name)
+                    .tag(model)
             }
+        }
+        .tint(.primary.opacity(0.7))
+        .onChange(of: selectedModel) { _, newValue in
+            DefaultsManager.shared.saveModel(newValue)
         }
     }
 }
