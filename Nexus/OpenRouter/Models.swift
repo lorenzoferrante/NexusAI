@@ -11,6 +11,9 @@ enum Models: String, CaseIterable, Codable {
     /// Auto Model
     case openrouter_auto = "openrouter/auto"
     
+    /// OpenRouter Models
+    case horizon_alpha = "openrouter/horizon-alpha"
+    
     /// Perplexity Models
     case sonar_deep_research = "perplexity/sonar-deep-research"
     case sonar = "perplexity/sonar"
@@ -36,4 +39,8 @@ enum Models: String, CaseIterable, Codable {
     case gpt_4o = "openai/gpt-4o"
     case o3_mini = "openai/o3-mini"
     case o4_mini_high = "openai/o4-mini-high"
+    
+    /// Anthropic Models
+    case claude_sonnet_4 = "anthropic/claude-sonnet-4"
+    case claude_opus_4 = "anthropic/claude-opus-4"
 }
