@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		50138E992E3A6A0000D17926 /* VariableBlur in Frameworks */ = {isa = PBXBuildFile; productRef = 50138E982E3A6A0000D17926 /* VariableBlur */; };
+		50E425DA2E3B703B009A418D /* MarkdownUI in Frameworks */ = {isa = PBXBuildFile; productRef = 50E425D92E3B703B009A418D /* MarkdownUI */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -28,6 +29,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				50138E992E3A6A0000D17926 /* VariableBlur in Frameworks */,
+				50E425DA2E3B703B009A418D /* MarkdownUI in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -71,6 +73,7 @@
 			name = Nexus;
 			packageProductDependencies = (
 				50138E982E3A6A0000D17926 /* VariableBlur */,
+				50E425D92E3B703B009A418D /* MarkdownUI */,
 			);
 			productName = Nexus;
 			productReference = 50E00D062E391CEF00E5A35B /* Nexus.app */;
@@ -102,6 +105,7 @@
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
 				50138E972E3A6A0000D17926 /* XCRemoteSwiftPackageReference "VariableBlur" */,
+				50E425D82E3B703B009A418D /* XCRemoteSwiftPackageReference "swift-markdown-ui" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 50E00D072E391CEF00E5A35B /* Products */;
@@ -359,6 +363,14 @@
 				kind = branch;
 			};
 		};
+		50E425D82E3B703B009A418D /* XCRemoteSwiftPackageReference "swift-markdown-ui" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/gonzalezreal/swift-markdown-ui";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 2.4.1;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -366,6 +378,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 50138E972E3A6A0000D17926 /* XCRemoteSwiftPackageReference "VariableBlur" */;
 			productName = VariableBlur;
+		};
+		50E425D92E3B703B009A418D /* MarkdownUI */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 50E425D82E3B703B009A418D /* XCRemoteSwiftPackageReference "swift-markdown-ui" */;
+			productName = MarkdownUI;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

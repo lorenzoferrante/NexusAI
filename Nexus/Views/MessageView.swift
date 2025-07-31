@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import MarkdownUI
 
 struct MessageView: View {
     @State var message: Message
@@ -24,7 +25,8 @@ struct MessageView: View {
                                 alignment: .leading
                             )
                     } else {
-                        Text(.init(message.content))
+                        Markdown(message.content)
+//                        Text(.init(message.content))
                             .textSelection(.enabled)
                             .frame(
                                 maxWidth: .infinity,
@@ -49,6 +51,15 @@ struct MessageView: View {
 }
 
 #Preview {
-    @Previewable @State var message: Message = .init(role: .assistant, content: "Hello!")
+    let markdownTest = """
+        # Title \
+        ## Title 2 \
+        This is a test view \
+        > this is cited text \
+        ```swift
+        let hello = "World!"
+        ```
+        """
+    @State var message: Message = .init(role: .assistant, content: markdownTest)
     MessageView(message: message)
 }
