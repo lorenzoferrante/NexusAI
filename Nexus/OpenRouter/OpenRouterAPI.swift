@@ -18,7 +18,7 @@ class OpenRouterAPI {
     private let API_KEY = ""
     private let completionsURL = URL(string: "https://openrouter.ai/api/v1/chat/completions")!
     
-    var selectedImage: Image? = nil
+    var selectedImage: UIImage? = nil
     var photoPickerItems: PhotosPickerItem? = nil {
         didSet {
             Task {
@@ -44,13 +44,23 @@ class OpenRouterAPI {
                 "model": selectedModel.rawValue,
                 "messages": messageDicts,
                 "plugins": [["id": "web"]],
-                "stream": true
+                "stream": true,
+                "reasoning": [
+                    "effort": "medium",
+                    "enabled": true,
+                    "exclude": true,
+                ]
             ]
         } else {
             payload = [
                 "model": selectedModel.rawValue,
                 "messages": messageDicts,
-                "stream": true
+                "stream": true,
+                "reasoning": [
+                    "effort": "medium",
+                    "enabled": true,
+                    "exclude": true,
+                ]
             ]
         }
         
@@ -105,6 +115,7 @@ class OpenRouterAPI {
                            let choices = json["choices"] as? [[String: Any]],
                            let delta = choices.first?["delta"] as? [String: Any],
                            let content = delta["content"] as? String {
+                            
                             // Append to last assistant message
                             await MainActor.run {
                                 if !chat.isEmpty {
@@ -126,9 +137,17 @@ class OpenRouterAPI {
         if let data = try? await item.loadTransferable(type: Data.self),
            let uiImage = UIImage(data: data) {
             await MainActor.run {
-                self.selectedImage = Image(uiImage: uiImage)
+                self.selectedImage = uiImage
             }
         }
+    }
+    
+    public func base64FromSwiftUIImage() -> String? {
+        guard let image = selectedImage else {
+            return nil
+        }
+        guard let imageData = image.pngData() else { return nil }
+        return "data:image/jpeg;base64,\(imageData.base64EncodedString())"
     }
     
 }

@@ -16,8 +16,24 @@ struct Message: Codable, Identifiable {
     var id = UUID()
     let role: Role
     var content: String
+    var imageData: String?
 
-    func asDictionary() -> [String: String] {
-        ["role": role.rawValue, "content": content]
+    func asDictionary() -> [String: Any] {
+        guard let imageData = imageData else {
+            return ["role": role.rawValue, "content": content]
+        }
+        return [
+            "role": role.rawValue,
+            "content": [
+                [
+                    "type": "text",
+                    "text": content
+                ],
+                [
+                    "type": "image_url",
+                    "image_url": imageData
+                ]
+            ]
+        ]
     }
 }

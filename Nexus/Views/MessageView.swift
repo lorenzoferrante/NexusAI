@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import UIKit
 import MarkdownUI
 
 struct MessageView: View {
@@ -26,7 +27,6 @@ struct MessageView: View {
                             )
                     } else {
                         Markdown(message.content)
-//                        Text(.init(message.content))
                             .textSelection(.enabled)
                             .frame(
                                 maxWidth: .infinity,
@@ -37,29 +37,65 @@ struct MessageView: View {
                 .padding()
                 .glassEffect(in: .rect(cornerRadius: 16))
             case .user:
-                Text(.init(message.content))
-                    .textSelection(.enabled)
-                    .padding(10)
-                    .frame(
-                        maxWidth: .infinity,
-                        alignment: .trailing
-                    )
+                VStack(alignment: .trailing) {
+                    if let imageData = message.imageData,
+                    let image = imageFromBase64(imageData) {
+                        image
+                            .resizable()
+                            .aspectRatio(contentMode: .fit)
+                            .frame(maxWidth: 200)
+                    }
+                    Text(.init(message.content))
+                        .textSelection(.enabled)
+                        .padding(10)
+                        .frame(
+                            maxWidth: .infinity,
+                            alignment: .trailing
+                        )
+                }
             }
         }
         .frame(maxWidth: .infinity)
+    }
+    
+    func imageFromBase64(_ base64String: String) -> Image? {
+        // Remove metadata if present
+        let cleanString: String
+        if let commaIndex = base64String.firstIndex(of: ",") {
+            cleanString = String(base64String[base64String.index(after: commaIndex)...])
+        } else {
+            cleanString = base64String
+        }
+        
+        // Decode base64 to Data
+        guard let imageData = Data(base64Encoded: cleanString) else { return nil }
+        
+        // Create UIImage and then SwiftUI Image
+        guard let uiImage = UIImage(data: imageData) else { return nil }
+        return Image(uiImage: uiImage)
     }
 }
 
 #Preview {
     let markdownTest = """
-        # Title \
-        ## Title 2 \
-        This is a test view \
-        > this is cited text \
+        # Main title
+        ## Title 2
+        ### Title 3
+        This is a test view
+        > this is cited text
         ```swift
-        let hello = "World!"
+        let hello = "World!
         ```
         """
-    @State var message: Message = .init(role: .assistant, content: markdownTest)
-    MessageView(message: message)
+    let userMessageTest = "Hello this a user message"
+    let image = UIImage(resource: .test).pngData()
+    @State var message: Message = .init(role: .user, content: userMessageTest, imageData: "data:image/jpeg;base64,\(image)")
+    ZStack {
+        BackView()
+        MessageView(message: message)
+            .padding()
+            .preferredColorScheme(.dark)
+    }
+    .ignoresSafeArea()
+    
 }

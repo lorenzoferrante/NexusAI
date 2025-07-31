@@ -25,7 +25,7 @@ struct BottomBar: View {
             GlassEffectContainer {
                 VStack(alignment: .leading) {
                     if let image = vm.selectedImage {
-                        photoSection(image)
+                        photoSection(Image(uiImage: image))
                     }
                     
                     TextField("Ask anything...", text: $prompt)
@@ -37,6 +37,8 @@ struct BottomBar: View {
                         }
                     
                     HStack(spacing: 0) {
+//                        Button("Attach photos", action: { photosPickerIsPresented.toggle() })
+                        
                         Menu {
                             Button("Attach photos", action: { photosPickerIsPresented.toggle() })
                             Button("Attach files", action: { })
@@ -95,8 +97,10 @@ struct BottomBar: View {
     private func generate() {
         isFocused = false
         withAnimation {
-            vm.chat.append(.init(role: .user, content: prompt))
+            let imageData = vm.base64FromSwiftUIImage()
+            vm.chat.append(.init(role: .user, content: prompt, imageData: imageData))
             prompt = ""
+            vm.selectedImage = nil
         }
         
         Task {
