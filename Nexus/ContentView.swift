@@ -39,19 +39,6 @@ struct ContentView: View {
                         Image(systemName: "square.and.pencil")
                     }
                 }
-                
-                ToolbarItem(placement: .topBarTrailing) {
-                    Picker("Model", selection: $openRouterAPI.selectedModel) {
-                        ForEach(ModelsList.models, id: \.code) { model in
-                            Text(model.name)
-                                .tag(model)
-                        }
-                    }
-                    .fixedSize()
-                }
-            }
-            .onChange(of: openRouterAPI.selectedModel) { _, newValue in
-                DefaultsManager.shared.saveModel(newValue)
             }
             .preferredColorScheme(.dark)
         }
@@ -67,7 +54,6 @@ struct ContentView: View {
     private func bottomBar() -> some View {
         ZStack {
             RaycastBottomView(prompt: $prompt)
-//            BottomBar(prompt: $prompt)
                 .fixedSize(horizontal: false, vertical: true)
                 .progressiveBlur()
         }

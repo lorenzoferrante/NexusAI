@@ -18,7 +18,6 @@ struct RaycastBottomView: View {
     @State var selectedModel: OpenRouterModel = DefaultsManager.shared.getModel()
     
     @State var photosPickerIsPresented: Bool = false
-    @State var isProviderPickerPresented: Bool = false
     
     @Binding var prompt: String
     
@@ -39,9 +38,12 @@ struct RaycastBottomView: View {
         .onChange(of: provider) { _, newValue in
             models = ModelsList.models.filter { $0.provider == newValue }
             selectedModel = models.first!
+            DefaultsManager.shared.saveModel(selectedModel)
+            vm.selectedModel = selectedModel
         }
         .onChange(of: selectedModel) { _, newValue in
             DefaultsManager.shared.saveModel(newValue)
+            vm.selectedModel = selectedModel
         }
     }
     
@@ -97,9 +99,6 @@ struct RaycastBottomView: View {
         .photosPicker(isPresented: $photosPickerIsPresented,
                       selection: $vm.photoPickerItems,
                       matching: .images)
-        .fullScreenCover(isPresented: $isProviderPickerPresented) {
-            
-        }
         
     }
     
@@ -116,25 +115,7 @@ struct RaycastBottomView: View {
         .tint(.primary.opacity(0.7))
         .padding()
     }
-    
-    private var providerText: some View {
-        Text(provider.rawValue)
-            .padding()
-            .glassEffect(in: .capsule)
-    }
-    
-    private var providerButton: some View {
-        Button {
-            isProviderPickerPresented.toggle()
-        } label: {
-            Text(provider.rawValue)
-        }
-        .buttonStyle(.bordered)
-        .glassEffect(in: .capsule)
-        .tint(.primary.opacity(0.7))
-        .padding()
-    }
-    
+        
     private var modelPicker: some View {
         Picker("Model", selection: $selectedModel) {
             ForEach(models, id: \.code) { model in
