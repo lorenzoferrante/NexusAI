@@ -16,6 +16,8 @@ struct RaycastBottomView: View {
     
     @FocusState private var isFocused: Bool
     
+    let feedbackGenerator = UIImpactFeedbackGenerator(style: .light)
+    
     var body: some View {
         VStack(alignment: .leading) {
             Spacer()
@@ -40,8 +42,13 @@ struct RaycastBottomView: View {
         GlassEffectContainer {
             HStack {
                 Menu {
-                    Button("Attach photos", action: { photosPickerIsPresented.toggle() })
-                    Button("Attach files", action: { })
+                    Button("Attach photos", action: {
+                        feedbackGenerator.impactOccurred()
+                        photosPickerIsPresented.toggle()
+                    })
+                    Button("Attach files", action: {
+                        feedbackGenerator.impactOccurred()
+                    })
                 } label: {
                     Image(systemName: "paperclip")
                 }
@@ -55,13 +62,12 @@ struct RaycastBottomView: View {
                     .focused($isFocused)
                 
                 Button {
-                    
+                    feedbackGenerator.impactOccurred()
                 } label: {
-                    Image(systemName: "arrow.up")
+                    Image(systemName: "paperplane.fill")
                 }
-                .buttonStyle(.borderedProminent)
                 .padding()
-//                .disabled(prompt.isEmpty)
+                .disabled(prompt.isEmpty)
             }
         }
     }
