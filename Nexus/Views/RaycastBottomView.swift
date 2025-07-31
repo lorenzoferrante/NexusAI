@@ -51,6 +51,10 @@ struct RaycastBottomView: View {
         GlassEffectContainer {
             VStack {
                 VStack(alignment: .leading) {
+                    if let image = vm.selectedImage {
+                        photoSection(Image(uiImage: image))
+                    }
+                    
                     HStack {
                         providerPicker
                         Spacer()
@@ -127,21 +131,24 @@ struct RaycastBottomView: View {
     }
     
     private func photoSection(_ image: Image) -> some View {
-        withAnimation {
-            image
-                .resizable()
-                .frame(width: 50, height: 50)
-                .clipShape(RoundedRectangle(cornerRadius: 10.0))
-                .scaledToFill()
-                .padding([.top, .leading, .trailing])
-                .onLongPressGesture {
-                    withAnimation {
-                        vm.selectedImage = nil
+        HStack {
+            withAnimation {
+                image
+                    .resizable()
+                    .clipShape(RoundedRectangle(cornerRadius: 10.0))
+                    .scaledToFit()
+                    .frame(maxHeight: 80)
+                    .padding([.top, .leading, .trailing])
+                    .onLongPressGesture {
+                        withAnimation {
+                            vm.selectedImage = nil
+                        }
                     }
-                }
+            }
+            Spacer()
         }
     }
-    
+
     private func generate() {
         isFocused = false
         let imageData = vm.base64FromSwiftUIImage()

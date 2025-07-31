@@ -80,9 +80,9 @@ struct BottomBar: View {
         withAnimation {
             image
                 .resizable()
-                .frame(width: 50, height: 50)
                 .clipShape(RoundedRectangle(cornerRadius: 10.0))
-                .scaledToFill()
+                .scaledToFit()
+                .frame(maxHeight: 60)
                 .padding([.top, .leading, .trailing])
                 .onLongPressGesture {
                     withAnimation {
