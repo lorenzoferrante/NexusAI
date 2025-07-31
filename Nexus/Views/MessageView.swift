@@ -48,8 +48,13 @@ struct MessageView: View {
         VStack(alignment: .leading, spacing: 8) {
             if !message.content.isEmpty {
                 withAnimation {
-                    Image(systemName: "brain.fill")
-                        .foregroundColor(.secondary)
+                    HStack {
+                        Image(systemName: "brain.fill")
+                            .foregroundColor(.secondary)
+                        Text(OpenRouterAPI.shared.selectedModel.rawValue)
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
                 }
             }
             if message.content.isEmpty {
@@ -80,7 +85,7 @@ struct MessageView: View {
     
     @Previewable @State var assistantMessage: Message = .init(
         role: .assistant,
-        content: "")
+        content: "Hello I am a simple AI assistant")
     
     ZStack {
         BackView()
