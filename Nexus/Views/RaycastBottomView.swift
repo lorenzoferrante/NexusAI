@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import PhotosUI
 
 struct RaycastBottomView: View {
     @State var vm = OpenRouterAPI.shared
@@ -62,9 +63,13 @@ struct RaycastBottomView: View {
                             .lineLimit(5)
                             .padding()
                             .focused($isFocused)
+                            .onSubmit {
+                                generate()
+                            }
                         
                         Button {
                             feedbackGenerator.impactOccurred()
+                            generate()
                         } label: {
                             Image(systemName: "paperplane.fill")
                         }
@@ -73,9 +78,14 @@ struct RaycastBottomView: View {
                     }
                 }
             }
+            
         }
         .glassEffect(.regular.interactive(), in: .rect(cornerRadius: 18))
         .padding()
+        .photosPicker(isPresented: $photosPickerIsPresented,
+                      selection: $vm.photoPickerItems,
+                      matching: .images)
+        
     }
 
     private var providerPicker: some View {
@@ -102,6 +112,41 @@ struct RaycastBottomView: View {
         .onChange(of: selectedModel) { _, newValue in
             DefaultsManager.shared.saveModel(newValue)
         }
+    }
+    
+    private func photoSection(_ image: Image) -> some View {
+        withAnimation {
+            image
+                .resizable()
+                .frame(width: 50, height: 50)
+                .clipShape(RoundedRectangle(cornerRadius: 10.0))
+                .scaledToFill()
+                .padding([.top, .leading, .trailing])
+                .onLongPressGesture {
+                    withAnimation {
+                        vm.selectedImage = nil
+                    }
+                }
+        }
+    }
+    
+    private func generate() {
+        isFocused = false
+        let imageData = vm.base64FromSwiftUIImage()
+        withAnimation {
+            print("[DEBUG] Appending prompt: \(prompt)")
+            vm.chat.append(.init(role: .user, content: prompt, imageData: imageData))
+            prompt = ""
+            vm.selectedImage = nil
+        }
+        
+        Task {
+            try await vm.stream(isWebSearch: isWebSearch)
+        }
+    }
+    
+    private func attachImage() {
+        photosPickerIsPresented.toggle()
     }
 }
 
