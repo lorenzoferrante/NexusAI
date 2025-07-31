@@ -12,6 +12,8 @@ struct RaycastBottomView: View {
     @State var isWebSearch: Bool = false
     @State var photosPickerIsPresented: Bool = false
     @State var provider = OpenRouterAPI.shared.selectedModel.provider
+    @State var models: [OpenRouterModel] = []
+    @State var selectedModel: OpenRouterModel = ModelsList.models.first!
     
     @Binding var prompt: String
     
@@ -37,12 +39,20 @@ struct RaycastBottomView: View {
                 }
             }
         }
+        .onAppear {
+            models = ModelsList.models.filter { $0.provider == provider }
+            selectedModel = models.first(where: { $0.code == vm.selectedModel.code })!
+        }
     }
     
     private var minimizedBar: some View {
         GlassEffectContainer {
             VStack(alignment: .leading) {
-                providerPicker
+                HStack {
+                    providerPicker
+                    Spacer()
+                    modelPicker
+                }
                 
                 HStack {
                     Menu {
@@ -96,11 +106,20 @@ struct RaycastBottomView: View {
                 .background {
                     Capsule()
                         .fill(.thinMaterial)
-                        .stroke(Color.accentColor.opacity(0.2), lineWidth: 1.0)
+                        .stroke(Color.primary.opacity(0.2), lineWidth: 1.0)
                 }
                 .padding()
+                .tint(.primary.opacity(0.7))
         }
-
+    }
+    
+    private var modelPicker: some View {
+        Picker("Model", selection: $selectedModel) {
+            ForEach(ModelsList.models, id: \.code) { model in
+                Text(model.name)
+                    .tag(model.name)
+            }
+        }
     }
 }
 
