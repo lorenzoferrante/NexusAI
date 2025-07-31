@@ -96,6 +96,7 @@ struct BottomBar: View {
         isFocused = false
         let imageData = vm.base64FromSwiftUIImage()
         withAnimation {
+            print("[DEBUG] Appending prompt: \(prompt)")
             vm.chat.append(.init(role: .user, content: prompt, imageData: imageData))
             prompt = ""
             vm.selectedImage = nil
@@ -115,4 +116,5 @@ struct BottomBar: View {
     @Previewable @State var vm = OpenRouterAPI.shared
     @Previewable @State var prompt: String = ""
     BottomBar(prompt: $prompt)
+        .preferredColorScheme(.dark)
 }

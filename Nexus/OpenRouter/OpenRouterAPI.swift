@@ -15,7 +15,7 @@ class OpenRouterAPI {
     
     static let shared = OpenRouterAPI()
     
-    private let API_KEY = ""
+    private let API_KEY = "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"
     private let completionsURL = URL(string: "https://openrouter.ai/api/v1/chat/completions")!
     
     var selectedImage: UIImage? = nil
@@ -28,7 +28,7 @@ class OpenRouterAPI {
     }
     var output: String = ""
     var chat: [Message] = []
-    var selectedModel: Models = DefaultsManager.shared.getModel()
+    var selectedModel: OpenRouterModel = DefaultsManager.shared.getModel()
     
     func stream(isWebSearch: Bool = false) async throws {
         var request = URLRequest(url: completionsURL)
@@ -41,7 +41,7 @@ class OpenRouterAPI {
         print(messageDicts)
         if isWebSearch {
             payload = [
-                "model": selectedModel.rawValue,
+                "model": selectedModel.code,
                 "messages": messageDicts,
                 "plugins": [["id": "web"]],
                 "stream": true,
@@ -53,7 +53,7 @@ class OpenRouterAPI {
             ]
         } else {
             payload = [
-                "model": selectedModel.rawValue,
+                "model": selectedModel.code,
                 "messages": messageDicts,
                 "stream": true,
                 "reasoning": [

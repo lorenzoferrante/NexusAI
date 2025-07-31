@@ -13,16 +13,18 @@ class DefaultsManager {
     static let shared = DefaultsManager()
     private let selectedModelKey = "selectedModel"
     
-    func saveModel(_ model: Models) {
-        UserDefaults.standard.set(model.rawValue, forKey: selectedModelKey)
+    func saveModel(_ model: OpenRouterModel) {
+        UserDefaults.standard.set(model.code, forKey: selectedModelKey)
     }
     
-    func getModel() -> Models {
-        if let rawValue = UserDefaults.standard.string(forKey: selectedModelKey),
-           let model = Models.allCases.first(where: { $0.rawValue == rawValue }) {
+    func getModel() -> OpenRouterModel {
+        if let openRouterModelCode = UserDefaults.standard.object(forKey: selectedModelKey) as? String,
+           let model = ModelsList.models.first(where: { $0.code == openRouterModelCode }) {
+            print("[DEBUG] Returining \(model.code)")
             return model
         }
-        return .glm_4_5_air
+        print("[DEBUG] Returining openrouter/auto")
+        return ModelsList.models.first(where: { $0.code == "openrouter/auto" })!
     }
     
 }

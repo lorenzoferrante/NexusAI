@@ -42,15 +42,16 @@ struct ContentView: View {
                 
                 ToolbarItem(placement: .topBarTrailing) {
                     Picker("Model", selection: $openRouterAPI.selectedModel) {
-                        ForEach(Models.allCases, id: \.self) { model in
-                            Text(model.rawValue)
-                        }
-                        .onChange(of: openRouterAPI.selectedModel) { _, newValue in
-                            DefaultsManager.shared.saveModel(newValue)
+                        ForEach(ModelsList.models, id: \.code) { model in
+                            Text(model.name)
+                                .tag(model)
                         }
                     }
                     .fixedSize()
                 }
+            }
+            .onChange(of: openRouterAPI.selectedModel) { _, newValue in
+                DefaultsManager.shared.saveModel(newValue)
             }
             .preferredColorScheme(.dark)
         }

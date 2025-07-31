@@ -38,7 +38,6 @@ struct MessageView: View {
             }
             Markdown(message.content)
                 .textSelection(.enabled)
-                .padding(10)
         }
         .frame(maxWidth: .infinity, alignment: .trailing)
         .padding()
@@ -51,7 +50,7 @@ struct MessageView: View {
                     HStack {
                         Image(systemName: "brain.fill")
                             .foregroundColor(.secondary)
-                        Text(OpenRouterAPI.shared.selectedModel.rawValue)
+                        Text(OpenRouterAPI.shared.selectedModel.code)
                             .font(.caption)
                             .foregroundStyle(.secondary)
                     }
