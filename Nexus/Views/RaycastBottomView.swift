@@ -24,20 +24,7 @@ struct RaycastBottomView: View {
     var body: some View {
         VStack(alignment: .leading) {
             Spacer()
-            
-            if isFocused {
-                withAnimation {
-                    maximizedBar
-                        .glassEffect(in: .rect(cornerRadius: 18.0))
-                        .padding()
-                }
-            } else {
-                withAnimation {
-                    minimizedBar
-                        .glassEffect(in: .rect(cornerRadius: 18.0))
-                        .padding()
-                }
-            }
+            minimizedBar
         }
         .onAppear {
             models = ModelsList.models.filter { $0.provider == provider }
@@ -47,103 +34,61 @@ struct RaycastBottomView: View {
     
     private var minimizedBar: some View {
         GlassEffectContainer {
-            VStack(alignment: .leading) {
-                HStack {
-                    providerPicker
-                    Spacer()
-                    modelPicker
-                }
-                
-                HStack {
-                    Menu {
-                        Button("Attach photos", action: {
-                            feedbackGenerator.impactOccurred()
-                            photosPickerIsPresented.toggle()
-                        })
-                        Button("Attach files", action: {
-                            feedbackGenerator.impactOccurred()
-                        })
-                    } label: {
-                        Image(systemName: "paperclip")
+            VStack {
+                VStack(alignment: .leading) {
+                    HStack {
+                        providerPicker
+                        Spacer()
+                        modelPicker
                     }
-                    .tint(.secondary)
-                    .menuStyle(.borderlessButton)
-                    .padding([.leading])
                     
-                    TextField("Ask anything...", text: $prompt)
-                        .lineLimit(1)
+                    HStack(alignment: .center) {
+                        Menu {
+                            Button("Attach photos", action: {
+                                feedbackGenerator.impactOccurred()
+                                photosPickerIsPresented.toggle()
+                            })
+                            Button("Attach files", action: {
+                                feedbackGenerator.impactOccurred()
+                            })
+                        } label: {
+                            Image(systemName: "paperclip")
+                        }
+                        .tint(.secondary)
+                        .menuStyle(.borderlessButton)
+                        .padding([.leading])
+                        
+                        TextField("Ask anything...", text: $prompt, axis: .vertical)
+                            .lineLimit(5)
+                            .padding()
+                            .focused($isFocused)
+                        
+                        Button {
+                            feedbackGenerator.impactOccurred()
+                        } label: {
+                            Image(systemName: "paperplane.fill")
+                        }
                         .padding()
-                        .focused($isFocused)
-                    
-                    Button {
-                        feedbackGenerator.impactOccurred()
-                    } label: {
-                        Image(systemName: "paperplane.fill")
+                        .disabled(prompt.isEmpty)
                     }
-                    .padding()
-                    .disabled(prompt.isEmpty)
                 }
             }
         }
+        .glassEffect(.regular.interactive(), in: .rect(cornerRadius: 18))
+        .padding()
     }
-    
-    private var maximizedBar: some View {
-        GlassEffectContainer {
-            VStack(alignment: .leading) {
-                HStack {
-                    providerPicker
-                    Spacer()
-                    modelPicker
-                }
-                
-                TextField("Ask anything...", text: $prompt)
-                    .lineLimit(5)
-                    .padding()
-                    .focused($isFocused)
-                
-                HStack {
-                    Menu {
-                        Button("Attach photos", action: {
-                            feedbackGenerator.impactOccurred()
-                            photosPickerIsPresented.toggle()
-                        })
-                        Button("Attach files", action: {
-                            feedbackGenerator.impactOccurred()
-                        })
-                    } label: {
-                        Image(systemName: "paperclip")
-                    }
-                    .tint(.secondary)
-                    .menuStyle(.borderlessButton)
-                    .padding([.leading])
-                    
-                    Button {
-                        feedbackGenerator.impactOccurred()
-                    } label: {
-                        Image(systemName: "paperplane.fill")
-                    }
-                    .padding()
-                    .disabled(prompt.isEmpty)
-                }
-            }
-        }
-    }
-    
+
     private var providerPicker: some View {
         Button {
             
         } label: {
             Text(provider.rawValue)
-                .padding([.horizontal], 8)
-                .padding([.vertical], 5)
-                .background {
-                    Capsule()
-                        .fill(.thinMaterial)
-                        .stroke(Color.primary.opacity(0.2), lineWidth: 1.0)
-                }
-                .padding()
-                .tint(.primary.opacity(0.7))
         }
+        .buttonStyle(.bordered)
+        .glassEffect(in: .capsule)
+        .tint(.primary.opacity(0.7))
+        .padding()
+        
     }
     
     private var modelPicker: some View {
