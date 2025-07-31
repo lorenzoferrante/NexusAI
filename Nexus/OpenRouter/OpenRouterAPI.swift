@@ -15,7 +15,7 @@ class OpenRouterAPI {
     
     static let shared = OpenRouterAPI()
     
-    private let API_KEY = "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"
+    private let API_KEY = "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"
     private let completionsURL = URL(string: "https://openrouter.ai/api/v1/chat/completions")!
     
     var selectedImage: UIImage? = nil

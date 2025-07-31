@@ -11,10 +11,14 @@ import PhotosUI
 struct RaycastBottomView: View {
     @State var vm = OpenRouterAPI.shared
     @State var isWebSearch: Bool = false
-    @State var photosPickerIsPresented: Bool = false
+    
+    @State var providers: Set<Providers> = []
     @State var provider = DefaultsManager.shared.getModel().provider
     @State var models: [OpenRouterModel] = []
     @State var selectedModel: OpenRouterModel = DefaultsManager.shared.getModel()
+    
+    @State var photosPickerIsPresented: Bool = false
+    @State var isProviderPickerPresented: Bool = false
     
     @Binding var prompt: String
     
@@ -28,8 +32,16 @@ struct RaycastBottomView: View {
             minimizedBar
         }
         .onAppear {
+            providers = Set(ModelsList.models.map(\.provider))
             models = ModelsList.models.filter { $0.provider == provider }
             selectedModel = models.first(where: { $0.code == vm.selectedModel.code })!
+        }
+        .onChange(of: provider) { _, newValue in
+            models = ModelsList.models.filter { $0.provider == newValue }
+            selectedModel = models.first!
+        }
+        .onChange(of: selectedModel) { _, newValue in
+            DefaultsManager.shared.saveModel(newValue)
         }
     }
     
@@ -85,12 +97,35 @@ struct RaycastBottomView: View {
         .photosPicker(isPresented: $photosPickerIsPresented,
                       selection: $vm.photoPickerItems,
                       matching: .images)
+        .fullScreenCover(isPresented: $isProviderPickerPresented) {
+            
+        }
         
     }
-
+    
     private var providerPicker: some View {
+        Menu(provider.rawValue) {
+            ForEach(Array(providers), id: \.rawValue) { provider in
+                Button(provider.rawValue) {
+                    self.provider = provider
+                }
+            }
+        }
+        .buttonStyle(.bordered)
+        .glassEffect(in: .capsule)
+        .tint(.primary.opacity(0.7))
+        .padding()
+    }
+    
+    private var providerText: some View {
+        Text(provider.rawValue)
+            .padding()
+            .glassEffect(in: .capsule)
+    }
+    
+    private var providerButton: some View {
         Button {
-            
+            isProviderPickerPresented.toggle()
         } label: {
             Text(provider.rawValue)
         }
@@ -98,7 +133,6 @@ struct RaycastBottomView: View {
         .glassEffect(in: .capsule)
         .tint(.primary.opacity(0.7))
         .padding()
-        
     }
     
     private var modelPicker: some View {
@@ -109,9 +143,6 @@ struct RaycastBottomView: View {
             }
         }
         .tint(.primary.opacity(0.7))
-        .onChange(of: selectedModel) { _, newValue in
-            DefaultsManager.shared.saveModel(newValue)
-        }
     }
     
     private func photoSection(_ image: Image) -> some View {
