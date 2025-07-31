@@ -11,6 +11,7 @@ struct RaycastBottomView: View {
     @State var vm = OpenRouterAPI.shared
     @State var isWebSearch: Bool = false
     @State var photosPickerIsPresented: Bool = false
+    @State var provider = OpenRouterAPI.shared.selectedModel.provider
     
     @Binding var prompt: String
     
@@ -40,34 +41,38 @@ struct RaycastBottomView: View {
     
     private var minimizedBar: some View {
         GlassEffectContainer {
-            HStack {
-                Menu {
-                    Button("Attach photos", action: {
-                        feedbackGenerator.impactOccurred()
-                        photosPickerIsPresented.toggle()
-                    })
-                    Button("Attach files", action: {
-                        feedbackGenerator.impactOccurred()
-                    })
-                } label: {
-                    Image(systemName: "paperclip")
-                }
-                .tint(.secondary)
-                .menuStyle(.borderlessButton)
-                .padding([.leading])
+            VStack(alignment: .leading) {
+                providerPicker
                 
-                TextField("Ask anything...", text: $prompt)
-                    .lineLimit(1)
+                HStack {
+                    Menu {
+                        Button("Attach photos", action: {
+                            feedbackGenerator.impactOccurred()
+                            photosPickerIsPresented.toggle()
+                        })
+                        Button("Attach files", action: {
+                            feedbackGenerator.impactOccurred()
+                        })
+                    } label: {
+                        Image(systemName: "paperclip")
+                    }
+                    .tint(.secondary)
+                    .menuStyle(.borderlessButton)
+                    .padding([.leading])
+                    
+                    TextField("Ask anything...", text: $prompt)
+                        .lineLimit(1)
+                        .padding()
+                        .focused($isFocused)
+                    
+                    Button {
+                        feedbackGenerator.impactOccurred()
+                    } label: {
+                        Image(systemName: "paperplane.fill")
+                    }
                     .padding()
-                    .focused($isFocused)
-                
-                Button {
-                    feedbackGenerator.impactOccurred()
-                } label: {
-                    Image(systemName: "paperplane.fill")
+                    .disabled(prompt.isEmpty)
                 }
-                .padding()
-                .disabled(prompt.isEmpty)
             }
         }
     }
@@ -79,6 +84,23 @@ struct RaycastBottomView: View {
                 .padding()
                 .focused($isFocused)
         }
+    }
+    
+    private var providerPicker: some View {
+        Button {
+            
+        } label: {
+            Text(provider.rawValue)
+                .padding([.horizontal], 8)
+                .padding([.vertical], 5)
+                .background {
+                    Capsule()
+                        .fill(.thinMaterial)
+                        .stroke(Color.accentColor.opacity(0.2), lineWidth: 1.0)
+                }
+                .padding()
+        }
+
     }
 }
 
