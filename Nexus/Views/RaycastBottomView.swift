@@ -7,6 +7,7 @@
 
 import SwiftUI
 import PhotosUI
+import UniformTypeIdentifiers
 
 struct RaycastBottomView: View {
     @State var vm = OpenRouterAPI.shared
@@ -17,6 +18,7 @@ struct RaycastBottomView: View {
     @State var models: [OpenRouterModel] = []
     @State var selectedModel: OpenRouterModel = DefaultsManager.shared.getModel()
     
+    @State var filePickerIsPresented: Bool = false
     @State var photosPickerIsPresented: Bool = false
     
     @Binding var prompt: String
@@ -45,6 +47,23 @@ struct RaycastBottomView: View {
             DefaultsManager.shared.saveModel(newValue)
             vm.selectedModel = selectedModel
         }
+        .photosPicker(
+            isPresented: $photosPickerIsPresented,
+            selection: $vm.photoPickerItems,
+            matching: .images
+        )
+        .fileImporter(
+            isPresented: $filePickerIsPresented,
+            allowedContentTypes: [.plainText, .pdf],
+            allowsMultipleSelection: false
+        ) { result in
+            switch result {
+            case .success(let urls):
+                parseFile(urls)
+            case .failure(let failure):
+                print("[DEBUG] Erorr \(failure.localizedDescription)")
+            }
+        }
     }
     
     private var minimizedBar: some View {
@@ -55,6 +74,10 @@ struct RaycastBottomView: View {
                         photoSection(Image(uiImage: image))
                     }
                     
+                    if vm.selectedFileURL != nil {
+                        fileSection()
+                    }
+                    
                     HStack {
                         providerPicker
                         Spacer()
@@ -63,13 +86,28 @@ struct RaycastBottomView: View {
                     
                     HStack(alignment: .center) {
                         Menu {
-                            Button("Attach photos", action: {
+                            Button {
+                                feedbackGenerator.impactOccurred()
+                                isWebSearch.toggle()
+                            } label: {
+                                Label("Web Search", systemImage: "network")
+                                    .tint(isWebSearch ? Color.accent : .primary)
+                            }
+                            
+                            Button {
                                 feedbackGenerator.impactOccurred()
                                 photosPickerIsPresented.toggle()
-                            })
-                            Button("Attach files", action: {
+                            } label: {
+                                Label("Add photo", systemImage: "photo.fill")
+                            }
+                            
+                            Button {
                                 feedbackGenerator.impactOccurred()
-                            })
+                                filePickerIsPresented.toggle()
+                            } label: {
+                                Label("Add file", systemImage: "text.document")
+                            }
+                            
                         } label: {
                             Image(systemName: "paperclip")
                         }
@@ -100,9 +138,6 @@ struct RaycastBottomView: View {
         }
         .glassEffect(.regular.interactive(), in: .rect(cornerRadius: 18))
         .padding()
-        .photosPicker(isPresented: $photosPickerIsPresented,
-                      selection: $vm.photoPickerItems,
-                      matching: .images)
         
     }
     
@@ -128,6 +163,7 @@ struct RaycastBottomView: View {
             }
         }
         .tint(.primary.opacity(0.7))
+        .padding(.trailing)
     }
     
     private func photoSection(_ image: Image) -> some View {
@@ -148,13 +184,45 @@ struct RaycastBottomView: View {
             Spacer()
         }
     }
+    
+    private func fileSection() -> some View {
+        HStack {
+            withAnimation {
+                Image(systemName: "text.document")
+                    .scaledToFit()
+                    .frame(maxHeight: 80)
+                    .padding([.top, .leading, .trailing])
+                    .onLongPressGesture {
+                        withAnimation {
+                            vm.selectedImage = nil
+                        }
+                    }
+            }
+            Spacer()
+        }
+    }
 
     private func generate() {
         isFocused = false
         let imageData = vm.base64FromSwiftUIImage()
+        let fileData = vm.fileContent()
+        let fileName = vm.selectedFileURL?.lastPathComponent ?? nil
+        let fileExtension = vm.selectedFileURL?.pathExtension.lowercased() ?? ""
+        var pdfFileData: String?
+        if fileExtension.lowercased() == "pdf" {
+            pdfFileData = vm.base64FromFileURL()
+        }
+        
         withAnimation {
             print("[DEBUG] Appending prompt: \(prompt)")
-            vm.chat.append(.init(role: .user, content: prompt, imageData: imageData))
+            vm.chat.append(.init(
+                role: .user,
+                content: prompt,
+                imageData: imageData,
+                fileData: fileData,
+                pdfData: pdfFileData,
+                fileName: fileName
+            ))
             prompt = ""
             vm.selectedImage = nil
         }
@@ -166,6 +234,12 @@ struct RaycastBottomView: View {
     
     private func attachImage() {
         photosPickerIsPresented.toggle()
+    }
+    
+    private func parseFile(_ urls: [URL]) {
+        if let url = urls.first {
+            vm.selectedFileURL = url
+        }
     }
 }
 

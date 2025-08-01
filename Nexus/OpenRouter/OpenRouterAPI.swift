@@ -18,6 +18,7 @@ class OpenRouterAPI {
     private let API_KEY = ""
     private let completionsURL = URL(string: "https://openrouter.ai/api/v1/chat/completions")!
     
+    var selectedFileURL: URL?
     var selectedImage: UIImage? = nil
     var photoPickerItems: PhotosPickerItem? = nil {
         didSet {
@@ -148,6 +149,61 @@ class OpenRouterAPI {
         }
         guard let imageData = image.pngData() else { return nil }
         return "data:image/jpeg;base64,\(imageData.base64EncodedString())"
+    }
+    
+    public func fileContent() -> String? {
+        guard let fileURL = selectedFileURL else {
+            return nil
+        }
+        
+        do {
+            return try String(contentsOf: fileURL, encoding: .utf8)
+        } catch {
+            return nil
+        }
+    }
+    
+    public func base64FromFileURL() -> String? {
+        guard let fileURL = selectedFileURL else {
+            return nil
+        }
+        
+        let fileExtension = fileURL.pathExtension
+        let dataURI = dataURIPrefix(for: fileExtension)
+        
+        do {
+            let encodedFile = try Data(contentsOf: fileURL).base64EncodedString()
+            return "\(dataURI)\(encodedFile)"
+        } catch {
+            print("[DEBUG] Error encoding file: \(error.localizedDescription)")
+        }
+        
+        return nil
+    }
+    
+    private func dataURIPrefix(for fileExtension: String) -> String {
+        switch fileExtension.lowercased() {
+        case "pdf":
+            return "data:application/pdf;base64,"
+        case "txt":
+            return "data:text/plain;base64,"
+        case "csv":
+            return "data:text/csv;base64,"
+        case "json":
+            return "data:application/json;base64,"
+        case "xml":
+            return "data:application/xml;base64,"
+        case "html", "htm":
+            return "data:text/html;base64,"
+        case "md":
+            return "data:text/markdown;base64,"
+        case "rtf":
+            return "data:application/rtf;base64,"
+        case "yaml", "yml":
+            return "data:text/yaml;base64,"
+        default:
+            return "data:application/octet-stream;base64,"
+        }
     }
     
 }

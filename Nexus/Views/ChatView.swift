@@ -26,7 +26,6 @@ struct ChatView: View {
                 Color.clear
                     .frame(height: 1)
                     .id(bottomID)
-//                    .padding(.bottom, 130)
             }
             .onChange(of: lastMessageContent) { _, _ in
                 withAnimation {

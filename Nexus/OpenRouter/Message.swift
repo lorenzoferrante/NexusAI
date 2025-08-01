@@ -17,23 +17,64 @@ struct Message: Codable, Identifiable {
     let role: Role
     var content: String
     var imageData: String?
+    var fileData: String?
+    var pdfData: String?
+    var fileName: String?
+    
 
     func asDictionary() -> [String: Any] {
-        guard let imageData = imageData else {
-            return ["role": role.rawValue, "content": content]
-        }
-        return [
-            "role": role.rawValue,
-            "content": [
-                [
-                    "type": "text",
-                    "text": content
-                ],
-                [
-                    "type": "image_url",
-                    "image_url": imageData
+        if let imageData = imageData {
+            return [
+                "role": role.rawValue,
+                "content": [
+                    [
+                        "type": "text",
+                        "text": content
+                    ],
+                    [
+                        "type": "image_url",
+                        "image_url": imageData
+                    ]
                 ]
             ]
-        ]
+        }
+        
+        if let fileData = fileData {
+            return [
+                "role": role.rawValue,
+                "content": [
+                    [
+                        "type": "text",
+                        "text": "This is the content of a file attached by the user: \(fileData)"
+                    ],
+                    [
+                        "type": "text",
+                        "text": content
+                    ]
+                ]
+            ]
+        }
+        
+        if let pdfData = pdfData {
+            return [
+                "role": role.rawValue,
+                "content": [
+                    [
+                        "type": "text",
+                        "text": content
+                    ],
+                    [
+                        "type": "file",
+                        "file": [
+                            "filename": fileName ?? "file.pdf",
+                            "file_data": pdfData
+                        ]
+                    ]
+                ]
+            ]
+        }
+        
+        return ["role": role.rawValue, "content": content]
+        
     }
 }
