@@ -79,8 +79,7 @@ struct MessageView: View {
 #Preview {
     @Previewable @State var message: Message = .init(
         role: .user,
-        content: "Hello this is a user message with an image attached!",
-        imageData: "data:image/jpeg;base64,\(UIImage(resource: .test).pngData()!.base64EncodedString())")
+        content: "Hello this is a user message with an image attached!")
     
     @Previewable @State var assistantMessage: Message = .init(
         role: .assistant,

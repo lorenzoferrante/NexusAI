@@ -141,12 +141,29 @@ struct RaycastBottomView: View {
         
     }
     
+    private var providerView: Label<Text, Image> {
+        Label {
+            Text(provider.rawValue)
+        } icon: {
+            Image(.google)
+        }
+
+    }
+    
     private var providerPicker: some View {
-        Menu(provider.rawValue) {
+        Menu {
             ForEach(Array(providers), id: \.rawValue) { provider in
                 Button(provider.rawValue) {
                     self.provider = provider
                 }
+            }
+        } label: {
+            HStack {
+                provider.icon()
+                    .resizable()
+                    .aspectRatio(contentMode: .fit)
+                    .frame(height: 20)
+                Text(provider.rawValue)
             }
         }
         .buttonStyle(.bordered)
@@ -162,6 +179,7 @@ struct RaycastBottomView: View {
                     .tag(model)
             }
         }
+        .lineLimit(1)
         .tint(.primary.opacity(0.7))
         .padding(.trailing)
     }

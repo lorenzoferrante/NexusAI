@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import SwiftUI
 
 enum Providers: String, CaseIterable, Codable {
     case openrouter = "OpenRouter"
@@ -16,6 +17,33 @@ enum Providers: String, CaseIterable, Codable {
     case xAI = "xAI"
     case openAI = "OpenAI"
     case anthropic = "Anthropic"
+    case deepseek = "DeepSeek"
+    case moonshot = "Moonshot"
+    
+    func icon() -> Image {
+        switch self {
+        case .openrouter:
+            return Image(.openrouter)
+        case .perplexity:
+            return Image(.perplexity)
+        case .zai:
+            return Image(.zAi)
+        case .qwen:
+            return Image(.qwen)
+        case .google:
+            return Image(.google)
+        case .xAI:
+            return Image(.xai)
+        case .openAI:
+            return Image(.openai)
+        case .anthropic:
+            return Image(.anthropic)
+        case .deepseek:
+            return Image(.deepseek)
+        case .moonshot:
+            return Image(.moonshot)
+        }
+    }
 }
 
 struct OpenRouterModel: Codable, Hashable {
@@ -62,5 +90,21 @@ class ModelsList {
         /// Anthropic Models
         OpenRouterModel(name: "Claude Sonnet 4", provider: .anthropic, description: "Sonnet 4 model by Anthropic.", code: "anthropic/claude-sonnet-4"),
         OpenRouterModel(name: "Claude Opus 4", provider: .anthropic, description: "Opus 4 model by Anthropic.", code: "anthropic/claude-opus-4"),
+        
+        /// xAI Models
+        OpenRouterModel(name: "Grok 4", provider: .xAI, description: "", code: "x-ai/grok-4"),
+        OpenRouterModel(name: "Grok 3", provider: .xAI, description: "", code: "x-ai/grok-3"),
+        OpenRouterModel(name: "Grok 3 Mini", provider: .xAI, description: "", code: "x-ai/grok-3-mini"),
+        
+        /// DeepSeek Models
+        OpenRouterModel(name: "R1", provider: .deepseek, description: "", code: "deepseek/deepseek-r1"),
+        OpenRouterModel(name: "R1 Distill Qwen 7B", provider: .deepseek, description: "", code: "deepseek/deepseek-r1-distill-qwen-7b"),
+        OpenRouterModel(name: "R1 0528 Qwen3 8B", provider: .deepseek, description: "", code: "deepseek/deepseek-r1-0528-qwen3-8b"),
+        OpenRouterModel(name: "DeepSeek: R1 0528", provider: .deepseek, description: "", code: "deepseek/deepseek-r1-0528"),
+        OpenRouterModel(name: "R1 Distill Qwen 32B", provider: .deepseek, description: "", code: "deepseek/deepseek-r1-distill-qwen-32b"),
+        OpenRouterModel(name: "DeepSeek: R1 Distill Llama 70B", provider: .deepseek, description: "", code: "deepseek/deepseek-r1-distill-llama-70b"),
+        
+        /// Moonshot Models
+        OpenRouterModel(name: "Kimi K2", provider: .moonshot, description: "", code: "moonshotai/kimi-k2"),
     ]
 }
