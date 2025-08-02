@@ -9,7 +9,7 @@ import SwiftUI
 import PhotosUI
 import UniformTypeIdentifiers
 
-struct RaycastBottomView: View {
+struct BottomView: View {
     @State var vm = OpenRouterAPI.shared
     @State var isWebSearch: Bool = false
     
@@ -137,8 +137,9 @@ struct RaycastBottomView: View {
             
         }
         .glassEffect(.regular.interactive(), in: .rect(cornerRadius: 18))
-        .padding()
-        
+        .padding(
+            isFocused ? .all : [.trailing, .leading]
+        )
     }
     
     private var providerView: Label<Text, Image> {
@@ -266,7 +267,7 @@ struct RaycastBottomView: View {
     @Previewable @State var prompt: String = ""
     ZStack {
         BackView()
-        RaycastBottomView(prompt: $prompt)
+        BottomView(prompt: $prompt)
             .preferredColorScheme(.dark)
     }
 }

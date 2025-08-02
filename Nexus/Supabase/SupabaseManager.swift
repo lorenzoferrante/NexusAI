@@ -3,11 +3,12 @@
 //  Nexus
 //
 //  Created by Lorenzo Ferrante on 8/2/25.
-//
+// Brilletta96_
 
 import Foundation
 import Supabase
 import AuthenticationServices
+import SwiftUI
 
 @MainActor
 @Observable
@@ -19,9 +20,7 @@ class SupabaseManager {
     private let supabaseKey = ""
     let client: SupabaseClient
     
-    public var isAuthenticated: Bool {
-        return client.auth.currentUser != nil
-    }
+    public var isAuthenticated: Bool = false
     
     private init() {
         guard let supabaseURL = URL(string: supabaseURLString) else {
@@ -32,6 +31,16 @@ class SupabaseManager {
             supabaseURL: supabaseURL,
             supabaseKey: supabaseKey
         )
+        
+        Task {
+            for await state in client.auth.authStateChanges {
+                if [.initialSession, .signedIn, .signedOut].contains(state.event) {
+                    withAnimation {
+                        isAuthenticated = state.session != nil
+                    }
+                }
+            }
+        }
     }
     
     public func logInTask(_ result: Result<ASAuthorization, any Error>) async {
@@ -51,6 +60,10 @@ class SupabaseManager {
                     idToken: idToken
                 )
             )
+            
+            await MainActor.run {
+                isAuthenticated = true
+            }
         } catch {
             print("[DEBUG] SignUp Error: \(error.localizedDescription)")
         }
@@ -61,6 +74,10 @@ class SupabaseManager {
             try await client.auth.signOut()
         } catch {
             print("[DEBUG] SignOut Error: \(error.localizedDescription)")
+        }
+        
+        await MainActor.run {
+            isAuthenticated = false
         }
     }
     

@@ -57,17 +57,21 @@ struct MessageView: View {
                 }
             }
             if message.content.isEmpty {
-                HStack {
-                    ThinkingIndicatorView()
-                    Markdown("Thinking...")
+                withAnimation {
+                    HStack {
+                        ThinkingIndicatorView()
+                        Markdown("Thinking...")
+                    }
                 }
             } else {
-                Markdown(message.content)
-                    .textSelection(.enabled)
-                    .frame(
-                        maxWidth: .infinity,
-                        alignment: .leading
-                    )
+                withAnimation {
+                    Markdown(message.content)
+                        .textSelection(.enabled)
+                        .frame(
+                            maxWidth: .infinity,
+                            alignment: .leading
+                        )
+                }
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)

@@ -32,6 +32,12 @@ class OpenRouterAPI {
     var selectedModel: OpenRouterModel = DefaultsManager.shared.getModel()
     
     func stream(isWebSearch: Bool = false) async throws {
+        // Append the assistant message ONCE before streaming
+        await MainActor.run {
+            chat.append(Message(role: .assistant, content: ""))
+        }
+        
+        
         var request = URLRequest(url: completionsURL)
         request.httpMethod = "POST"
         request.setValue("Bearer \(API_KEY)", forHTTPHeaderField: "Authorization")
@@ -85,11 +91,6 @@ class OpenRouterAPI {
                 print("[DEBUG] Body: \(body)")
             }
             return
-        }
-        
-        // Append the assistant message ONCE before streaming
-        await MainActor.run {
-            chat.append(Message(role: .assistant, content: ""))
         }
         
         var buffer = Data()

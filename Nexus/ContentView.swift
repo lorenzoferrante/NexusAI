@@ -45,7 +45,7 @@ struct ContentView: View {
     
     private func bottomBar() -> some View {
         ZStack {
-            RaycastBottomView(prompt: $prompt)
+            BottomView(prompt: $prompt)
                 .fixedSize(horizontal: false, vertical: true)
                 .progressiveBlur()
         }
