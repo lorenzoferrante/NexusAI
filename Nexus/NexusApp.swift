@@ -9,9 +9,19 @@ import SwiftUI
 
 @main
 struct NexusApp: App {
+    @State var supabaseClient = SupabaseManager.shared
+    
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            if supabaseClient.isAuthenticated {
+                NavigationSplitView {
+                    SidebarView()
+                } detail: {
+                    ContentView()
+                }
+            } else {
+                SignView()
+            }
         }
     }
 }
