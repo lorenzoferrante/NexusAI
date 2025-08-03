@@ -13,14 +13,23 @@ struct NexusApp: App {
     
     var body: some Scene {
         WindowGroup {
-            if supabaseClient.isAuthenticated {
-                NavigationSplitView {
-                    SidebarView()
-                } detail: {
-                    ContentView()
+            Group {
+                if supabaseClient.isAuthenticated && supabaseClient.userHasProfile {
+                    NavigationSplitView {
+                        SidebarView()
+                    } detail: {
+                        ContentView()
+                    }
+                } else {
+                    NavigationStack {
+                        SignView()
+                    }
                 }
-            } else {
-                SignView()
+            }
+            .onAppear {
+                Task {
+                    await supabaseClient.checkIfUserHasProfile()
+                }
             }
         }
     }

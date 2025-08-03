@@ -11,16 +11,34 @@ import Supabase
 
 struct SignView: View {
     @State var supabaseClient = SupabaseManager.shared
+    @State var authComplete: Bool = false
     
     var body: some View {
         ZStack {
+            BackView()
+                .ignoresSafeArea()
+            
             VStack(alignment: .leading) {
-                userInfo()
+                Group {
+                    Text("Welcome")
+                    Text("to NexusAI")
+                }
+                .font(.largeTitle)
+                .fontWeight(.bold)
+                
+                CarouselView()
+                    .frame(height: 200)
+                
+                Spacer()
+//                userInfo()
                 signUp()
             }
+            .padding()
         }
-        .ignoresSafeArea()
         .preferredColorScheme(.dark)
+        .navigationDestination(isPresented: $supabaseClient.isAuthenticated) {
+            CreateProfileView()
+        }
     }
     
     private func signUp() -> some View {
@@ -29,6 +47,7 @@ struct SignView: View {
         } onCompletion: { result in
             Task {
                 await supabaseClient.logInTask(result)
+                await supabaseClient.checkIfUserHasProfile()
             }
         }
         .signInWithAppleButtonStyle(.white)

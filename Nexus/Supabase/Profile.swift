@@ -11,9 +11,11 @@ import Supabase
 struct Profile: Codable, Sendable {
     let username: String?
     let fullname: String?
+    let country: String?
     
     enum CodingKeys: String, CodingKey {
         case username
         case fullname = "full_name"
+        case country
     }
 }

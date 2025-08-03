@@ -10,6 +10,7 @@ import Supabase
 
 struct SidebarView: View {
     @State private var supabaseClient = SupabaseManager.shared
+    @State private var isSettingsPresented = false
     
     var body: some View {
         ZStack {
@@ -32,6 +33,9 @@ struct SidebarView: View {
                         .glassEffect(in: .circle)
                 }
             }
+        }
+        .sheet(isPresented: $isSettingsPresented) {
+            SettingsView()
         }
     }
     
@@ -57,9 +61,14 @@ struct SidebarView: View {
     private var bottomBar: some View {
         GlassEffectContainer {
             HStack {
-                Image(systemName: "person.crop.circle.fill")
-                    .foregroundColor(.gray)
-                Text(supabaseClient.getUser()?.email ?? "")
+                Button {
+                    isSettingsPresented.toggle()
+                } label: {
+                    Image(systemName: "person.crop.circle.fill")
+                        .foregroundColor(.gray)
+                    Text(supabaseClient.profile?.username ?? "")
+                }
+                .tint(.primary)
                 
                 Spacer()
                 
@@ -78,6 +87,7 @@ struct SidebarView: View {
             .glassEffect(.regular.interactive(), in: .capsule)
         }
         .padding([.leading, .trailing])
+        .preferredColorScheme(.dark)
     }
 }
 

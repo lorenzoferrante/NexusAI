@@ -12,69 +12,130 @@ import Supabase
 struct CreateProfileView: View {
     @State var supabaseManager = SupabaseManager.shared
     
+    @State var email = ""
     @State var username = ""
     @State var fullname = ""
     
     @State var isLoading: Bool = false
     
+    @State var isEditing = false
+    
+    @State private var selectedCountry = ""
+    let countries = [
+        "United States",
+        "Canada",
+        "United Kingdom",
+        "Germany",
+        "France",
+        "Italy",
+        "Spain",
+        "Australia",
+        "India",
+        "China",
+        "Japan"
+    ]
+    
     var body: some View {
-        ZStack {
-            BackView()
-            
-            ScrollView {
-                VStack(alignment: .leading) {
-                    Text("Create your profile")
-                        .font(.largeTitle)
-                        .fontWeight(.bold)
-                    
-                    GlassEffectContainer {
-                        TextField("Username", text: $username)
-                            .padding()
-                            .glassEffect(.regular.interactive(), in: .capsule)
+        NavigationStack {
+            ZStack {
+                BackView()
+                
+                ScrollView {
+                    VStack(alignment: .leading) {
+                        //                    Text("Welcome")
+                        //                        .font(.largeTitle)
+                        //                        .fontWeight(.bold)
                         
-                        TextField("Full Name", text: $fullname)
-                            .padding()
-                            .glassEffect(.regular.interactive(), in: .capsule)
+                        //                    Text("You are one step away from the power of AI in your pocket")
+                        //                        .foregroundStyle(.secondary)
+                        //                        .fontDesign(.monospaced)
+                        //                        .padding([.bottom])
                         
-                        Button {
+                        CarouselView()
+                            .frame(height: 120)
+                        
+                        GlassEffectContainer {
+                            TextField("Email", text: $email)
+                                .disabled(true)
+                                .foregroundStyle(.secondary)
+                                .padding()
+                                .glassEffect(.regular.interactive(), in: .rect(cornerRadius: 16))
                             
-                        } label: {
-                            HStack {
-                                if isLoading {
-                                    ProgressView()
-                                } else {
-                                    Image(systemName: "person.crop.circle.fill")
-                                    Text("Save profile")
+                            TextField("Username", text: $username)
+                                .padding()
+                                .glassEffect(.regular.interactive(), in: .rect(cornerRadius: 16))
+                            
+                            TextField("Full Name", text: $fullname)
+                                .padding()
+                                .glassEffect(.regular.interactive(), in: .rect(cornerRadius: 16))
+                            
+                            HStack(alignment: .lastTextBaseline) {
+                                Text("Where are you from?")
+                                    .padding([.leading])
+                                    .foregroundStyle(.secondary)
+                                Spacer()
+                                Picker("Country", selection: $selectedCountry) {
+                                    ForEach(countries, id: \.self) { country in
+                                        Text(country)
+                                            .tag(country)
+                                    }
                                 }
                             }
-                            .background(.clear)
-                            .buttonStyle(.glassProminent)
-                            .padding()
-                            .frame(maxWidth: .infinity)
-                            .glassEffect(.regular.interactive(), in: .capsule)
+                            .padding([.top, .bottom])
+                            
+                            
+                            Button {
+                                saveProfile()
+                            } label: {
+                                HStack {
+                                    if isLoading {
+                                        ProgressView()
+                                    } else {
+                                        Text("Save profile")
+                                            .fontWeight(.semibold)
+                                    }
+                                }
+                                .padding([.top, .bottom])
+                                .frame(maxWidth: .infinity)
+                            }
+                            .tint(.black)
+                            .background(
+                                RoundedRectangle(cornerRadius: 16.0)
+                                    .fill(.white)
+                            )
+                            .glassEffect(.regular.interactive())
                         }
-                        
+                    }
+                    .padding()
+                }
+                .onAppear {
+                    Task {
+                        await getInitialProfile()
                     }
                 }
-                .padding()
             }
+            .navigationTitle("Your Profile")
+            .preferredColorScheme(.dark)
         }
     }
     
     func getInitialProfile() async {
         do {
+            email = try await supabaseManager.client.auth.session.user.email ?? ""
+            
             let currentUser = try await supabaseManager.client.auth.session.user
-            let response = try await supabaseManager.client.from("profiles")
+            let profile: Profile = try await supabaseManager.client.from("profiles")
                 .select()
                 .eq("id", value: currentUser.id)
                 .single()
                 .execute()
-            let profile: Profile = (response.value as? Profile)!
-            
+                .value
+            supabaseManager.profile = profile
             username = profile.username ?? ""
             fullname = profile.fullname ?? ""
+            selectedCountry = profile.country ?? countries.first!
         } catch {
-            debugPrint(error)
+            print("[DEBUG - getInitialProfile()] Error: \(error.localizedDescription)")
         }
     }
     
@@ -85,7 +146,11 @@ struct CreateProfileView: View {
             defer { isLoading = false }
             
             do {
-                let updatedProfile = Profile(username: username, fullname: fullname)
+                let updatedProfile = Profile(
+                    username: username,
+                    fullname: fullname,
+                    country: selectedCountry
+                )
                 let currentUser = try await supabaseManager.client.auth.session.user
                 
                 try await supabaseManager.client
@@ -93,6 +158,9 @@ struct CreateProfileView: View {
                     .update(updatedProfile)
                     .eq("id", value: currentUser.id)
                     .execute()
+                
+                supabaseManager.isAuthenticated = true
+                supabaseManager.userHasProfile = true
             } catch {
                 debugPrint(error)
             }
@@ -108,6 +176,12 @@ struct CreateProfileView: View {
         
         if username
             .trimmingCharacters(in: .whitespaces)
+            .isEmpty {
+            return false
+        }
+        
+        if selectedCountry
+            .trimmingCharacters(in: .whitespacesAndNewlines)
             .isEmpty {
             return false
         }

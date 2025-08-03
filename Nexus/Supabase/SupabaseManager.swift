@@ -21,6 +21,8 @@ class SupabaseManager {
     let client: SupabaseClient
     
     public var isAuthenticated: Bool = false
+    public var userHasProfile: Bool = false
+    public var profile: Profile? = nil
     
     private init() {
         guard let supabaseURL = URL(string: supabaseURLString) else {
@@ -64,6 +66,8 @@ class SupabaseManager {
             await MainActor.run {
                 isAuthenticated = true
             }
+            
+            await checkIfUserHasProfile()
         } catch {
             print("[DEBUG] SignUp Error: \(error.localizedDescription)")
         }
@@ -78,6 +82,7 @@ class SupabaseManager {
         
         await MainActor.run {
             isAuthenticated = false
+            userHasProfile = false
         }
     }
     
@@ -86,6 +91,25 @@ class SupabaseManager {
             return currentUser
         } else {
             return nil
+        }
+    }
+    
+    public func checkIfUserHasProfile() async {
+        do {
+            let userID = try await client.auth.session.user.id
+            let profile: Profile = try await client.from("profiles")
+                .select()
+                .eq("id", value: userID)
+                .single()
+                .execute()
+                .value
+            print("[DEBUG - checkIfUserHasProfile()] Username: \(profile.username ?? "no username")")
+            await MainActor.run {
+                self.profile = profile
+                userHasProfile = (profile.username != nil)
+            }
+        } catch {
+            print("[DEBUG - checkIfUserHasProfile()] Error: \(error.localizedDescription)")
         }
     }
     
