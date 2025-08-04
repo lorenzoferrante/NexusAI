@@ -10,6 +10,7 @@ import PhotosUI
 import UniformTypeIdentifiers
 
 struct BottomView: View {
+    @State var supabaseManager = SupabaseManager.shared
     @State var vm = OpenRouterAPI.shared
     @State var isWebSearch: Bool = false
     
@@ -234,14 +235,32 @@ struct BottomView: View {
         
         withAnimation {
             print("[DEBUG] Appending prompt: \(prompt)")
-            vm.chat.append(.init(
+            
+            let newUserMessage: Message = .init(
+                chatId: supabaseManager.currentChat!.id,
                 role: .user,
                 content: prompt,
                 imageData: imageData,
                 fileData: fileData,
                 pdfData: pdfFileData,
-                fileName: fileName
-            ))
+                fileName: fileName,
+                createdAt: Date()
+            )
+            
+            Task {
+                try await supabaseManager.addMessageToChat(newUserMessage)
+            }
+            
+//            vm.chat.append(.init(
+//                chatId: UUID(),
+//                role: .user,
+//                content: prompt,
+//                imageData: imageData,
+//                fileData: fileData,
+//                pdfData: pdfFileData,
+//                fileName: fileName,
+//                createdAt: Date()
+//            ))
             prompt = ""
             vm.selectedImage = nil
         }

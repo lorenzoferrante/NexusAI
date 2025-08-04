@@ -33,17 +33,24 @@ class OpenRouterAPI {
     
     func stream(isWebSearch: Bool = false) async throws {
         // Append the assistant message ONCE before streaming
-        await MainActor.run {
-            chat.append(Message(role: .assistant, content: ""))
-        }
+//        await MainActor.run {
+//            chat.append(Message(chatId: UUID(), role: .assistant, content: "", createdAt: Date()))
+//        }
         
+        let newAssistantMessage: Message = .init(
+            chatId: SupabaseManager.shared.currentChat!.id,
+            role: .assistant,
+            content: "",
+            createdAt: Date()
+        )
+        try await SupabaseManager.shared.addMessageToChat(newAssistantMessage)
         
         var request = URLRequest(url: completionsURL)
         request.httpMethod = "POST"
         request.setValue("Bearer \(API_KEY)", forHTTPHeaderField: "Authorization")
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         
-        let messageDicts = chat.map { $0.asDictionary() }
+        let messageDicts = SupabaseManager.shared.currentMessages.map { $0.asDictionary() }
         var payload: [String: Any] = [:]
         print(messageDicts)
         if isWebSearch {
@@ -120,12 +127,23 @@ class OpenRouterAPI {
                             
                             // Append to last assistant message
                             await MainActor.run {
-                                if !chat.isEmpty {
-                                    chat[chat.count - 1].content += content
+                                if !SupabaseManager.shared.currentMessages.isEmpty {
+                                    let lastIndex = SupabaseManager.shared.currentMessages.lastIndex(where: {$0.role == .assistant})!
+                                    SupabaseManager.shared.currentMessages[lastIndex].content += content
+//                                    chat[chat.count - 1].content += content
                                 }
                             }
                             fflush(stdout)
                         }
+                        
+                        let lastContent = SupabaseManager.shared
+                            .currentMessages
+                            .last(where: {$0.role == .assistant})!
+                            .content
+                        await MainActor.run {
+                            SupabaseManager.shared.updateLastMessage(lastContent)
+                        }
+
                     } catch {
                         print("[DEBUG] Parsing error...")
                     }

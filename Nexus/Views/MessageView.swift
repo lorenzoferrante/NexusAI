@@ -82,12 +82,18 @@ struct MessageView: View {
 
 #Preview {
     @Previewable @State var message: Message = .init(
+        chatId: UUID(),
         role: .user,
-        content: "Hello this is a user message with an image attached!")
+        content: "Hello this is a user message with an image attached!",
+        createdAt: Date()
+    )
     
     @Previewable @State var assistantMessage: Message = .init(
+        chatId: UUID(),
         role: .assistant,
-        content: "Hello I am a simple AI assistant")
+        content: "Hello I am a simple AI assistant",
+        createdAt: Date()
+    )
     
     ZStack {
         BackView()

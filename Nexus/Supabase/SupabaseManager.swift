@@ -23,6 +23,9 @@ class SupabaseManager {
     public var isAuthenticated: Bool = false
     public var userHasProfile: Bool = false
     public var profile: Profile? = nil
+    public var chats: [Chat] = []
+    public var currentChat: Chat? = nil
+    public var currentMessages: [Message] = []
     
     private init() {
         guard let supabaseURL = URL(string: supabaseURLString) else {
@@ -113,4 +116,129 @@ class SupabaseManager {
         }
     }
     
+    public func createNewChat() async throws -> Chat {
+        let chatId = UUID()
+        let userId = try await client.auth.session.user.id
+        let newChat = Chat(
+            id: chatId,
+            userId: userId,
+            model: DefaultsManager.shared.getModel().code,
+            createdAt: Date(),
+            updatedAt: Date()
+        )
+        
+        try await client
+            .from("chats")
+            .insert(newChat)
+            .execute()
+        
+        debugPrint("[DEBUG] Created new chat")
+        
+        await MainActor.run {
+            self.currentChat = newChat
+            self.chats.append(newChat)
+        }
+        
+        try await retriveMessagesForChat(chatId)
+        
+        return newChat
+    }
+    
+    public func retriveChats() async throws {
+        let userId = try await client.auth.session.user.id
+        let chats: [Chat] = try await client
+            .from("chats")
+            .select()
+            .eq("user_id", value: userId)
+            .order("created_at", ascending: false)
+            .execute()
+            .value
+        
+        await MainActor.run {
+            self.chats = chats
+        }
+        debugPrint("[DEBUG] Retrieved chats")
+    }
+    
+    public func addMessageToChat(_ message: Message) async throws {
+        do {
+            try await client
+                .from("messages")
+                .insert(message)
+                .execute()
+            debugPrint("[DEBUG] Added message to chat")
+            
+            await MainActor.run {
+                debugPrint("[DEBUG] Appended message to currentMessages")
+                self.currentMessages.append(message)
+            }
+            
+        } catch {
+            debugPrint("[DEBUG - addMessageToChat()] Error: \(error.localizedDescription)")
+        }
+    }
+    
+    public func retriveMessagesForChat(_ chatId: UUID) async throws {
+        do {
+            let messages: [Message] = try await client
+                .from("messages")
+                .select()
+                .eq("chat_id", value: chatId)
+                .order("created_at", ascending: true)
+                .execute()
+                .value
+            
+            debugPrint("[DEBUG] Retrieved messaged for chat \(chatId)")
+            
+            DispatchQueue.main.async {
+                self.currentMessages = messages
+            }
+        } catch {
+            debugPrint("[DEBUG - retriveMessagesForChat()] Error: \(error.localizedDescription)")
+        }
+    }
+    
+    public func loadChatWith(_ chatID: UUID) async throws {
+        do {
+            let chat: Chat = try await client
+                .from("chats")
+                .select()
+                .eq("id", value: chatID)
+                .single()
+                .execute()
+                .value
+            
+            await MainActor.run {
+                self.currentChat = chat
+            }
+            
+            try await retriveMessagesForChat(chatID)
+        } catch {
+            debugPrint("[DEBUG - loadChatWith()] Error: \(error.localizedDescription)")
+        }
+    }
+    
+    public func updateLastMessage(_ content: String) {
+        Task {
+            do {
+                let message: Message = try await client
+                    .from("messages")
+                    .update(["content": content])
+                    .eq("id", value: currentMessages.last(where: {$0.role == .assistant})!.id)
+                    .select()
+                    .single()
+                    .execute()
+                    .value
+                
+                await MainActor.run {
+                    debugPrint("[RESPONSE] \(message.content)")
+                    self.currentMessages[self.currentMessages.count - 1].content = message.content
+                }
+                
+                debugPrint("[DEBUG - updateLastMessage()] Updated last message")
+            } catch {
+                debugPrint("[DEBUG - updateLastMessage()] Error: \(error.localizedDescription)")
+            }
+        }
+    }
 }

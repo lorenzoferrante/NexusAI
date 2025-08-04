@@ -7,19 +7,39 @@
 
 import Foundation
 
-struct Message: Codable, Identifiable {
-    enum Role: String, Codable {
-        case user
-        case assistant
-    }
+enum Role: String, Codable {
+    case user
+    case assistant
+}
 
+struct Message: Codable, Identifiable, Hashable {
     var id = UUID()
+    let chatId: UUID
     let role: Role
     var content: String
+    var tokenCount: Int?
+    var finishReason: String?
     var imageData: String?
     var fileData: String?
     var pdfData: String?
     var fileName: String?
+    let createdAt: Date
+    var deletedAt: Date?
+    
+    private enum CodingKeys: String, CodingKey {
+        case id
+        case chatId = "chat_id"
+        case role
+        case content
+        case tokenCount = "token_count"
+        case finishReason = "finish_reason"
+        case imageData = "image_data"
+        case fileData = "file_data"
+        case pdfData = "pdf_data"
+        case fileName = "file_name"
+        case createdAt = "created_at"
+        case deletedAt = "deleted_at"
+    }
     
 
     func asDictionary() -> [String: Any] {

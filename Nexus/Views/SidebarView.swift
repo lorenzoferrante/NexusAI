@@ -11,6 +11,7 @@ import Supabase
 struct SidebarView: View {
     @State private var supabaseClient = SupabaseManager.shared
     @State private var isSettingsPresented = false
+    @State private var createNewChat: Bool = false
     
     var body: some View {
         ZStack {
@@ -26,35 +27,69 @@ struct SidebarView: View {
         .navigationTitle("NexusAI")
         .toolbar {
             ToolbarItem(placement: .primaryAction) {
-                NavigationLink {
-                    ContentView()
+                Button {
+                    Task {
+                        // Create new chat
+                        _ = try await supabaseClient.createNewChat()
+                        createNewChat.toggle()
+                    }
                 } label: {
                     Label("", systemImage: "plus")
                         .glassEffect(in: .circle)
                 }
             }
         }
+        .navigationDestination(isPresented: $createNewChat) {
+            ContentView()
+        }
         .sheet(isPresented: $isSettingsPresented) {
             SettingsView()
+        }
+        .onAppear {
+            Task {
+                try await supabaseClient.retriveChats()
+            }
         }
     }
     
     private var chatList: some View {
-        VStack {
-            Spacer()
-            Image(systemName: "sparkles")
-                .font(.system(size: 40))
-                .fontWeight(.semibold)
-                .foregroundStyle(.primary.opacity(0.6))
-                .padding(.bottom)
-                .symbolEffect(.breathe.plain.wholeSymbol, options: .repeat(.continuous))
-            Text("Your knowledge begins here.")
-                .fontWeight(.semibold)
-                .foregroundStyle(.primary.opacity(0.6))
-            Text("Tap the + icon to start a new chat.")
-                .font(.caption)
-                .foregroundStyle(.secondary)
-            Spacer()
+        Group {
+            if supabaseClient.chats.count > 0 {
+                VStack(alignment: .leading) {
+                    ForEach(supabaseClient.chats) { chat in
+                        NavigationLink {
+                            ContentView()
+                        } label: {
+                            Text(chat.id.uuidString)
+                                .frame(maxWidth: .infinity)
+                                .padding()
+                                .onTapGesture {
+                                    Task {
+                                        try await supabaseClient.loadChatWith(chat.id)
+                                    }
+                                }
+                        }
+                        .tint(.primary)
+                    }
+                }
+            } else {
+                VStack {
+                    Spacer()
+                    Image(systemName: "sparkles")
+                        .font(.system(size: 40))
+                        .fontWeight(.semibold)
+                        .foregroundStyle(.primary.opacity(0.6))
+                        .padding(.bottom)
+                        .symbolEffect(.breathe.plain.wholeSymbol, options: .repeat(.continuous))
+                    Text("Your knowledge begins here.")
+                        .fontWeight(.semibold)
+                        .foregroundStyle(.primary.opacity(0.6))
+                    Text("Tap the + icon to start a new chat.")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                    Spacer()
+                }
+            }
         }
     }
     

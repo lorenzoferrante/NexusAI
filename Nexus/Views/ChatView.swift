@@ -8,10 +8,12 @@
 import SwiftUI
 
 struct ChatView: View {
-    @State var openRouteAPI = OpenRouterAPI.shared
+    @State var openRouterAPI = OpenRouterAPI.shared
+    @State var supabaseManager = SupabaseManager.shared
     
     private var lastMessageContent: String {
-        openRouteAPI.chat.last?.content ?? ""
+        supabaseManager.currentMessages.last?.content ?? ""
+//        openRouterAPI.chat.last?.content ?? ""
     }
     
     private let bottomID = "bottomID"
@@ -19,7 +21,7 @@ struct ChatView: View {
     var body: some View {
         ScrollViewReader { proxy in
             ScrollView {
-                ForEach(openRouteAPI.chat, id: \.content) { message in
+                ForEach(supabaseManager.currentMessages, id: \.id) { message in
                     MessageView(message: message)
                         .padding([.trailing, .leading])
                 }
@@ -37,12 +39,12 @@ struct ChatView: View {
 }
 
 #Preview {
-    @Previewable @State var openRouteAPI = OpenRouterAPI.shared
+    @Previewable @State var openRouterAPI = OpenRouterAPI.shared
     ChatView()
         .onAppear {
-            openRouteAPI.chat.append(contentsOf: [
-                .init(role: .user, content: "Hello!"),
-                .init(role: .assistant, content: "I am an LLM developed by DMP! How can I help you?")
+            openRouterAPI.chat.append(contentsOf: [
+                .init(chatId: UUID(), role: .user, content: "Hello!", createdAt: Date()),
+                .init(chatId: UUID(), role: .assistant, content: "I am an LLM developed by DMP! How can I help you?", createdAt: Date())
             ])
         }
 }
