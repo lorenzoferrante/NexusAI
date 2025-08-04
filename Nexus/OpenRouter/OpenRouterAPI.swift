@@ -33,10 +33,6 @@ class OpenRouterAPI {
     
     func stream(isWebSearch: Bool = false) async throws {
         // Append the assistant message ONCE before streaming
-//        await MainActor.run {
-//            chat.append(Message(chatId: UUID(), role: .assistant, content: "", createdAt: Date()))
-//        }
-        
         let newAssistantMessage: Message = .init(
             chatId: SupabaseManager.shared.currentChat!.id,
             role: .assistant,
