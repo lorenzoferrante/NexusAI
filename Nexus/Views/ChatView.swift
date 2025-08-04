@@ -13,7 +13,6 @@ struct ChatView: View {
     
     private var lastMessageContent: String {
         supabaseManager.currentMessages.last?.content ?? ""
-//        openRouterAPI.chat.last?.content ?? ""
     }
     
     private let bottomID = "bottomID"

@@ -58,7 +58,6 @@ class ModelsList {
         /// OpenRouter Models
         OpenRouterModel(name: "Auto", provider: .openrouter, description: "Automatically selects the best model.", code: "openrouter/auto"),
         OpenRouterModel(name: "Horizon Alpha", provider: .openrouter, description: "Alpha version of Horizon model.", code: "openrouter/horizon-alpha"),
-        OpenRouterModel(name: "Horizon Beta", provider: .openrouter, description: "Beta version of Horizon model.", code: "openrouter/horizon-beta"),
         
         /// Perplexity Models
         OpenRouterModel(name: "Sonar Deep Research", provider: .perplexity, description: "Deep research model by Perplexity.", code: "perplexity/sonar-deep-research"),

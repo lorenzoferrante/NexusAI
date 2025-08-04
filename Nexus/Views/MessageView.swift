@@ -26,14 +26,20 @@ struct MessageView: View {
     
     private var userMessage: some View {
         VStack(alignment: .trailing) {
-            if let imageData = message.imageData {
+            if let imageURL = message.imageURL {
                 HStack {
                     Spacer()
-                    Image(base64DataString: imageData)
-                        .resizable()
-                        .scaledToFit()
-                        .clipShape(RoundedRectangle(cornerRadius: 10))
-                        .frame(maxHeight: 100)
+                    AsyncImage(url: URL(string: imageURL)!) { result in
+                        result.image?
+                            .resizable()
+                            .scaledToFit()
+                            .clipShape(RoundedRectangle(cornerRadius: 10))
+                            .frame(maxHeight: 100)
+                    }
+//                        .resizable()
+//                        .scaledToFit()
+//                        .clipShape(RoundedRectangle(cornerRadius: 10))
+//                        .frame(maxHeight: 100)
                 }
             }
             Markdown(message.content)

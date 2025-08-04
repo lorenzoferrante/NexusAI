@@ -8,6 +8,7 @@
 import SwiftUI
 import PhotosUI
 import UniformTypeIdentifiers
+import Auth
 
 struct BottomView: View {
     @State var supabaseManager = SupabaseManager.shared
@@ -121,12 +122,16 @@ struct BottomView: View {
                             .padding()
                             .focused($isFocused)
                             .onSubmit {
-                                generate()
+                                Task {
+                                    await generate()
+                                }
                             }
                         
                         Button {
                             feedbackGenerator.impactOccurred()
-                            generate()
+                            Task {
+                                await generate()
+                            }
                         } label: {
                             Image(systemName: "paperplane.fill")
                         }
@@ -222,17 +227,32 @@ struct BottomView: View {
         }
     }
 
-    private func generate() {
+    private func generate() async {
         isFocused = false
-        let imageData = vm.base64FromSwiftUIImage()
+        
+        if supabaseManager.currentMessages.count == 0 {
+            await updateChatTitle()
+        }
+
         let fileData = vm.fileContent()
         let fileName = vm.selectedFileURL?.lastPathComponent ?? nil
         let fileExtension = vm.selectedFileURL?.pathExtension.lowercased() ?? ""
         var pdfFileData: String?
-        if fileExtension.lowercased() == "pdf" {
+        
+        if fileExtension == "pdf" {
             pdfFileData = vm.base64FromFileURL()
         }
         
+        var imageURL: String? = nil
+        if let selectedImage = vm.selectedImage {
+            let userID = supabaseManager.getUser()?.id.uuidString ?? "uploads"
+            let fileName = "\(userID)/\(UUID().uuidString).jpeg"
+            if let data = selectedImage.jpegData(compressionQuality: 0.5) {
+                await supabaseManager.uploadImageToBucket(data, fileName: fileName)
+                imageURL = supabaseManager.retrieveImageURLFor(fileName)
+            }
+        }
+
         withAnimation {
             print("[DEBUG] Appending prompt: \(prompt) to \(supabaseManager.currentChat!.id)")
             
@@ -240,7 +260,7 @@ struct BottomView: View {
                 chatId: supabaseManager.currentChat!.id,
                 role: .user,
                 content: prompt,
-                imageData: imageData,
+                imageURL: imageURL,
                 fileData: fileData,
                 pdfData: pdfFileData,
                 fileName: fileName,
@@ -265,6 +285,15 @@ struct BottomView: View {
     private func parseFile(_ urls: [URL]) {
         if let url = urls.first {
             vm.selectedFileURL = url
+        }
+    }
+    
+    private func updateChatTitle() async {
+        do {
+            let chatTitle = try await vm.generateChatTitle(from: prompt) ?? "New chat"
+            await supabaseManager.updateChatTitle(chatTitle)
+        } catch {
+            debugPrint("[DEBUG - generateChatTitle] Error: \(error)")
         }
     }
 }

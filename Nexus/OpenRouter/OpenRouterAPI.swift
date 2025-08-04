@@ -126,19 +126,10 @@ class OpenRouterAPI {
                                 if !SupabaseManager.shared.currentMessages.isEmpty {
                                     let lastIndex = SupabaseManager.shared.currentMessages.lastIndex(where: {$0.role == .assistant})!
                                     SupabaseManager.shared.currentMessages[lastIndex].content += content
-//                                    chat[chat.count - 1].content += content
                                 }
                             }
                             fflush(stdout)
                         }
-                        
-//                        let lastContent = SupabaseManager.shared
-//                            .currentMessages
-//                            .last(where: {$0.role == .assistant})!
-//                            .content
-//                        await MainActor.run {
-//                            SupabaseManager.shared.updateLastMessage(lastContent)
-//                        }
 
                     } catch {
                         print("[DEBUG] Parsing error...")
@@ -219,6 +210,37 @@ class OpenRouterAPI {
         default:
             return "data:application/octet-stream;base64,"
         }
+    }
+    
+    public func generateChatTitle(from query: String) async throws -> String? {
+        let url = URL(string: "https://openrouter.ai/api/v1/completions")!
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("Bearer \(API_KEY)", forHTTPHeaderField: "Authorization")
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+
+        // Use the selected model's code, or fallback to a default string if needed
+        let prompt = """
+            Given the user prompt, generate a short, concise yet effective title for a chat. \
+            RESPOND ONLY WITH THE TITLE. \
+            QUERY: \(query.trimmingCharacters(in: .whitespacesAndNewlines))
+            """
+        let modelCode = "google/gemini-2.5-flash-lite"
+        let payload: [String: Any] = [
+            "model": modelCode,
+            "prompt": prompt
+        ]
+        request.httpBody = try JSONSerialization.data(withJSONObject: payload)
+
+        let (data, response) = try await URLSession.shared.data(for: request)
+
+        guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else {
+            print("[DEBUG - generateChatTitle()] Failed to generate chat title: Invalid response")
+            return nil
+        }
+        let decoded = try JSONDecoder().decode(CompletionResponse.self, from: data)
+        debugPrint("[DEBUG - generateChatTitle()] Title: \(decoded)")
+        return decoded.choices.first?.text
     }
     
 }

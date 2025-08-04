@@ -19,7 +19,7 @@ struct Message: Codable, Identifiable, Hashable {
     var content: String
     var tokenCount: Int?
     var finishReason: String?
-    var imageData: String?
+    var imageURL: String?
     var fileData: String?
     var pdfData: String?
     var fileName: String?
@@ -33,7 +33,7 @@ struct Message: Codable, Identifiable, Hashable {
         case content
         case tokenCount = "token_count"
         case finishReason = "finish_reason"
-        case imageData = "image_data"
+        case imageURL = "image_url"
         case fileData = "file_data"
         case pdfData = "pdf_data"
         case fileName = "file_name"
@@ -43,7 +43,7 @@ struct Message: Codable, Identifiable, Hashable {
     
 
     func asDictionary() -> [String: Any] {
-        if let imageData = imageData {
+        if let imageURL = imageURL {
             return [
                 "role": role.rawValue,
                 "content": [
@@ -53,7 +53,7 @@ struct Message: Codable, Identifiable, Hashable {
                     ],
                     [
                         "type": "image_url",
-                        "image_url": imageData
+                        "image_url": imageURL
                     ]
                 ]
             ]

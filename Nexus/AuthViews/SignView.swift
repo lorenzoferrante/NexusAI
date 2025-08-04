@@ -21,7 +21,7 @@ struct SignView: View {
             VStack(alignment: .leading) {
                 Group {
                     Text("Welcome")
-                    Text("to NexusAI")
+                    Text("to Mercury AI")
                 }
                 .font(.largeTitle)
                 .fontWeight(.bold)

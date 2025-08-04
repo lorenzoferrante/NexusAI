@@ -242,4 +242,48 @@ class SupabaseManager {
             }
         }
     }
+    
+    public func uploadImageToBucket(_ data: Data, fileName: String) async {
+        do {
+            print("[DEBUG - uploadImageToBucket()] \(data.count)")
+            
+            try await client
+                .storage
+                .from("image-bucket")
+                .upload(fileName, data: data, options: FileOptions(contentType: "image/jpeg"))
+        } catch {
+            debugPrint("[DEBUG - uploadImageToBucket()] Error: \(error)")
+        }
+    }
+    
+    public func retrieveImageURLFor(_ fileName: String) -> String {
+        do {
+            let imageURL = try client
+                .storage
+                .from("image-bucket")
+                .getPublicURL(path: fileName)
+            
+            debugPrint("[DEBUG - retrieveImageURLFor()] URL: \(imageURL.absoluteString)")
+            return imageURL.absoluteString
+        } catch {
+            debugPrint("[DEBUG - retrieveImageURLFor()] Error: \(error)")
+            return ""
+        }
+    }
+    
+    public func updateChatTitle(_ title: String) async {
+        do {
+            try await client
+                .from("chats")
+                .update(["title": title])
+                .eq("id", value: currentChat!.id)
+                .execute()
+            
+            await MainActor.run {
+                currentChat!.title = title
+            }
+        } catch {
+            debugPrint("[DEBUG - updateChatTitle()] Error: \(error)")
+        }
+    }
 }

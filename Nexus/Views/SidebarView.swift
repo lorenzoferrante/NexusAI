@@ -13,6 +13,12 @@ struct SidebarView: View {
     @State private var isSettingsPresented = false
     @State private var createNewChat: Bool = false
     
+    private let chatDateFormatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "d MMMM, yyyy"
+        return formatter
+    }()
+    
     var body: some View {
         ZStack {
             BackView()
@@ -24,7 +30,7 @@ struct SidebarView: View {
                 bottomBar
             }
         }
-        .navigationTitle("NexusAI")
+        .navigationTitle("Mercury AI")
         .toolbar {
             ToolbarItem(placement: .primaryAction) {
                 Button {
@@ -94,7 +100,12 @@ struct SidebarView: View {
     
     private func chatTitle(_ chat: Chat) -> some View {
         HStack {
-            Text(chat.id.uuidString)
+            VStack(alignment: .leading) {
+                Text(chat.title ?? "Chat with \(chat.model)")
+                Text(chatDateFormatter.string(from: chat.createdAt))
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
             Spacer()
         }
         .frame(maxWidth: .infinity)

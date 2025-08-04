@@ -20,6 +20,7 @@ struct NexusApp: App {
                     } detail: {
                         ContentView()
                     }
+                    .navigationSplitViewStyle(.prominentDetail)
                 } else {
                     NavigationStack {
                         SignView()
