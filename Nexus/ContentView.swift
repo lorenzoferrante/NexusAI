@@ -33,12 +33,6 @@ struct ContentView: View {
                     }
                 }
             }
-            .onAppear {
-                Task {
-                    try await supabaseManager.retriveChats()
-                    supabaseManager.currentChat = supabaseManager.chats.last ?? nil
-                }
-            }
             .preferredColorScheme(.dark)
         }
     }

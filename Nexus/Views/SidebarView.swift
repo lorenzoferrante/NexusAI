@@ -55,23 +55,22 @@ struct SidebarView: View {
     private var chatList: some View {
         Group {
             if supabaseClient.chats.count > 0 {
-                VStack(alignment: .leading) {
-                    ForEach(supabaseClient.chats) { chat in
-                        NavigationLink {
-                            ContentView()
-                        } label: {
-                            Text(chat.id.uuidString)
-                                .frame(maxWidth: .infinity)
-                                .padding()
-                                .onTapGesture {
-                                    Task {
-                                        try await supabaseClient.loadChatWith(chat.id)
-                                    }
+                ScrollView {
+                    VStack(alignment: .leading) {
+                        ForEach(supabaseClient.chats) { chat in
+                            Button {
+                                Task {
+                                    try await supabaseClient.loadChatWith(chat.id)
+                                    createNewChat.toggle()
                                 }
+                            } label: {
+                                chatTitle(chat)
+                            }
+                            .tint(.primary)
                         }
-                        .tint(.primary)
                     }
                 }
+                .scrollIndicators(.hidden)
             } else {
                 VStack {
                     Spacer()
@@ -91,6 +90,15 @@ struct SidebarView: View {
                 }
             }
         }
+    }
+    
+    private func chatTitle(_ chat: Chat) -> some View {
+        HStack {
+            Text(chat.id.uuidString)
+            Spacer()
+        }
+        .frame(maxWidth: .infinity)
+        .padding()
     }
     
     private var bottomBar: some View {

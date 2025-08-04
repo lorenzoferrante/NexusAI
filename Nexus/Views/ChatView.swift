@@ -34,6 +34,13 @@ struct ChatView: View {
                     proxy.scrollTo(bottomID, anchor: .bottom)
                 }
             }
+            .onAppear {
+                if !supabaseManager.currentMessages.isEmpty {
+                    withAnimation {
+                        proxy.scrollTo(bottomID, anchor: .bottom)
+                    }
+                }
+            }
         }
     }
 }

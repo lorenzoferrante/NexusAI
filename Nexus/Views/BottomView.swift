@@ -234,7 +234,7 @@ struct BottomView: View {
         }
         
         withAnimation {
-            print("[DEBUG] Appending prompt: \(prompt)")
+            print("[DEBUG] Appending prompt: \(prompt) to \(supabaseManager.currentChat!.id)")
             
             let newUserMessage: Message = .init(
                 chatId: supabaseManager.currentChat!.id,
@@ -249,24 +249,12 @@ struct BottomView: View {
             
             Task {
                 try await supabaseManager.addMessageToChat(newUserMessage)
+                try await vm.stream(isWebSearch: isWebSearch)
+                supabaseManager.updateLastMessage()
             }
             
-//            vm.chat.append(.init(
-//                chatId: UUID(),
-//                role: .user,
-//                content: prompt,
-//                imageData: imageData,
-//                fileData: fileData,
-//                pdfData: pdfFileData,
-//                fileName: fileName,
-//                createdAt: Date()
-//            ))
             prompt = ""
             vm.selectedImage = nil
-        }
-        
-        Task {
-            try await vm.stream(isWebSearch: isWebSearch)
         }
     }
     

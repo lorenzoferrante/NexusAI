@@ -10,7 +10,7 @@ import UIKit
 import MarkdownUI
 
 struct MessageView: View {
-    @State var message: Message
+    let message: Message
     
     var body: some View {
         VStack {

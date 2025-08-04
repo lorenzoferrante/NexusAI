@@ -136,13 +136,13 @@ class OpenRouterAPI {
                             fflush(stdout)
                         }
                         
-                        let lastContent = SupabaseManager.shared
-                            .currentMessages
-                            .last(where: {$0.role == .assistant})!
-                            .content
-                        await MainActor.run {
-                            SupabaseManager.shared.updateLastMessage(lastContent)
-                        }
+//                        let lastContent = SupabaseManager.shared
+//                            .currentMessages
+//                            .last(where: {$0.role == .assistant})!
+//                            .content
+//                        await MainActor.run {
+//                            SupabaseManager.shared.updateLastMessage(lastContent)
+//                        }
 
                     } catch {
                         print("[DEBUG] Parsing error...")

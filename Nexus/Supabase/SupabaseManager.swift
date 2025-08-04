@@ -218,13 +218,14 @@ class SupabaseManager {
         }
     }
     
-    public func updateLastMessage(_ content: String) {
+    public func updateLastMessage() {
         Task {
+            let lastMessage = currentMessages.last(where: {$0.role == .assistant})!
             do {
                 let message: Message = try await client
                     .from("messages")
-                    .update(["content": content])
-                    .eq("id", value: currentMessages.last(where: {$0.role == .assistant})!.id)
+                    .update(["content": lastMessage.content])
+                    .eq("id", value: lastMessage.id)
                     .select()
                     .single()
                     .execute()
