@@ -12,12 +12,7 @@ struct SidebarView: View {
     @State private var supabaseClient = SupabaseManager.shared
     @State private var isSettingsPresented = false
     @State private var createNewChat: Bool = false
-    
-    private let chatDateFormatter: DateFormatter = {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "d MMMM, yyyy"
-        return formatter
-    }()
+    @State private var presentAlert: Bool = false
     
     var body: some View {
         ZStack {
@@ -56,26 +51,36 @@ struct SidebarView: View {
                 try await supabaseClient.retriveChats()
             }
         }
+        .alert(
+            "Are you sure you want to delete this chat?",
+            isPresented: $presentAlert) {
+                Button("Delete") {
+                    
+                }
+            }
     }
     
     private var chatList: some View {
         Group {
             if supabaseClient.chats.count > 0 {
-                ScrollView {
-                    VStack(alignment: .leading) {
-                        ForEach(supabaseClient.chats) { chat in
-                            Button {
-                                Task {
-                                    try await supabaseClient.loadChatWith(chat.id)
-                                    createNewChat.toggle()
-                                }
-                            } label: {
-                                chatTitle(chat)
+                List {
+                    ForEach(supabaseClient.chats) { chat in
+                        Button {
+                            Task {
+                                try await supabaseClient.loadChatWith(chat.id)
+                                createNewChat.toggle()
                             }
-                            .tint(.primary)
+                        } label: {
+                            chatTitle(chat)
                         }
+                        .tint(.primary)
+                        .listRowBackground(Color.clear)
+                        .listRowSeparator(.hidden)
+                        .listRowInsets(EdgeInsets(top: 16, leading: 0, bottom: 16, trailing: 0))
                     }
+                    .onDelete(perform: deleteChat)
                 }
+                .scrollContentBackground(.hidden)
                 .scrollIndicators(.hidden)
             } else {
                 VStack {
@@ -102,14 +107,14 @@ struct SidebarView: View {
         HStack {
             VStack(alignment: .leading) {
                 Text(chat.title ?? "Chat with \(chat.model)")
-                Text(chatDateFormatter.string(from: chat.createdAt))
+                Text(DateUtils.daySince(chat.createdAt))
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }
             Spacer()
         }
         .frame(maxWidth: .infinity)
-        .padding()
+        .contentShape(Rectangle())
     }
     
     private var bottomBar: some View {
@@ -142,6 +147,13 @@ struct SidebarView: View {
         }
         .padding([.leading, .trailing])
         .preferredColorScheme(.dark)
+    }
+    
+    private func deleteChat(at offest: IndexSet) {
+        guard let index = offest.first else {
+            return
+        }
+        debugPrint("[DEBUG] Delete chat at: \(index)")
     }
 }
 

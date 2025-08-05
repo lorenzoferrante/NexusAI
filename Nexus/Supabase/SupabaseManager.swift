@@ -286,4 +286,32 @@ class SupabaseManager {
             debugPrint("[DEBUG - updateChatTitle()] Error: \(error)")
         }
     }
+    
+    public func deleteChat(at offsets: IndexSet) {
+        let chatsToDelete = offsets.map { self.chats[$0] }
+        self.chats.remove(atOffsets: offsets)
+
+        Task {
+            for chat in chatsToDelete {
+                do {
+                    let chatId = chat.id
+                    try await client.from("messages")
+                        .delete()
+                        .eq("chat_id", value: chatId)
+                        .execute()
+                    
+                    debugPrint("[DEBUG] Deleted messages for chat \(chatId)")
+
+                    try await client.from("chats")
+                        .delete()
+                        .eq("id", value: chatId)
+                        .execute()
+                    
+                    debugPrint("[DEBUG] Deleted chat \(chatId)")
+                } catch {
+                    debugPrint("[DEBUG - deleteChat] Error: \(error.localizedDescription)")
+                }
+            }
+        }
+    }
 }

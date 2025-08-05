@@ -39,7 +39,7 @@ class OpenRouterAPI {
             content: "",
             createdAt: Date()
         )
-        try await SupabaseManager.shared.addMessageToChat(newAssistantMessage)
+        try await SupabaseManager.shared.addMessageToChat(newAssistantMessage)        
         
         var request = URLRequest(url: completionsURL)
         request.httpMethod = "POST"
