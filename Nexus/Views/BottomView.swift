@@ -143,9 +143,7 @@ struct BottomView: View {
             
         }
         .glassEffect(.regular.interactive(), in: .rect(cornerRadius: 18))
-        .padding(
-            isFocused ? .all : [.trailing, .leading]
-        )
+        .padding()
     }
     
     private var providerView: Label<Text, Image> {

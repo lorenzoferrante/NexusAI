@@ -86,10 +86,13 @@ class ModelsList {
         OpenRouterModel(name: "GPT 4o", provider: .openAI, description: "GPT 4o model variant.", code: "openai/gpt-4o"),
         OpenRouterModel(name: "O3 Mini", provider: .openAI, description: "Mini version of O3.", code: "openai/o3-mini"),
         OpenRouterModel(name: "O4 Mini High", provider: .openAI, description: "High performance O4 mini.", code: "openai/o4-mini-high"),
+        OpenRouterModel(name: "GPT OSS 120B", provider: .openAI, description: "gpt-oss-120b is an open-weight, 117B-parameter Mixture-of-Experts (MoE) language model from OpenAI designed for high-reasoning, agentic, and general-purpose production use cases.", code: "openai/gpt-oss-120b"),
+        OpenRouterModel(name: "GPT OSS 20B", provider: .openAI, description: "gpt-oss-20b is an open-weight 21B parameter model released by OpenAI under the Apache 2.0 license.", code: "openai/gpt-oss-20b"),
         
         /// Anthropic Models
         OpenRouterModel(name: "Claude Sonnet 4", provider: .anthropic, description: "Sonnet 4 model by Anthropic.", code: "anthropic/claude-sonnet-4"),
         OpenRouterModel(name: "Claude Opus 4", provider: .anthropic, description: "Opus 4 model by Anthropic.", code: "anthropic/claude-opus-4"),
+        OpenRouterModel(name: "Claude Opus 4.1", provider: .anthropic, description: "Opus 4.1 model by Anthropic.", code: "anthropic/claude-opus-4.1"),
         
         /// xAI Models
         OpenRouterModel(name: "Grok 4", provider: .xAI, description: "", code: "x-ai/grok-4"),

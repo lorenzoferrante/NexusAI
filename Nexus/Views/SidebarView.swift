@@ -135,7 +135,8 @@ struct SidebarView: View {
                     .foregroundColor(.gray)
                 Text(supabaseClient.profile?.username ?? "")
             }
-            .tint(.primary)
+            .foregroundStyle(.white)
+//            .tint(.white)
             .padding()
             .glassEffect(.regular.interactive(), in: .capsule)
             

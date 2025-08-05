@@ -36,13 +36,10 @@ struct MessageView: View {
                             .clipShape(RoundedRectangle(cornerRadius: 10))
                             .frame(maxHeight: 100)
                     }
-//                        .resizable()
-//                        .scaledToFit()
-//                        .clipShape(RoundedRectangle(cornerRadius: 10))
-//                        .frame(maxHeight: 100)
                 }
             }
             Markdown(message.content)
+                .markdownTheme(.defaultDark)
                 .textSelection(.enabled)
         }
         .frame(maxWidth: .infinity, alignment: .trailing)
@@ -67,16 +64,19 @@ struct MessageView: View {
                     HStack {
                         ThinkingIndicatorView()
                         Markdown("Thinking...")
+                            .markdownTheme(.defaultDark)
                     }
                 }
             } else {
                 withAnimation {
                     Markdown(message.content)
+                        .markdownTheme(.defaultDark)
                         .textSelection(.enabled)
                         .frame(
                             maxWidth: .infinity,
                             alignment: .leading
                         )
+                        .opacity(1.0)
                 }
             }
         }
