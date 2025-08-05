@@ -14,7 +14,7 @@ struct ThinkingIndicatorView: View {
         Circle()
             .fill(Color.white)
             .frame(width: 20, height: 20)
-            .scaleEffect(isAnimating ? 1.1 : 0.7)
+            .scaleEffect(isAnimating ? 0.9 : 0.6)
             .opacity(isAnimating ? 1.0 : 0.7)
             .animation(
                 Animation.easeInOut(duration: 1)

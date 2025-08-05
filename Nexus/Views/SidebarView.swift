@@ -13,24 +13,26 @@ struct SidebarView: View {
     @State private var isSettingsPresented = false
     @State private var createNewChat: Bool = false
     @State private var presentAlert: Bool = false
+    @State private var indexToDelete: Int? = nil
     
     var body: some View {
         ZStack {
             BackView()
                 .ignoresSafeArea()
             
+            chatList
+            
             VStack {
-                chatList
                 Spacer()
                 bottomBar
             }
+                        
         }
         .navigationTitle("Mercury AI")
         .toolbar {
             ToolbarItem(placement: .primaryAction) {
                 Button {
                     Task {
-                        // Create new chat
                         _ = try await supabaseClient.createNewChat()
                         createNewChat.toggle()
                     }
@@ -53,11 +55,18 @@ struct SidebarView: View {
         }
         .alert(
             "Are you sure you want to delete this chat?",
-            isPresented: $presentAlert) {
-                Button("Delete") {
-                    
-                }
+            isPresented: $presentAlert,
+            presenting: indexToDelete
+        ) { index in
+            Button("Cancel", role: .cancel) {
+                presentAlert.toggle()
             }
+            Button("Delete", role: .destructive) {
+                supabaseClient.deleteChat(at: index)
+            }
+        } message: { _ in
+            Text("This action cannot be undone.")
+        }
     }
     
     private var chatList: some View {
@@ -118,42 +127,42 @@ struct SidebarView: View {
     }
     
     private var bottomBar: some View {
-        GlassEffectContainer {
-            HStack {
-                Button {
-                    isSettingsPresented.toggle()
-                } label: {
-                    Image(systemName: "person.crop.circle.fill")
-                        .foregroundColor(.gray)
-                    Text(supabaseClient.profile?.username ?? "")
+        HStack {
+            Button {
+                isSettingsPresented.toggle()
+            } label: {
+                Image(systemName: "person.crop.circle.fill")
+                    .foregroundColor(.gray)
+                Text(supabaseClient.profile?.username ?? "")
+            }
+            .tint(.primary)
+            .padding()
+            .glassEffect(.regular.interactive(), in: .capsule)
+            
+            Spacer()
+            
+            Button {
+                Task {
+                    await supabaseClient.logOut()
                 }
-                .tint(.primary)
-                
-                Spacer()
-                
-                Button {
-                    Task {
-                        await supabaseClient.logOut()
-                    }
-                } label: {
-                    Label("Log out", systemImage: "person.fill.xmark")
-                        .labelStyle(.iconOnly)
-                        .tint(.secondary)
-                }
-                
+            } label: {
+                Label("Log out", systemImage: "person.fill.xmark")
+                    .labelStyle(.iconOnly)
+                    .tint(.secondary)
             }
             .padding()
             .glassEffect(.regular.interactive(), in: .capsule)
+            
         }
-        .padding([.leading, .trailing])
-        .preferredColorScheme(.dark)
+        .padding()
     }
     
     private func deleteChat(at offest: IndexSet) {
         guard let index = offest.first else {
             return
         }
-        debugPrint("[DEBUG] Delete chat at: \(index)")
+        indexToDelete = index
+        presentAlert.toggle()
     }
 }
 
