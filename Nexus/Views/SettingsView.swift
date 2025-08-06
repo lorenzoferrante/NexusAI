@@ -10,7 +10,7 @@ import SwiftUI
 struct SettingsView: View {
     @State var models: [OpenRouterModel] = ModelsList.models
     @State var selectedModel: OpenRouterModel = DefaultsManager.shared.getModel()
-    @State var selectedColor: Color = DefaultsManager.shared.getThemeColor()
+    @State var selectedThemeColor: ThemeColors = DefaultsManager.shared.getThemeColor()
     
     var body: some View {
         NavigationStack {
@@ -45,6 +45,9 @@ struct SettingsView: View {
         .preferredColorScheme(.dark)
         .onChange(of: selectedModel) { _, newValue in
             DefaultsManager.shared.saveModel(newValue)
+        }
+        .onChange(of: selectedThemeColor) { _, newValue in
+            DefaultsManager.shared.saveThemeColor(newValue)
         }
     }
     
@@ -131,20 +134,16 @@ struct SettingsView: View {
                 Spacer()
                 
                 Menu {
-                    Picker("", selection: $selectedColor) {
+                    Picker("", selection: $selectedThemeColor) {
                         ForEach(ThemeColors.allCases, id: \.self) { color in
-                            Text(color.rawValue)
+                            Text(ThemeColors.toString(color: color))
                                 .tag(color)
                         }
                     }
                 } label: {
                     Circle()
-                        .fill(selectedColor)
+                        .fill(ThemeColors.from(color: selectedThemeColor))
                         .frame(width: 20)
-                }
-                .onChange(of: selectedColor) { _, newValue in
-                    debugPrint("[DEBUG] Changing theme color to: \(newValue)")
-                    DefaultsManager.shared.saveThemeColor(newValue)
                 }
                 
             }

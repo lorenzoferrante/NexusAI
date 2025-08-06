@@ -15,7 +15,7 @@ struct BackView: View {
         GeometryReader { proxy in
             ZStack {
                 Rectangle()
-                    .fill(defaultsManager.selectedThemeColor)
+                    .fill(ThemeColors.from(color: defaultsManager.selectedThemeColor))
                 Rectangle()
                     .fill(
                         LinearGradient(
@@ -39,7 +39,7 @@ struct BackView: View {
                         ShaderLibrary.default.noiseShader(
                             .float2(proxy.size),
                             .float(0.4),
-                            .float(0.4)
+                            .float(0.5)
                         )
                     )
             }

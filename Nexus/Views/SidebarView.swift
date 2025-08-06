@@ -15,6 +15,8 @@ struct SidebarView: View {
     @State private var presentAlert: Bool = false
     @State private var indexToDelete: Int? = nil
     
+    let feedbackGenerator = UIImpactFeedbackGenerator(style: .light)
+    
     var body: some View {
         ZStack {
             BackView()
@@ -76,6 +78,7 @@ struct SidebarView: View {
                     ForEach(supabaseClient.chats) { chat in
                         Button {
                             Task {
+                                feedbackGenerator.impactOccurred()
                                 try await supabaseClient.loadChatWith(chat.id)
                                 createNewChat.toggle()
                             }
@@ -129,6 +132,7 @@ struct SidebarView: View {
     private var bottomBar: some View {
         HStack {
             Button {
+                feedbackGenerator.impactOccurred()
                 isSettingsPresented.toggle()
             } label: {
                 Image(systemName: "person.crop.circle.fill")
@@ -144,6 +148,7 @@ struct SidebarView: View {
             
             Button {
                 Task {
+                    feedbackGenerator.impactOccurred()
                     await supabaseClient.logOut()
                 }
             } label: {
@@ -163,6 +168,8 @@ struct SidebarView: View {
             return
         }
         indexToDelete = index
+        
+        feedbackGenerator.impactOccurred()
         presentAlert.toggle()
     }
 }

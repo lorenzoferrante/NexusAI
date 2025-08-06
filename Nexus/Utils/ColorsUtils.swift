@@ -9,6 +9,7 @@ import Foundation
 import SwiftUI
 
 enum ThemeColors: String, CaseIterable {
+    case defaultRed
     case bronze
     case realPurple
     case darkGray
@@ -19,6 +20,7 @@ enum ThemeColors: String, CaseIterable {
     
     static func from(color: ThemeColors) -> Color {
         switch color {
+        case .defaultRed: return .red
         case .bronze: return .bronze
         case .realPurple: return .realPurple
         case .darkGray: return .darkGray
@@ -26,6 +28,19 @@ enum ThemeColors: String, CaseIterable {
         case .soTeal: return .soTeal
         case .gold: return .gold
         case .leafGreen: return .leafGreen
+        }
+    }
+    
+    static func toString(color: ThemeColors) -> String {
+        switch color {
+        case .defaultRed: return "Default Red"
+        case .bronze: return "Bronze"
+        case .realPurple: return "Haze"
+        case .darkGray: return "Metal"
+        case .brightBlue: return "BrightBlue"
+        case .soTeal: return "So Teal"
+        case .gold: return "Gold"
+        case .leafGreen: return "Leaf Green"
         }
     }
 }

@@ -15,7 +15,16 @@ class DefaultsManager {
     private let selectedModelKey = "selectedModel"
     private let themeColor = "themeColor"
     
-    var selectedThemeColor = Color.red
+    var selectedThemeColor: ThemeColors
+    
+    private init() {
+        if let colorString = UserDefaults.standard.string(forKey: themeColor),
+           let themeColor = ThemeColors(rawValue: colorString) {
+            self.selectedThemeColor = themeColor
+        } else {
+            self.selectedThemeColor = .bronze
+        }
+    }
     
     func saveModel(_ model: OpenRouterModel) {
         UserDefaults.standard.set(model.code, forKey: selectedModelKey)
@@ -31,15 +40,19 @@ class DefaultsManager {
         return ModelsList.models.first(where: { $0.code == "openrouter/auto" })!
     }
     
-    func saveThemeColor(_ color: Color) {
+    func saveThemeColor(_ color: ThemeColors) {
         withAnimation {
             self.selectedThemeColor = color
-            UserDefaults.standard.set(color, forKey: themeColor)
+            UserDefaults.standard.set(color.rawValue, forKey: themeColor)
         }
     }
     
-    func getThemeColor() -> Color {
-        return UserDefaults.standard.object(forKey: themeColor) as? Color ?? Color.red
+    func getThemeColor() -> ThemeColors {
+        if let colorString = UserDefaults.standard.string(forKey: themeColor),
+           let themeColor = ThemeColors(rawValue: colorString) {
+            return themeColor
+        }
+        return .bronze
     }
     
 }
