@@ -8,7 +8,6 @@
 
 /* Begin PBXBuildFile section */
 		50138E992E3A6A0000D17926 /* VariableBlur in Frameworks */ = {isa = PBXBuildFile; productRef = 50138E982E3A6A0000D17926 /* VariableBlur */; };
-		501524F22E41645C00704AFD /* MercuryAI.icon in Resources */ = {isa = PBXBuildFile; fileRef = 501524F12E41645C00704AFD /* MercuryAI.icon */; };
 		50E425DA2E3B703B009A418D /* MarkdownUI in Frameworks */ = {isa = PBXBuildFile; productRef = 50E425D92E3B703B009A418D /* MarkdownUI */; };
 		50F723532E3E25C0005D247A /* Auth in Frameworks */ = {isa = PBXBuildFile; productRef = 50F723522E3E25C0005D247A /* Auth */; };
 		50F723552E3E25C0005D247A /* Functions in Frameworks */ = {isa = PBXBuildFile; productRef = 50F723542E3E25C0005D247A /* Functions */; };
@@ -16,11 +15,12 @@
 		50F723592E3E25C0005D247A /* Realtime in Frameworks */ = {isa = PBXBuildFile; productRef = 50F723582E3E25C0005D247A /* Realtime */; };
 		50F7235B2E3E25C0005D247A /* Storage in Frameworks */ = {isa = PBXBuildFile; productRef = 50F7235A2E3E25C0005D247A /* Storage */; };
 		50F723612E3E2788005D247A /* Supabase in Frameworks */ = {isa = PBXBuildFile; productRef = 50F723602E3E2788005D247A /* Supabase */; };
+		50FB263A2E42B65A0080475E /* MercuryAI.icon in Resources */ = {isa = PBXBuildFile; fileRef = 50FB26392E42B65A0080475E /* MercuryAI.icon */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		501524F12E41645C00704AFD /* MercuryAI.icon */ = {isa = PBXFileReference; lastKnownFileType = folder.iconcomposer.icon; path = MercuryAI.icon; sourceTree = "<group>"; };
 		50E00D062E391CEF00E5A35B /* Nexus.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Nexus.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		50FB26392E42B65A0080475E /* MercuryAI.icon */ = {isa = PBXFileReference; lastKnownFileType = folder.iconcomposer.icon; path = MercuryAI.icon; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -53,7 +53,7 @@
 		50E00CFD2E391CEF00E5A35B = {
 			isa = PBXGroup;
 			children = (
-				501524F12E41645C00704AFD /* MercuryAI.icon */,
+				50FB26392E42B65A0080475E /* MercuryAI.icon */,
 				50E00D082E391CEF00E5A35B /* Nexus */,
 				50F7235F2E3E2788005D247A /* Frameworks */,
 				50E00D072E391CEF00E5A35B /* Products */,
@@ -152,7 +152,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				501524F22E41645C00704AFD /* MercuryAI.icon in Resources */,
+				50FB263A2E42B65A0080475E /* MercuryAI.icon in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

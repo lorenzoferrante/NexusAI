@@ -10,6 +10,7 @@ import SwiftUI
 struct SettingsView: View {
     @State var models: [OpenRouterModel] = ModelsList.models
     @State var selectedModel: OpenRouterModel = DefaultsManager.shared.getModel()
+    @State var selectedColor: Color = DefaultsManager.shared.getThemeColor()
     
     var body: some View {
         NavigationStack {
@@ -23,13 +24,13 @@ struct SettingsView: View {
                         }
                         
                         Section {
-                            modelPickerCell("Default model", icon: "gear")
-                            actionCell("Theme color", icon: "swatchpalette.fill") {}
+                            modelPickerCell("Default model", icon: "brain.fill")
+                            themeCell("Theme color", icon: "swatchpalette.fill") {}
                         }
                         
                         Section {
                             actionCell("Log out", icon: "person.slash.fill", action: logOut)
-                            actionCell("Delete account", icon: "trash.fill") {}
+                            actionCell("Delete account", icon: "trash.fill", isDestructive: true) {}
                         }
                     }
                     .listRowBackground(Color.clear)
@@ -67,6 +68,7 @@ struct SettingsView: View {
     private func actionCell(
         _ value: String,
         icon: String,
+        isDestructive: Bool = false,
         action: @escaping () -> Void
     ) -> some View {
         Button {
@@ -74,9 +76,11 @@ struct SettingsView: View {
         } label: {
             HStack {
                 Image(systemName: icon)
-                    .foregroundStyle(.secondary)
+                    .symbolRenderingMode(.hierarchical)
+                    .foregroundStyle(isDestructive ? .red : .secondary)
                 Text(value)
                     .font(.default)
+                    .tint(isDestructive ? .red : .primary)
                 Spacer()
             }
         }
@@ -99,7 +103,6 @@ struct SettingsView: View {
                     ForEach(models, id: \.code) { model in
                         Text(model.code)
                             .tag(model)
-                            .foregroundStyle(.secondary)
                     }
                 }
             }
@@ -108,6 +111,47 @@ struct SettingsView: View {
         }
         .tint(.primary)
     }
+    
+    private func themeCell(
+        _ value: String,
+        icon: String,
+        isDestructive: Bool = false,
+        action: @escaping () -> Void
+    ) -> some View {
+        Button {
+            action()
+        } label: {
+            HStack {
+                Image(systemName: icon)
+                    .symbolRenderingMode(.hierarchical)
+                    .foregroundStyle(isDestructive ? .red : .secondary)
+                Text(value)
+                    .font(.default)
+                    .tint(isDestructive ? .red : .primary)
+                Spacer()
+                
+                Menu {
+                    Picker("", selection: $selectedColor) {
+                        ForEach(ThemeColors.allCases, id: \.self) { color in
+                            Text(color.rawValue)
+                                .tag(color)
+                        }
+                    }
+                } label: {
+                    Circle()
+                        .fill(selectedColor)
+                        .frame(width: 20)
+                }
+                .onChange(of: selectedColor) { _, newValue in
+                    debugPrint("[DEBUG] Changing theme color to: \(newValue)")
+                    DefaultsManager.shared.saveThemeColor(newValue)
+                }
+                
+            }
+        }
+        .tint(.primary)
+    }
+    
     
     private func logOut() {
         Task {

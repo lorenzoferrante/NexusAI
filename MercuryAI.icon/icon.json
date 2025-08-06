@@ -16,19 +16,24 @@
           "value" : "normal"
         }
       ],
-      "blur-material-specializations" : [
-        {
-          "value" : null
-        },
-        {
-          "appearance" : "dark",
-          "value" : null
-        }
-      ],
+      "blur-material" : null,
       "hidden" : false,
       "layers" : [
         {
           "blend-mode" : "multiply",
+          "fill-specializations" : [
+            {
+              "appearance" : "dark",
+              "value" : {
+                "solid" : "extended-srgb:1.00000,0.21961,0.23529,1.00000"
+              }
+            },
+            {
+              "appearance" : "tinted",
+              "value" : "automatic"
+            }
+          ],
+          "hidden" : false,
           "image-name" : "Vector 3.svg",
           "name" : "Vector 3",
           "opacity" : 0.4,
@@ -42,7 +47,20 @@
         },
         {
           "blend-mode" : "multiply",
-          "fill" : "automatic",
+          "fill-specializations" : [
+            {
+              "value" : "automatic"
+            },
+            {
+              "appearance" : "dark",
+              "value" : {
+                "linear-gradient" : [
+                  "extended-srgb:1.00000,0.21961,0.23529,1.00000",
+                  "extended-srgb:1.00000,0.21961,0.23529,1.00000"
+                ]
+              }
+            }
+          ],
           "glass" : true,
           "hidden" : false,
           "image-name" : "Vector 2.svg",
@@ -58,9 +76,27 @@
         },
         {
           "blend-mode" : "multiply",
-          "fill" : {
-            "solid" : "extended-gray:1.00000,1.00000"
-          },
+          "fill-specializations" : [
+            {
+              "value" : {
+                "solid" : "extended-gray:1.00000,1.00000"
+              }
+            },
+            {
+              "appearance" : "dark",
+              "value" : {
+                "linear-gradient" : [
+                  "extended-srgb:1.00000,0.21961,0.23529,1.00000",
+                  "extended-srgb:1.00000,0.21961,0.23529,1.00000"
+                ]
+              }
+            },
+            {
+              "appearance" : "tinted",
+              "value" : "automatic"
+            }
+          ],
+          "hidden" : false,
           "image-name" : "Vector 1.svg",
           "name" : "Vector 1",
           "opacity" : 0.8,
