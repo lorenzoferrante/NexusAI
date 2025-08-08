@@ -81,11 +81,10 @@ class ModelsList {
         OpenRouterModel(name: "Gemini 2.5 Pro", provider: .google, description: "Pro version of Gemini 2.5.", code: "google/gemini-2.5-pro"),
         
         /// OpenAI Models
-        OpenRouterModel(name: "GPT 4.1 Mini", provider: .openAI, description: "Mini variant of GPT 4.1.", code: "openai/gpt-4.1-mini"),
-        OpenRouterModel(name: "GPT 4.1", provider: .openAI, description: "Standard GPT 4.1 model.", code: "openai/gpt-4.1"),
-        OpenRouterModel(name: "GPT 4o", provider: .openAI, description: "GPT 4o model variant.", code: "openai/gpt-4o"),
-        OpenRouterModel(name: "O3 Mini", provider: .openAI, description: "Mini version of O3.", code: "openai/o3-mini"),
-        OpenRouterModel(name: "O4 Mini High", provider: .openAI, description: "High performance O4 mini.", code: "openai/o4-mini-high"),
+        OpenRouterModel(name: "GPT-5", provider: .openAI, description: "GPT-5 is OpenAI’s most advanced model, offering major improvements in reasoning, code quality, and user experience.", code: "openai/gpt-5"),
+        OpenRouterModel(name: "GPT-5 Chat", provider: .openAI, description: "GPT-5 is OpenAI’s most advanced model, offering major improvements in reasoning, code quality, and user experience.", code: "openai/gpt-5-chat"),
+        OpenRouterModel(name: "GPT-5 Mini", provider: .openAI, description: "GPT-5 is OpenAI’s most advanced model, offering major improvements in reasoning, code quality, and user experience.", code: "openai/gpt-5-mini"),
+        OpenRouterModel(name: "GPT-5 Nano", provider: .openAI, description: "GPT-5 is OpenAI’s most advanced model, offering major improvements in reasoning, code quality, and user experience.", code: "openai/gpt-5-nano"),
         OpenRouterModel(name: "GPT OSS 120B", provider: .openAI, description: "gpt-oss-120b is an open-weight, 117B-parameter Mixture-of-Experts (MoE) language model from OpenAI designed for high-reasoning, agentic, and general-purpose production use cases.", code: "openai/gpt-oss-120b"),
         OpenRouterModel(name: "GPT OSS 20B", provider: .openAI, description: "gpt-oss-20b is an open-weight 21B parameter model released by OpenAI under the Apache 2.0 license.", code: "openai/gpt-oss-20b"),
         

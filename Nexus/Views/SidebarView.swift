@@ -35,6 +35,7 @@ struct SidebarView: View {
             ToolbarItem(placement: .primaryAction) {
                 Button {
                     Task {
+                        feedbackGenerator.impactOccurred()
                         _ = try await supabaseClient.createNewChat()
                         createNewChat.toggle()
                     }
