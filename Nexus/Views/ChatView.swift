@@ -40,6 +40,12 @@ struct ChatView: View {
                     }
                 }
             }
+            .onDisappear {
+                if let chat = supabaseManager.currentChat, supabaseManager.currentMessages.isEmpty {
+                    debugPrint("[DEBUG] Chat empty \(supabaseManager.currentChat!.id)")
+                    supabaseManager.deleteChatWith(chat.id)
+                }
+            }
         }
     }
 }

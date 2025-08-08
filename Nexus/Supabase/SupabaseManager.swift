@@ -311,4 +311,28 @@ class SupabaseManager {
             }
         }
     }
+    
+    public func deleteChatWith(_ chatId: UUID) {
+        self.chats.removeAll(where: { $0.id == chatId })
+        
+        Task {
+            do {
+                try await client.from("messages")
+                    .delete()
+                    .eq("chat_id", value: chatId)
+                    .execute()
+                
+                debugPrint("[DEBUG] Deleted messages for chat \(chatId)")
+
+                try await client.from("chats")
+                    .delete()
+                    .eq("id", value: chatId)
+                    .execute()
+                
+                debugPrint("[DEBUG] Deleted chat \(chatId)")
+            } catch {
+                debugPrint("[DEBUG - deleteChat] Error: \(error.localizedDescription)")
+            }
+        }
+    }
 }
