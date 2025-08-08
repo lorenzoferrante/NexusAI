@@ -17,7 +17,7 @@ class SupabaseManager {
     static let shared = SupabaseManager()
     
     private let supabaseURLString = "https://mtsrrteuvxdzexlhcpoo.supabase.co"
-    private let supabaseKey = ""
+    private let supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im10c3JydGV1dnhkemV4bGhjcG9vIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQxMjgyMjksImV4cCI6MjA2OTcwNDIyOX0.qvh6brPKqk1vL4A_l1YSWz96kI3dyG4gfZbPhd_ZK2k"
     let client: SupabaseClient
     
     public var isAuthenticated: Bool = false

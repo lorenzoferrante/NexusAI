@@ -20,19 +20,27 @@ float random(float2 p) {
 /// - Parameter strength: The intensity of the noise effect.
 /// - Parameter opacity: The opacity of the noise effect, from 0.0 (transparent) to 1.0 (opaque).
 [[ stitchable ]]
-half4 noiseShader(float2 position, half4 color, float2 size, float strength, float opacity) {
-    float value = fract(sin(dot(position, float2(12.9898, 78.233))) * 43758.5453);
-    
-    // Create a noisy color by adding the noise value (adjusted by strength) to the original color.
-    // Subtracting 0.5 from `value` centers the noise so it can both lighten and darken pixels.
-    half3 noisyColor = color.rgb + (value - 0.5h) * strength;
-    
-    // Blend the original color with the noisy color based on the opacity.
-    // An opacity of 0.0 returns the original color.
-    // An opacity of 1.0 returns the fully noisy color.
-    half3 finalColor = mix(color.rgb, noisyColor, opacity);
-    
-    return half4(finalColor, color.a);
+half4 noiseShader(float2 position,
+                  half4  color,
+                  float2 size,
+                  float  time,
+                  float  strength,
+                  float  opacity)
+{
+    // Normalize coordinates to 0..1 to keep effect size-independent
+    float2 uv = position / max(size, float2(1.0, 1.0));
+
+    // Animated noise: move through noise field over time
+    float n = random(uv * 1024.0 + float2(time * 60.0, time * 37.0));
+
+    // Center noise to [-0.5, 0.5] and scale by strength
+    float delta = (n - 0.5) * strength;
+
+    // Apply in brightness space, then blend by opacity
+    float3 noisy = clamp(float3(color.rgb) + delta, 0.0, 1.0);
+    float3 blended = mix(float3(color.rgb), noisy, opacity);
+
+    return half4(half3(blended), color.a);
 }
 
 // SwiftUI color-effect shader (works great for text).
@@ -47,64 +55,55 @@ half4 shimmerColor(float2 position,
                    float  width,     // e.g. 0.25
                    float  strength)  // e.g. 0.22
 {
-    // Normalized coords and sweep direction
-    float2 uv  = position / size;
+    // Normalize coords and compute sweep direction
+    float2 uv  = position / max(size, float2(1.0, 1.0));
     float2 dir = float2(cos(angle), sin(angle));
 
     // Project onto sweep direction and animate with time (wrap 0..1)
-    float x = fract(dot(uv, dir) - time);
+    float proj = fract(dot(uv, dir) - time);
 
-    // Distance from band center (0.5) → soft band via smoothstep
-    float d    = abs(x - 0.5);
-    float band = smoothstep(width, 0.0, d);  // 1 at center, 0 outside
+    // Soft band centered at 0.5
+    float d    = abs(proj - 0.5);
+    float band = smoothstep(width, 0.0, d); // 1 at center, 0 outside
 
-    // Always-visible shimmer:
-    //   Outside band → slightly dim base (baseGain < 1)
-    //   Inside band  → brighten up to (1 + strength), then clamp by premult alpha
-    float baseGain = 1.0 - strength * 0.55;     // e.g. 0.88
+    // Make the band clearly visible even on white text by dimming the base
+    float baseGain = max(0.6, 1.0 - strength); // stronger dim outside band
     float gain     = mix(baseGain, 1.0 + strength, band);
 
-    // Apply gain to premultiplied RGB; preserve alpha.
-    half3 outRGB = clamp(inColor.rgb * half(gain), 0.0h, inColor.a); // keep <= alpha
-    return half4(outRGB, inColor.a);
+    // Apply gain to premultiplied RGB and clamp to alpha
+    float3 rgb = clamp(float3(inColor.rgb) * gain, 0.0, min(1.0, (float)inColor.a));
+    return half4(half3(rgb), inColor.a);
 }
 
 
-[[ stitchable ]] half4 shimmer(SwiftUI::Layer layer, float2 position, float time) {
-    // Sample the original color
+[[ stitchable ]] half4 shimmer(SwiftUI::Layer layer, float2 position, float time, float2 viewSize) {
+    // Sample original color
     half4 color = layer.sample(position);
+    if (color.a <= 0.001h) { return color; }
+
+    // Normalize using the view size passed from SwiftUI
+    float2 size = viewSize;
+    float2 uv   = position / max(size, float2(1.0, 1.0));
+
+    // Diagonal sweep from top-left to bottom-right
+    float2 dir  = normalize(float2(1.0, 1.0));
+    float proj  = fract(dot(uv, dir) - time * 0.5);
+
+    // Soft band
+    float d     = abs(proj - 0.5);
+    float band  = smoothstep(0.18, 0.0, d);
+
+    // Work in unpremultiplied space to avoid vanishing on thin glyph edges
+    float  a       = (float)color.a;
+    float3 src     = a > 0.0 ? float3(color.rgb) / a : float3(color.rgb);
     
-    // If the pixel is transparent, return as-is
-    if (color.a < 0.01) {
-        return color;
-    }
-    
-    // Create diagonal shimmer line using raw position coordinates
-    // This creates a diagonal pattern across the text
-    float shimmerLine = (position.x + position.y) * 0.002; // Scale down the position values
-    
-    // Animate the shimmer position - moves the shimmer band across
-    float shimmerPos = fmod(time * 0.3, 3.0) - 1.0; // Cycle from -1 to 2
-    
-    // Calculate distance from the moving shimmer line
-    float dist = abs(shimmerLine - shimmerPos);
-    
-    // Create shimmer intensity with smooth falloff
-    float shimmerWidth = 0.4;
-    float shimmer = 1.0 - smoothstep(0.0, shimmerWidth, dist);
-    shimmer = shimmer * shimmer; // Square for more focused highlight
-    
-    // Boost the shimmer intensity
-    shimmer *= 1.5;
-    
-    // Create bright shimmer color
-    half3 shimmerColor = half3(1.5, 1.5, 1.8); // Slightly blue-white
-    
-    // Add shimmer effect to original color
-    half3 result = color.rgb + (shimmerColor * shimmer * color.a);
-    
-    // Clamp to avoid over-brightness
-    result = min(result, half3(1.0));
-    
-    return half4(result, color.a);
+    // Keep base brightness unchanged so text never dims; only brighten the band
+    float baseGain = 1.0;    // outside the band
+    float hiGain   = 1.35;   // inside the band
+    float gain     = mix(baseGain, hiGain, band);
+
+    float3 dst     = clamp(src * gain, 0.0, 1.0);
+    float3 premul  = dst * a;        // re-premultiply
+
+    return half4(half3(premul), color.a);
 }

@@ -11,24 +11,28 @@ struct LoadingView: View {
     @State private var time: Float = 0
     
     var body: some View {
-        TimelineView(.animation) { context in
-            ZStack {
-                BackView()
-                    .ignoresSafeArea()
-                
-                VStack {
-                    ProgressView()
-                    Text("Fetching your data...")
-                        .foregroundStyle(.primary)
-                        .colorEffect(
-                            ShaderLibrary.shimmer(
-                                .float(context.date.timeIntervalSinceNow)
-                            )
-                        )
+        GeometryReader { proxy in
+            TimelineView(.animation) { context in
+                ZStack {
+                    BackView()
+                        .ignoresSafeArea()
+                    
+                    VStack {
+                        ProgressView()
+                        Text("Fetching your data...")
+                            .foregroundStyle(.primary)
+//                            .layerEffect(
+//                                ShaderLibrary.shimmer(
+//                                    .float(context.date.timeIntervalSinceNow),
+//                                    .float2(Float(proxy.size.width), Float(proxy.size.height))
+//                                ),
+//                                maxSampleOffset: .zero
+//                            )
+                    }
                 }
             }
+            .preferredColorScheme(.dark)
         }
-        .preferredColorScheme(.dark)
     }
 }
 
