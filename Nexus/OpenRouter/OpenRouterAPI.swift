@@ -15,7 +15,7 @@ class OpenRouterAPI {
     
     static let shared = OpenRouterAPI()
     
-    private let API_KEY = "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"
+    private let API_KEY = ""
     private let completionsURL = URL(string: "https://openrouter.ai/api/v1/chat/completions")!
     
     var selectedFileURL: URL?

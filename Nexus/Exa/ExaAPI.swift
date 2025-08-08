@@ -16,7 +16,7 @@ public enum ExaClientError: Error {
 }
 
 public final class ExaClient {
-    private let apiKey: String = "5f63fcc2-fbbf-4662-bca0-68c216ace6f2"
+    private let apiKey: String = ""
     private let session: URLSession
     
     public init(session: URLSession = .shared) {
