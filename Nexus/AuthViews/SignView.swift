@@ -36,9 +36,6 @@ struct SignView: View {
             .padding()
         }
         .preferredColorScheme(.dark)
-        .navigationDestination(isPresented: $supabaseClient.isAuthenticated) {
-            CreateProfileView()
-        }
     }
     
     private func signUp() -> some View {
@@ -47,7 +44,6 @@ struct SignView: View {
         } onCompletion: { result in
             Task {
                 await supabaseClient.logInTask(result)
-                await supabaseClient.checkIfUserHasProfile()
             }
         }
         .signInWithAppleButtonStyle(.white)
