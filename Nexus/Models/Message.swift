@@ -10,19 +10,49 @@ import Foundation
 enum Role: String, Codable {
     case user
     case assistant
+    case tool
+}
+
+struct ToolFunction: Codable, Hashable {
+    var name: String?
+    var arguments: String?
+    
+    func asDictionary() -> [String: Any] {
+        return [
+            "name": name!,
+            "arguments": arguments!
+        ]
+    }
+}
+
+struct ToolCall: Codable, Identifiable, Hashable {
+    var id: String?
+    var type: String?
+    var function: ToolFunction?
+    
+    func asDictionary() -> [String: Any] {
+        return [
+            "id": id!,
+            "type": type!,
+            "function": function!.asDictionary()
+        ]
+    }
 }
 
 struct Message: Codable, Identifiable, Hashable {
     var id = UUID()
     let chatId: UUID
     let role: Role
-    var content: String
+    var content: String?
     var tokenCount: Int?
     var finishReason: String?
     var imageURL: String?
     var fileData: String?
     var pdfData: String?
     var fileName: String?
+    var toolCallId: String?
+    var toolName: String?
+    var toolCalls: [ToolCall]?
     let createdAt: Date
     var deletedAt: Date?
     
@@ -37,6 +67,9 @@ struct Message: Codable, Identifiable, Hashable {
         case fileData = "file_data"
         case pdfData = "pdf_data"
         case fileName = "file_name"
+        case toolCallId = "tool_call_id"
+        case toolName = "tool_name"
+        case toolCalls = "tool_calls"
         case createdAt = "created_at"
         case deletedAt = "deleted_at"
     }
@@ -81,7 +114,7 @@ struct Message: Codable, Identifiable, Hashable {
                 "content": [
                     [
                         "type": "text",
-                        "text": content
+                        "text": content ?? ""
                     ],
                     [
                         "type": "file",
@@ -94,7 +127,24 @@ struct Message: Codable, Identifiable, Hashable {
             ]
         }
         
-        return ["role": role.rawValue, "content": content]
+        if let toolCallId = toolCallId,
+           let toolName = toolName {
+            return [
+                "role": "tool",
+                "tool_call_id": toolCallId,
+                "name": toolName,
+                "content": content ?? ""
+            ]
+        }
+        
+        if let toolCalls = toolCalls {
+            return [
+                "role": "assistant",
+                "tool_calls": toolCalls.map({ $0.asDictionary() })
+            ]
+        }
+        
+        return ["role": role.rawValue, "content": content ?? ""]
         
     }
 }

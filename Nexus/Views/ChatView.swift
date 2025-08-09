@@ -21,8 +21,11 @@ struct ChatView: View {
         ScrollViewReader { proxy in
             ScrollView {
                 ForEach(supabaseManager.currentMessages, id: \.id) { message in
-                    MessageView(message: message)
-                        .padding([.trailing, .leading])
+                    
+                    if message.content != nil {
+                        MessageView(message: message)
+                            .padding([.trailing, .leading])
+                    }
                 }
                 Color.clear
                     .frame(height: 1)
@@ -40,12 +43,12 @@ struct ChatView: View {
                     }
                 }
             }
-            .onDisappear {
-                if let chat = supabaseManager.currentChat, supabaseManager.currentMessages.isEmpty {
-                    debugPrint("[DEBUG] Chat empty \(supabaseManager.currentChat!.id)")
-                    supabaseManager.deleteChatWith(chat.id)
-                }
-            }
+//            .onDisappear {
+//                if let chat = supabaseManager.currentChat, supabaseManager.currentMessages.isEmpty {
+//                    debugPrint("[DEBUG] Chat empty \(supabaseManager.currentChat!.id)")
+//                    supabaseManager.deleteChatWith(chat.id)
+//                }
+//            }
         }
     }
 }

@@ -37,7 +37,7 @@ struct BottomView: View {
         .onAppear {
             providers = Set(ModelsList.models.map(\.provider))
             models = ModelsList.models.filter { $0.provider == provider }
-            selectedModel = models.first(where: { $0.code == vm.selectedModel.code })!
+            selectedModel = models.first(where: { $0.code == vm.selectedModel.code }) ?? DefaultsManager.shared.getModel()
         }
         .onChange(of: provider) { _, newValue in
             models = ModelsList.models.filter { $0.provider == newValue }

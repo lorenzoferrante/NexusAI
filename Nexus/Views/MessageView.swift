@@ -19,6 +19,8 @@ struct MessageView: View {
                 assistantMessage
             case .user:
                 userMessage
+            case .tool:
+                toolMessage
             }
         }
         .frame(maxWidth: .infinity)
@@ -38,7 +40,7 @@ struct MessageView: View {
                     }
                 }
             }
-            Markdown(message.content)
+            Markdown(message.content ?? "")
                 .markdownTheme(.defaultDark)
                 .textSelection(.enabled)
         }
@@ -47,42 +49,65 @@ struct MessageView: View {
     }
     
     private var assistantMessage: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            if !message.content.isEmpty {
-                withAnimation {
-                    HStack {
-                        Image(systemName: "brain.fill")
-                            .foregroundColor(.secondary)
-                        Text(OpenRouterAPI.shared.selectedModel.code)
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
+        Group {
+            if let messageContent = message.content {
+                VStack(alignment: .leading, spacing: 8) {
+                    if !messageContent.isEmpty {
+                        withAnimation {
+                            HStack {
+                                Image(systemName: "brain.fill")
+                                    .foregroundColor(.secondary)
+                                Text(OpenRouterAPI.shared.selectedModel.code)
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                            }
+                        }
+                    }
+                    
+                    if !messageContent.isEmpty {
+                        withAnimation {
+                            Markdown(messageContent)
+                                .markdownTheme(.defaultDark)
+                                .textSelection(.enabled)
+                                .frame(
+                                    maxWidth: .infinity,
+                                    alignment: .leading
+                                )
+                                .opacity(1.0)
+                        }
                     }
                 }
-            }
-            if message.content.isEmpty {
-                withAnimation {
-                    HStack {
-                        ThinkingIndicatorView()
-                        Markdown("Thinking...")
-                            .markdownTheme(.defaultDark)
-                    }
-                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding()
+                .glassEffect(.regular.interactive(), in: .rect(cornerRadius: 16))
             } else {
-                withAnimation {
-                    Markdown(message.content)
-                        .markdownTheme(.defaultDark)
-                        .textSelection(.enabled)
-                        .frame(
-                            maxWidth: .infinity,
-                            alignment: .leading
-                        )
-                        .opacity(1.0)
-                }
+                Color.clear
             }
         }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .padding()
-        .glassEffect(.regular.interactive(), in: .rect(cornerRadius: 16))
+    }
+    
+    // Changed from func to computed property and consolidated into one builder.
+    private var toolMessage: some View {
+        Group {
+            if let toolName = message.toolName {
+                let toolType = ToolsManager().getToolTypeFrom(toolName)
+                let info = ToolsManager().getInfoFor(toolType) // [title, systemIconName].
+                
+                VStack(alignment: .leading, spacing: 8) {
+                    HStack {
+                        Image(systemName: info[1])
+                            .foregroundColor(.secondary)
+                        Text(info[0])
+                            .foregroundStyle(.white)
+                    }
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding()
+                .glassEffect(.regular.interactive(), in: .rect(cornerRadius: 16))
+            } else {
+                EmptyView()
+            }
+        }
     }
 }
 
@@ -91,6 +116,13 @@ struct MessageView: View {
         chatId: UUID(),
         role: .user,
         content: "Hello this is a user message with an image attached!",
+        createdAt: Date()
+    )
+    
+    @Previewable @State var toolMessage: Message = .init(
+        chatId: UUID(),
+        role: .tool,
+        content: "",
         createdAt: Date()
     )
     
@@ -108,9 +140,14 @@ struct MessageView: View {
                 .padding()
                 .preferredColorScheme(.dark)
             
+            MessageView(message: toolMessage)
+                .padding()
+                .preferredColorScheme(.dark)
+            
             MessageView(message: assistantMessage)
                 .padding()
                 .preferredColorScheme(.dark)
+            
         }
         
     }

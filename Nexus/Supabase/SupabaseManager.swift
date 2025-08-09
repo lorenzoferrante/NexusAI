@@ -220,7 +220,10 @@ class SupabaseManager {
     
     public func updateLastMessage() {
         Task {
-            let lastMessage = currentMessages.last(where: {$0.role == .assistant})!
+            guard let lastMessage = currentMessages.last(where: {$0.role == .assistant}) else {
+                return
+            }
+            
             do {
                 let message: Message = try await client
                     .from("messages")
@@ -232,7 +235,7 @@ class SupabaseManager {
                     .value
                 
                 await MainActor.run {
-                    debugPrint("[RESPONSE] \(message.content)")
+                    debugPrint("[RESPONSE] \(message.content ?? "")")
                     self.currentMessages[self.currentMessages.count - 1].content = message.content
                 }
                 

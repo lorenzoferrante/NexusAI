@@ -39,7 +39,7 @@ struct BackView: View {
                         ShaderLibrary.default.noiseShader(
                             .float2(proxy.size),
                             .float(0.4),
-                            .float(0.5)
+                            .float(0.4)
                         )
                     )
             }
