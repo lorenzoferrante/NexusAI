@@ -267,7 +267,7 @@ struct BottomView: View {
             
             Task {
                 try await supabaseManager.addMessageToChat(newUserMessage)
-                try await vm.stream(isWebSearch: isWebSearch)
+                try await vm.stream()
                 supabaseManager.updateLastMessage()
             }
             

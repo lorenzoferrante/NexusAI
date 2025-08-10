@@ -29,6 +29,7 @@ class ToolsManager {
         ]
     }
     
+    /// MARK: - Web Search
     func makeWebSearchTool() -> [String: Any] {
         return makeFunctionTool(
             name: "search_web",

@@ -50,10 +50,10 @@ struct MessageView: View {
     
     private var assistantMessage: some View {
         Group {
-            if let messageContent = message.content {
-                VStack(alignment: .leading, spacing: 8) {
-                    if !messageContent.isEmpty {
-                        withAnimation {
+            VStack(alignment: .leading, spacing: 8) {
+                withAnimation {
+                    Group {
+                        if !message.content!.isEmpty {
                             HStack {
                                 Image(systemName: "brain.fill")
                                     .foregroundColor(.secondary)
@@ -61,12 +61,8 @@ struct MessageView: View {
                                     .font(.caption)
                                     .foregroundStyle(.secondary)
                             }
-                        }
-                    }
-                    
-                    if !messageContent.isEmpty {
-                        withAnimation {
-                            Markdown(messageContent)
+                            
+                            Markdown(message.content!)
                                 .markdownTheme(.defaultDark)
                                 .textSelection(.enabled)
                                 .frame(
@@ -74,14 +70,42 @@ struct MessageView: View {
                                     alignment: .leading
                                 )
                                 .opacity(1.0)
+                        } else {
+                            thinkingAssistant()
                         }
                     }
                 }
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .padding()
-                .glassEffect(.regular.interactive(), in: .rect(cornerRadius: 16))
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding()
+            .glassEffect(.regular.interactive(), in: .rect(cornerRadius: 16))
+        }
+    }
+    
+    private func thinkingAssistant() -> some View {
+        Group {
+            if let lastMessage = SupabaseManager.shared.currentMessages.last,
+               lastMessage.id == message.id {
+                HStack {
+                    ThinkingIndicatorView()
+                    Markdown("Thinking...")
+                        .markdownTheme(.defaultDark)
+                        .frame(
+                            maxWidth: .infinity,
+                            alignment: .leading
+                        )
+                        .opacity(1.0)
+                }
             } else {
-                Color.clear
+                HStack {
+                    Markdown("Sorry, there was an error with this message. Try again")
+                        .markdownTheme(.defaultDark)
+                        .frame(
+                            maxWidth: .infinity,
+                            alignment: .leading
+                        )
+                        .opacity(1.0)
+                }
             }
         }
     }
@@ -126,6 +150,13 @@ struct MessageView: View {
         createdAt: Date()
     )
     
+    @Previewable @State var emptyAssistant: Message = .init(
+        chatId: UUID(),
+        role: .assistant,
+        content: "",
+        createdAt: Date()
+    )
+    
     @Previewable @State var assistantMessage: Message = .init(
         chatId: UUID(),
         role: .assistant,
@@ -141,6 +172,10 @@ struct MessageView: View {
                 .preferredColorScheme(.dark)
             
             MessageView(message: toolMessage)
+                .padding()
+                .preferredColorScheme(.dark)
+            
+            MessageView(message: emptyAssistant)
                 .padding()
                 .preferredColorScheme(.dark)
             

@@ -20,10 +20,10 @@ struct ThinkingIndicatorView: View {
             .opacity(isAnimating ? 1.0 : 0.7)
             .animation(.easeInOut(duration: 1).repeatForever(autoreverses: true), value: isAnimating)
             .onAppear {
-                feedbackGenerator.prepare()
+//                feedbackGenerator.prepare()
                 timer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { _ in
                     isAnimating.toggle()
-                    feedbackGenerator.impactOccurred()
+//                    feedbackGenerator.impactOccurred()
                 }
             }
             .onDisappear {

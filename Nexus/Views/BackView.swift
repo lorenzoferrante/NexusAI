@@ -35,13 +35,13 @@ struct BackView: View {
                             startPoint: .top,
                             endPoint: .bottom)
                     )
-                    .colorEffect(
-                        ShaderLibrary.default.noiseShader(
-                            .float2(proxy.size),
-                            .float(0.4),
-                            .float(0.4)
-                        )
-                    )
+//                    .colorEffect(
+//                        ShaderLibrary.default.noiseShader(
+//                            .float2(proxy.size),
+//                            .float(0.4),
+//                            .float(0.4)
+//                        )
+//                    )
             }
             .ignoresSafeArea()
         }

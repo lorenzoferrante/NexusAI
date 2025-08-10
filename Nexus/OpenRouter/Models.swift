@@ -19,6 +19,7 @@ enum Providers: String, CaseIterable, Codable {
     case anthropic = "Anthropic"
     case deepseek = "DeepSeek"
     case moonshot = "Moonshot"
+    case ai21 = "AI21"
     
     func icon() -> Image {
         switch self {
@@ -42,6 +43,8 @@ enum Providers: String, CaseIterable, Codable {
             return Image(.deepseek)
         case .moonshot:
             return Image(.moonshot)
+        case .ai21:
+            return Image(.ai21)
         }
     }
 }
@@ -57,7 +60,7 @@ class ModelsList {
     static let models = [
         /// OpenRouter Models
         OpenRouterModel(name: "Auto", provider: .openrouter, description: "Automatically selects the best model.", code: "openrouter/auto"),
-        OpenRouterModel(name: "Horizon Alpha", provider: .openrouter, description: "Alpha version of Horizon model.", code: "openrouter/horizon-alpha"),
+        OpenRouterModel(name: "Horizon Beta", provider: .openrouter, description: "Alpha version of Horizon model.", code: "openrouter/horizon-beta"),
         
         /// Perplexity Models
         OpenRouterModel(name: "Sonar Deep Research", provider: .perplexity, description: "Deep research model by Perplexity.", code: "perplexity/sonar-deep-research"),
@@ -85,6 +88,9 @@ class ModelsList {
         OpenRouterModel(name: "GPT-5 Chat", provider: .openAI, description: "GPT-5 is OpenAI’s most advanced model, offering major improvements in reasoning, code quality, and user experience.", code: "openai/gpt-5-chat"),
         OpenRouterModel(name: "GPT-5 Mini", provider: .openAI, description: "GPT-5 is OpenAI’s most advanced model, offering major improvements in reasoning, code quality, and user experience.", code: "openai/gpt-5-mini"),
         OpenRouterModel(name: "GPT-5 Nano", provider: .openAI, description: "GPT-5 is OpenAI’s most advanced model, offering major improvements in reasoning, code quality, and user experience.", code: "openai/gpt-5-nano"),
+        OpenRouterModel(name: "o3 Pro", provider: .openAI, description: "GPT-5 is OpenAI’s most advanced model, offering major improvements in reasoning, code quality, and user experience.", code: "openai/o3-pro"),
+        OpenRouterModel(name: "o3", provider: .openAI, description: "GPT-5 is OpenAI’s most advanced model, offering major improvements in reasoning, code quality, and user experience.", code: "openai/o3"),
+        OpenRouterModel(name: "GPT-4o", provider: .openAI, description: "GPT-5 is OpenAI’s most advanced model, offering major improvements in reasoning, code quality, and user experience.", code: "openai/gpt-4o"),
         OpenRouterModel(name: "GPT OSS 120B", provider: .openAI, description: "gpt-oss-120b is an open-weight, 117B-parameter Mixture-of-Experts (MoE) language model from OpenAI designed for high-reasoning, agentic, and general-purpose production use cases.", code: "openai/gpt-oss-120b"),
         OpenRouterModel(name: "GPT OSS 20B", provider: .openAI, description: "gpt-oss-20b is an open-weight 21B parameter model released by OpenAI under the Apache 2.0 license.", code: "openai/gpt-oss-20b"),
         
@@ -99,14 +105,19 @@ class ModelsList {
         OpenRouterModel(name: "Grok 3 Mini", provider: .xAI, description: "", code: "x-ai/grok-3-mini"),
         
         /// DeepSeek Models
+        OpenRouterModel(name: "DeepSeek V3 0324", provider: .deepseek, description: "", code: "deepseek/deepseek-chat-v3-0324"),
         OpenRouterModel(name: "R1", provider: .deepseek, description: "", code: "deepseek/deepseek-r1"),
         OpenRouterModel(name: "R1 Distill Qwen 7B", provider: .deepseek, description: "", code: "deepseek/deepseek-r1-distill-qwen-7b"),
         OpenRouterModel(name: "R1 0528 Qwen3 8B", provider: .deepseek, description: "", code: "deepseek/deepseek-r1-0528-qwen3-8b"),
-        OpenRouterModel(name: "DeepSeek: R1 0528", provider: .deepseek, description: "", code: "deepseek/deepseek-r1-0528"),
+        OpenRouterModel(name: "R1 0528", provider: .deepseek, description: "", code: "deepseek/deepseek-r1-0528"),
         OpenRouterModel(name: "R1 Distill Qwen 32B", provider: .deepseek, description: "", code: "deepseek/deepseek-r1-distill-qwen-32b"),
-        OpenRouterModel(name: "DeepSeek: R1 Distill Llama 70B", provider: .deepseek, description: "", code: "deepseek/deepseek-r1-distill-llama-70b"),
+        OpenRouterModel(name: "R1 Distill Llama 70B", provider: .deepseek, description: "", code: "deepseek/deepseek-r1-distill-llama-70b"),
         
         /// Moonshot Models
         OpenRouterModel(name: "Kimi K2", provider: .moonshot, description: "", code: "moonshotai/kimi-k2"),
+        
+        /// AI21 Models
+        OpenRouterModel(name: "Jamba Mini 1.7", provider: .ai21, description: "", code: "ai21/jamba-mini-1.7"),
+        OpenRouterModel(name: "Jamba Large 1.7", provider: .ai21, description: "", code: "ai21/jamba-large-1.7"),
     ]
 }
