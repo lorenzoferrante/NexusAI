@@ -12,12 +12,60 @@ enum ToolType {
     case genericTool
 }
 
+@MainActor
 class ToolsManager {
+    
+    // MARK: - Properties
+    
+    /// Registry of all available tools
+    private let tools: [Tool]
+    
+    /// Singleton instance (optional, you can also inject this)
+    static let shared = ToolsManager()
+    
+    // MARK: - Initialization
+    
+    init() {
+        // Register all available tools here
+        self.tools = [
+            WebSearchTool(),
+            // CalculatorTool(), // Uncomment to add calculator
+            // Add more tools here as needed
+        ]
+    }
+    
+    // MARK: - Tool Registry Methods
+    
+    /// Get all available tools as function definitions
+    func getAllToolDefinitions() -> [[String: Any]] {
+        tools.map { $0.asFunctionDefinition() }
+    }
+    
+    /// Get a specific tool by name
+    func getTool(named name: String) -> Tool? {
+        tools.first { $0.name == name }
+    }
+    
+    /// Execute a tool by name with given arguments
+    func executeTool(named name: String, arguments: String) async throws -> String {
+        guard let tool = getTool(named: name) else {
+            throw ToolError.toolNotFound(name)
+        }
+        
+        do {
+            return try await tool.execute(arguments: arguments)
+        } catch {
+            throw ToolError.executionFailed(name, error)
+        }
+    }
+    
+    // MARK: - Backward Compatibility Methods
+    // Keep these for compatibility with your existing codebase
     
     func makeFunctionTool(
         name: String,
         description: String,
-        parameters: [String: Any]   // JSON Schema
+        parameters: [String: Any]
     ) -> [String: Any] {
         [
             "type": "function",
@@ -29,51 +77,20 @@ class ToolsManager {
         ]
     }
     
-    /// MARK: - Web Search
     func makeWebSearchTool() -> [String: Any] {
-        return makeFunctionTool(
-            name: "search_web",
-            description: "Search the web for up-to date informations",
-            parameters: [
-                "type": "object",
-                "properties": [
-                    "query": [
-                        "type": "string",
-                        "description": "Query to feed to a search engine"
-                    ]
-                ],
-                "required": ["query"]
-            ]
-        )
+        WebSearchTool().asFunctionDefinition()
     }
     
     func executeWebSearch(_ query: String) async throws -> String {
-        let results = try await ExaClient().search(query: query, numResults: 5)
-        
-        let formatted = results.map { result -> String in
-            let titleTrimmed = result.title?.trimmingCharacters(in: .whitespacesAndNewlines)
-            let titleOrHost: String = {
-                if let t = titleTrimmed, !t.isEmpty { return t }
-                return URL(string: result.url)?.host ?? result.url
-            }()
-            let content = (result.text ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
-            return "\(titleOrHost) - \(result.url)\n\(content)"
-        }
-        .joined(separator: "\n\n")
-        
-        return formatted
+        let args = #"{"query":"\#(query)"}"#
+        return try await executeTool(named: "search_web", arguments: args)
     }
     
-    public func getToolTypeFrom(_ name: String) -> ToolType {
-        switch name {
-        case "search_web":
-            return .webSearch
-        default:
-            return .genericTool
-        }
+    func getToolTypeFrom(_ name: String) -> ToolType {
+        getTool(named: name)?.type ?? .genericTool
     }
     
-    public func getInfoFor(_ toolType: ToolType) -> [String] {
+    func getInfoFor(_ toolType: ToolType) -> [String] {
         switch toolType {
         case .webSearch:
             return ["Performing web search", "network"]
@@ -82,3 +99,19 @@ class ToolsManager {
         }
     }
 }
+
+// MARK: - Error Types
+enum ToolError: LocalizedError {
+    case toolNotFound(String)
+    case executionFailed(String, Error)
+    
+    var errorDescription: String? {
+        switch self {
+        case .toolNotFound(let name):
+            return "Tool '\(name)' not found"
+        case .executionFailed(let name, let error):
+            return "Tool '\(name)' execution failed: \(error.localizedDescription)"
+        }
+    }
+}
+

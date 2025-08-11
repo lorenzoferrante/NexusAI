@@ -246,7 +246,7 @@ class OpenRouterAPI {
                         // Execute your web search tool
                         do {
                             let args = try JSONDecoder().decode(WebSearchArgs.self, from: Data((call.function?.arguments ?? "").utf8))
-                            resultContent = try await ToolsManager().executeWebSearch(args.query)
+                            resultContent = try await ToolsManager().executeTool(named: "search_web", arguments: args.query)
                                 .trimmingCharacters(in: .whitespacesAndNewlines)
                         } catch {
                             resultContent = "Error executing web search: \(error.localizedDescription)"
@@ -297,7 +297,7 @@ class OpenRouterAPI {
         ]
         
         // Tools
-        let tools = [ToolsManager().makeWebSearchTool()]
+        let tools = ToolsManager().getAllToolDefinitions()
         payload["tools"] = tools
         payload["tool_choice"] = "auto"
         
