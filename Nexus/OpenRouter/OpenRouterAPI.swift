@@ -288,6 +288,7 @@ class OpenRouterAPI {
         // Use your Message.asDictionary() to preserve formatting (text, images, files, tools).
         let messagesPayload = SupabaseManager.shared.currentMessages
             .filter { $0.id != excludingMessageId }
+//            .filter { $0.role != .tool }
             .map { $0.asDictionary() }
         
         var payload: [String: Any] = [
