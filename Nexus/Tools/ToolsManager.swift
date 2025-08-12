@@ -10,6 +10,7 @@ import Foundation
 enum ToolType {
     case webSearch
     case genericTool
+    case docLookUp
 }
 
 @MainActor
@@ -29,8 +30,7 @@ class ToolsManager {
         // Register all available tools here
         self.tools = [
             WebSearchTool(),
-            // CalculatorTool(), // Uncomment to add calculator
-            // Add more tools here as needed
+//            DocLookupTool(),
         ]
     }
     
@@ -47,13 +47,13 @@ class ToolsManager {
     }
     
     /// Execute a tool by name with given arguments
-    func executeTool(named name: String, arguments: String) async throws -> String {
+    func executeTool(named name: String, arguments: String, other: String? = nil) async throws -> String {
         guard let tool = getTool(named: name) else {
             throw ToolError.toolNotFound(name)
         }
         
         do {
-            return try await tool.execute(arguments: arguments)
+            return try await tool.execute(arguments: arguments, others: other)
         } catch {
             throw ToolError.executionFailed(name, error)
         }
@@ -94,6 +94,8 @@ class ToolsManager {
         switch toolType {
         case .webSearch:
             return ["Performing web search", "network"]
+        case .docLookUp:
+            return ["Analyzing document", "text.document"]
         case .genericTool:
             return ["Performing tool call", "cpu.fill"]
         }

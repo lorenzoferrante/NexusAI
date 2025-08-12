@@ -17,7 +17,7 @@ public enum ExaClientError: Error {
 
 public final class ExaClient {
     private let apiKey: String = ""
-    private let session: URLSession    
+    private let session: URLSession
     
     public init(session: URLSession = .shared) {
         self.session = session
@@ -28,7 +28,7 @@ public final class ExaClient {
     public func search(
         query: String,
         numResults: Int = 5,
-        type: String = "auto",
+        type: String = "fast",
         includeText: Bool = true,
         includeContext: Bool = true
     ) async throws -> [ExaResult] {

@@ -35,6 +35,7 @@ class OpenRouterAPI {
     }
     
     private struct WebSearchArgs: Codable { let query: String }
+    private struct DocLookupArgs: Codable { let docID: String }
     
     // Server-Sent Events (SSE) decoded structure (kept tiny).
     private struct StreamChunk: Decodable {
@@ -97,7 +98,7 @@ class OpenRouterAPI {
             chatId: currentChat.id,
             role: .assistant,
             content: "",
-            createdAt: Date()
+            createdAt: Date(),
         )
         try await SupabaseManager.shared.addMessageToChat(placeholder)
         
@@ -242,27 +243,46 @@ class OpenRouterAPI {
             for call in toolCalls {
                 group.addTask {
                     let resultContent: String
+                    var toolMsg: Message = Message(
+                        chatId: currentChat.id,
+                        role: .tool,
+                        createdAt: Date()
+                    )
+                    
                     if call.function?.name == "search_web" {
                         // Execute your web search tool
                         do {
                             let args = try JSONDecoder().decode(WebSearchArgs.self, from: Data((call.function?.arguments ?? "").utf8))
-                            resultContent = try await ToolsManager().executeTool(named: "search_web", arguments: args.query)
+                            let lastUserMessage = await SupabaseManager.shared.currentMessages.last(where: { $0.role == .user })!.content
+                                
+                            toolMsg.toolCallId = call.id
+                            toolMsg.toolName = call.function?.name
+                            toolMsg.toolArgs = "Searching for \"\(args.query)\""
+                            
+                            resultContent = try await ToolsManager().executeTool(named: "search_web", arguments: args.query, other: lastUserMessage)
                                 .trimmingCharacters(in: .whitespacesAndNewlines)
+                            toolMsg.content = resultContent
                         } catch {
                             resultContent = "Error executing web search: \(error.localizedDescription)"
+                        }
+                    } else if call.function?.name == "doc_lookup"  {
+                        // Execute doc lookup tool
+                        toolMsg.toolCallId = call.id
+                        toolMsg.toolName = call.function?.name
+                        
+                        do {
+                            let args = try JSONDecoder().decode(DocLookupArgs.self, from: Data((call.function?.arguments ?? "").utf8))
+                            let lastUserMessage = await SupabaseManager.shared.currentMessages.last(where: { $0.role == .user })!.content
+                            resultContent = try await ToolsManager().executeTool(named: "doc_lookup", arguments: args.docID, other: lastUserMessage)
+                                .trimmingCharacters(in: .whitespacesAndNewlines)
+                            toolMsg.content = resultContent
+                        } catch {
+                            resultContent = "Error executing doc lookup: \(error.localizedDescription)"
                         }
                     } else {
                         resultContent = #"{"error":"No handler for tool: \#(call.function?.name ?? "unknown")"}"#
                     }
                     
-                    let toolMsg = Message(
-                        chatId: currentChat.id,
-                        role: .tool,
-                        content: resultContent,
-                        toolCallId: call.id,               // critical for the model to correlate
-                        toolName: call.function?.name,
-                        createdAt: Date()
-                    )
                     try await SupabaseManager.shared.addMessageToChat(toolMsg)
                     return toolMsg
                 }
@@ -394,6 +414,80 @@ class OpenRouterAPI {
         let payload: [String: Any] = [
             "model": "google/gemini-2.5-flash-lite",
             "prompt": prompt
+        ]
+        request.httpBody = try JSONSerialization.data(withJSONObject: payload)
+        
+        let (data, response) = try await URLSession.shared.data(for: request)
+        guard let http = response as? HTTPURLResponse, http.statusCode == 200 else {
+            print("[DEBUG] Failed to generate chat title: Invalid response")
+            return nil
+        }
+        
+        struct CompletionResponse: Decodable {
+            struct Choice: Decodable { let text: String }
+            let choices: [Choice]
+        }
+        
+        let decoded = try JSONDecoder().decode(CompletionResponse.self, from: data)
+        return decoded.choices.first?.text
+    }
+    
+    // MARK: - Generate quick summary
+    public func generateQuickSummary(from query: String, url: String, content: String) async throws -> String? {
+        let url = URL(string: "https://openrouter.ai/api/v1/completions")!
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("Bearer \(API_KEY)", forHTTPHeaderField: "Authorization")
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        
+        let MAX_GENERAL_POINTS = "2"
+        let MAX_USER_POINTS = "5"
+        let MAX_CHARS = "300"
+        
+        let prompt = """
+        You are a meticulous research assistant. \
+        For context today is \(Date()). \
+        \
+        GOAL \
+        Given a USER_QUERY and the full text of one web page, produce a concise Markdown digest with: \
+        (A) general key points from the page, and \
+        (B) points directly relevant to USER_QUERY. \
+        \
+        INPUTS \
+        - USER_QUERY: \(query) \
+        - PAGE_URL: \(url) \
+        - PAGE_TEXT (full body): \(content) \
+
+        OUTPUT \
+        Return ONLY Markdown (no code fences). Use this exact section order and keep the entire output under \(MAX_CHARS) characters total. \ 
+        \
+        # Title & Source \
+        - **Title:** {best title or "Unknown"} \
+        - **URL:** {PAGE_URL} \
+        - **Published:** {ISO date if found, else "n/a"} \
+        \
+        # TL;DR \
+        One or two short sentences summarizing the page (≤ 40 words total). \
+        \
+        # General Points \
+        - Up to \(MAX_GENERAL_POINTS) bullets. \
+        - Each bullet ≤ 22 words, de-duplicated, concrete (dates, numbers, prices/specs when available). \
+        \
+        # Findings for the User Query \
+        Numbered list, up to \(MAX_USER_POINTS) bullets, ordered by usefulness to USER_QUERY (most useful first). For each item: \
+        1. **Point:** ≤ 22 words, de-duplicated, concrete (dates, numbers, prices/specs when available). \  
+        \
+        RULES \
+        - Write in the same language as USER_QUERY. \
+        - Use ONLY facts present in PAGE_TEXT. Do not invent sources or details. \
+        - Prefer concrete numbers/dates; normalize units/currencies where helpful. \
+        - Strip boilerplate/marketing; merge overlapping bullets. \
+        - If PAGE_TEXT has no direct relevance, state so in TL;DR and provide best-effort General Points + Missing Info.
+        """
+        
+        let payload: [String: Any] = [
+            "model": "google/gemini-2.5-flash",
+            "prompt": prompt,
         ]
         request.httpBody = try JSONSerialization.data(withJSONObject: payload)
         

@@ -23,7 +23,7 @@ protocol Tool {
     var type: ToolType { get }
     
     /// Execute the tool with the given arguments (as JSON string)
-    func execute(arguments: String) async throws -> String
+    func execute(arguments: String, others: String?) async throws -> String
 }
 
 // MARK: - Tool Extensions
@@ -38,15 +38,5 @@ extension Tool {
                 "parameters": parameters
             ]
         ]
-    }
-    
-    /// Get UI info for this tool
-    func getInfo() -> [String] {
-        switch type {
-        case .webSearch:
-            return ["Performing web search", "network"]
-        case .genericTool:
-            return ["Performing tool call", "cpu.fill"]
-        }
     }
 }

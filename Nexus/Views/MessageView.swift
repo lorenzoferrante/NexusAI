@@ -21,31 +21,39 @@ struct MessageView: View {
                 userMessage
             case .tool:
                 toolMessage
+            default:
+                EmptyView()
+                    .frame(width: .zero)
             }
         }
         .frame(maxWidth: .infinity)
     }
     
     private var userMessage: some View {
-        VStack(alignment: .trailing) {
-            if let imageURL = message.imageURL {
-                HStack {
-                    Spacer()
-                    AsyncImage(url: URL(string: imageURL)!) { result in
-                        result.image?
-                            .resizable()
-                            .scaledToFit()
-                            .clipShape(RoundedRectangle(cornerRadius: 10))
-                            .frame(maxHeight: 100)
+        HStack {
+            Spacer()
+            
+            VStack(alignment: .trailing) {
+                if let imageURL = message.imageURL {
+                    HStack {
+                        Spacer()
+                        AsyncImage(url: URL(string: imageURL)!) { result in
+                            result.image?
+                                .resizable()
+                                .scaledToFit()
+                                .clipShape(RoundedRectangle(cornerRadius: 10))
+                                .frame(maxHeight: 100)
+                        }
                     }
                 }
+                Markdown(message.content ?? "")
+                    .markdownTheme(.defaultDark)
+                    .textSelection(.enabled)
             }
-            Markdown(message.content ?? "")
-                .markdownTheme(.defaultDark)
-                .textSelection(.enabled)
+            //        .frame(maxWidth: .infinity, alignment: .trailing)
+            .padding()
+            .glassEffect(.regular.interactive(), in: .rect(cornerRadius: 16))
         }
-        .frame(maxWidth: .infinity, alignment: .trailing)
-        .padding()
     }
     
     private var assistantMessage: some View {
@@ -57,7 +65,10 @@ struct MessageView: View {
                             HStack {
                                 Image(systemName: "brain.fill")
                                     .foregroundColor(.secondary)
-                                Text(OpenRouterAPI.shared.selectedModel.code)
+                                Text(
+                                    message.modelName ??
+                                    OpenRouterAPI.shared.selectedModel.code
+                                )
                                     .font(.caption)
                                     .foregroundStyle(.secondary)
                             }
@@ -77,8 +88,8 @@ struct MessageView: View {
                 }
             }
             .frame(maxWidth: .infinity, alignment: .leading)
-            .padding()
-            .glassEffect(.regular.interactive(), in: .rect(cornerRadius: 16))
+            .padding([.top, .bottom])
+//            .glassEffect(.regular.interactive(), in: .rect(cornerRadius: 16))
         }
     }
     
@@ -86,15 +97,25 @@ struct MessageView: View {
         Group {
             if let lastMessage = SupabaseManager.shared.currentMessages.last,
                lastMessage.id == message.id {
-                HStack {
-                    ThinkingIndicatorView()
-                    Markdown("Thinking...")
-                        .markdownTheme(.defaultDark)
-                        .frame(
-                            maxWidth: .infinity,
-                            alignment: .leading
-                        )
-                        .opacity(1.0)
+                VStack(alignment: .leading) {
+                    HStack {
+                        Image(systemName: "brain.fill")
+                            .foregroundColor(.secondary)
+                        Text(OpenRouterAPI.shared.selectedModel.code)
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
+                    
+                    HStack {
+                        ThinkingIndicatorView()
+                        Markdown("Thinking...")
+                            .markdownTheme(.defaultDark)
+                            .frame(
+                                maxWidth: .infinity,
+                                alignment: .leading
+                            )
+                            .opacity(1.0)
+                    }
                 }
             } else {
                 HStack {
@@ -123,6 +144,12 @@ struct MessageView: View {
                             .foregroundColor(.secondary)
                         Text(info[0])
                             .foregroundStyle(.white)
+                    }
+                    
+                    if let toolArgs = message.toolArgs {
+                        Text(toolArgs)
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
                     }
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)

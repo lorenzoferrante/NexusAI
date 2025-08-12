@@ -178,6 +178,29 @@ class SupabaseManager {
         }
     }
     
+    public func updateToolMessage(_ message: Message) async throws {
+        do {
+            let message: Message = try await client
+                .from("messages")
+                .update(["content": message.content ?? ""])
+                .eq("id", value: message.id)
+                .select()
+                .single()
+                .execute()
+                .value
+            
+            await MainActor.run {
+                if let index = self.currentMessages.firstIndex(of: message) {
+                    self.currentMessages[index].content = message.content
+                }
+            }
+            
+            debugPrint("[DEBUG - updateToolMessage()] Updated tool message")
+        } catch {
+            debugPrint("[DEBUG - updateToolMessage()] Error: \(error.localizedDescription)")
+        }
+    }
+    
     public func retriveMessagesForChat(_ chatId: UUID) async throws {
         do {
             let messages: [Message] = try await client
@@ -224,10 +247,15 @@ class SupabaseManager {
                 return
             }
             
+            let currentModelCode = DefaultsManager.shared.getModel().code
+            
             do {
                 let message: Message = try await client
                     .from("messages")
-                    .update(["content": lastMessage.content])
+                    .update([
+                        "content": lastMessage.content,
+                        "model_name": currentModelCode,
+                    ])
                     .eq("id", value: lastMessage.id)
                     .select()
                     .single()
@@ -268,6 +296,34 @@ class SupabaseManager {
             
             debugPrint("[DEBUG - retrieveImageURLFor()] URL: \(imageURL.absoluteString)")
             return imageURL.absoluteString
+        } catch {
+            debugPrint("[DEBUG - retrieveImageURLFor()] Error: \(error)")
+            return ""
+        }
+    }
+    
+    public func uploadFileToBucket(_ content: String, fileName: String) async {
+        do {
+            print("[DEBUG - uploadFileToBucket()] \(fileName)")
+            
+            try await client
+                .storage
+                .from("doc-bucket")
+                .upload(fileName, data: content.data(using: .utf8)!, options: FileOptions.init(contentType: "text/plain"))
+        } catch {
+            debugPrint("[DEBUG - uploadImageToBucket()] Error: \(error)")
+        }
+    }
+    
+    public func retrieveFileURLFrom(_ fileName: String) -> String {
+        do {
+            let fileURL = try client
+                .storage
+                .from("doc-bucket")
+                .getPublicURL(path: fileName)
+            
+            debugPrint("[DEBUG - retrieveFileFrom()] URL: \(fileURL)")
+            return fileURL.absoluteString
         } catch {
             debugPrint("[DEBUG - retrieveImageURLFor()] Error: \(error)")
             return ""

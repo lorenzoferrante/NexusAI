@@ -8,6 +8,7 @@
 import Foundation
 
 enum Role: String, Codable {
+    case system
     case user
     case assistant
     case tool
@@ -53,8 +54,10 @@ struct Message: Codable, Identifiable, Hashable {
     var toolCallId: String?
     var toolName: String?
     var toolCalls: [ToolCall]?
+    var toolArgs: String?
     let createdAt: Date
     var deletedAt: Date?
+    var modelName: String?
     
     private enum CodingKeys: String, CodingKey {
         case id
@@ -70,8 +73,10 @@ struct Message: Codable, Identifiable, Hashable {
         case toolCallId = "tool_call_id"
         case toolName = "tool_name"
         case toolCalls = "tool_calls"
+        case toolArgs = "tool_args"
         case createdAt = "created_at"
         case deletedAt = "deleted_at"
+        case modelName = "model_name"
     }
     
 
