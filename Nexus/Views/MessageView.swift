@@ -118,15 +118,9 @@ struct MessageView: View {
                     }
                 }
             } else {
-                HStack {
-                    Markdown("Sorry, there was an error with this message. Try again")
-                        .markdownTheme(.defaultDark)
-                        .frame(
-                            maxWidth: .infinity,
-                            alignment: .leading
-                        )
-                        .opacity(1.0)
-                }
+                EmptyView()
+                    .frame(width: .zero)
+                    .padding(0)
             }
         }
     }

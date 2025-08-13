@@ -8,12 +8,20 @@
 import SwiftUI
 
 struct SettingsView: View {
+    // MARK: - Models
     @State var models: [OpenRouterModel] = ModelsList.models
     @State var selectedModel: OpenRouterModel = DefaultsManager.shared.getModel()
-    @State var selectedThemeColor: ThemeColors = DefaultsManager.shared.getThemeColor()
     @State var selectedReasoningEffort: String = DefaultsManager.shared.getReasoningEffort()
     @State var isReasoningEnabled: Bool = DefaultsManager.shared.getReasoningEnabled()
     @State var efforts = ReasoningEffort.allCases
+    
+    // MARK: - App Theme
+    @State var selectedThemeColor: ThemeColors = DefaultsManager.shared.getThemeColor()
+    
+    // MARK: - Tools
+    @State var isWebSearchEnabled: Bool = DefaultsManager.shared.getWebSearchEnabled()
+    @State var isCalendarEnabled: Bool = false
+    @State var isReminderEnabled: Bool = false
     
     var body: some View {
         NavigationStack {
@@ -35,9 +43,10 @@ struct SettingsView: View {
                         }
                         
                         Section(header: Text("Tools")) {
-                            toggleCell(icon: "network", title: "Web search", isOn: $isReasoningEnabled)
-                            toggleCell(icon: "network", title: "Calendar access", isOn: $isReasoningEnabled)
-                            toggleCell(icon: "network", title: "Reminder access", isOn: $isReasoningEnabled)
+                            toggleCell(icon: "network", title: "Web search", isOn: $isWebSearchEnabled, subtitle: "The model will be able to search the web for up-to-date informations.")
+                            toggleCell(icon: "calendar.badge", title: "Calendar access", isOn: $isCalendarEnabled, subtitle: "The model will be able to add events to your calendar.")
+                            toggleCell(icon: "bell.badge.fill", title: "Reminder access", isOn: $isReminderEnabled, subtitle: "The model will be able to add reminders.")
+                                .disabled(true)
                         }
                         
                         Section(header: Text("App Settings")) {
@@ -69,9 +78,16 @@ struct SettingsView: View {
             DefaultsManager.shared.saveReasoningEffort(ReasoningEffort(rawValue: newValue) ?? ReasoningEffort.medium)
         }
         .onChange(of: isReasoningEnabled) { _, newValue in
-            withAnimation {
-                isReasoningEnabled = newValue
-                DefaultsManager.shared.saveReasoningEnabled(newValue)
+            isReasoningEnabled = newValue
+            DefaultsManager.shared.saveReasoningEnabled(newValue)
+        }
+        .onChange(of: isWebSearchEnabled) { _, newValue in
+            isWebSearchEnabled = newValue
+            DefaultsManager.shared.saveWebSearchEnabled(newValue)
+        }
+        .onAppear {
+            Task {
+                isCalendarEnabled = await CalendarManager.shared.requestAccess()
             }
         }
     }

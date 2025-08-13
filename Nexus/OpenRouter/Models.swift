@@ -74,6 +74,7 @@ class ModelsList {
         OpenRouterModel(name: "GLM 4.5 Air", provider: .zai, description: "Air variant of GLM 4.5.", code: "z-ai/glm-4.5-air"),
         
         /// Qwen Models
+        OpenRouterModel(name: "Qwen3 14B (free)", provider: .qwen, description: "Qwen3-14B is a dense 14.8B parameter causal language model from the Qwen3 series.", code: "qwen/qwen3-14b:free"),
         OpenRouterModel(name: "Qwen3 235B A22B Thinking 2507", provider: .qwen, description: "Advanced Qwen thinking model.", code: "qwen/qwen3-235b-a22b-thinking-2507"),
         OpenRouterModel(name: "Qwen3 Coder", provider: .qwen, description: "Coder model by Qwen.", code: "qwen/qwen3-coder"),
         
