@@ -9,6 +9,7 @@ import Foundation
 
 enum ToolType {
     case webSearch
+    case calendarTool
     case genericTool
     case docLookUp
 }
@@ -30,6 +31,7 @@ class ToolsManager {
         // Register all available tools here
         self.tools = [
             WebSearchTool(),
+            CalendarTool()
 //            DocLookupTool(),
         ]
     }
@@ -96,6 +98,8 @@ class ToolsManager {
             return ["Performing web search", "network"]
         case .docLookUp:
             return ["Analyzing document", "text.document"]
+        case .calendarTool:
+            return ["Adding calendar event", "calendar.badge"]
         case .genericTool:
             return ["Performing tool call", "cpu.fill"]
         }

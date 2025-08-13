@@ -43,6 +43,9 @@ struct NexusApp: App {
                     isCheckingProfile = false
                 }
             }
+            .task {
+                _ = await CalendarManager.shared.requestAccess()
+            }
             .preferredColorScheme(.dark)
         }
     }

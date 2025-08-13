@@ -23,9 +23,22 @@
 		50FB26392E42B65A0080475E /* MercuryAI.icon */ = {isa = PBXFileReference; lastKnownFileType = folder.iconcomposer.icon; path = MercuryAI.icon; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		50A186422E4BF96F0044FC2B /* Exceptions for "Nexus" folder in "Nexus" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = 50E00D052E391CEF00E5A35B /* Nexus */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		50E00D082E391CEF00E5A35B /* Nexus */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				50A186422E4BF96F0044FC2B /* Exceptions for "Nexus" folder in "Nexus" target */,
+			);
 			path = Nexus;
 			sourceTree = "<group>";
 		};
@@ -301,6 +314,7 @@
 				DEVELOPMENT_TEAM = XYA85FESD6;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = Nexus/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = MercuryAI;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
@@ -339,6 +353,7 @@
 				DEVELOPMENT_TEAM = XYA85FESD6;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = Nexus/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = MercuryAI;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;

@@ -8,14 +8,24 @@
 import Foundation
 import SwiftUI
 
+enum ReasoningEffort: String, CaseIterable {
+    case low
+    case medium
+    case high
+}
+
 @Observable
 class DefaultsManager {
     
     static let shared = DefaultsManager()
     private let selectedModelKey = "selectedModel"
     private let themeColor = "themeColor"
+    private let reasoningEffort = "reasoningEffort"
+    private let reasoningEnabled = "reasoningEnabled"
     
     var selectedThemeColor: ThemeColors
+    var selectedReasoningEffort: String
+    var isReasoningEnabled: Bool
     
     private init() {
         if let colorString = UserDefaults.standard.string(forKey: themeColor),
@@ -24,6 +34,9 @@ class DefaultsManager {
         } else {
             self.selectedThemeColor = .bronze
         }
+        
+        selectedReasoningEffort = ReasoningEffort.medium.rawValue
+        isReasoningEnabled = true
     }
     
     func saveModel(_ model: OpenRouterModel) {
@@ -54,5 +67,31 @@ class DefaultsManager {
         }
         return .bronze
     }
+    
+    func saveReasoningEffort(_ effort: ReasoningEffort) {
+        withAnimation {
+            self.selectedReasoningEffort = effort.rawValue
+            UserDefaults.standard.set(effort.rawValue, forKey: reasoningEffort)
+        }
+    }
+    
+    func getReasoningEffort() -> String {
+        if let effort = UserDefaults.standard.string(forKey: reasoningEffort) {
+            return effort
+        }
+        return ReasoningEffort.medium.rawValue
+    }
+    
+    func saveReasoningEnabled(_ isEnabled: Bool) {
+        withAnimation {
+            self.isReasoningEnabled = isEnabled
+            UserDefaults.standard.set(isEnabled, forKey: reasoningEnabled)
+        }
+    }
+    
+    func getReasoningEnabled() -> Bool {
+        return UserDefaults.standard.bool(forKey: reasoningEnabled)
+    }
+    
     
 }

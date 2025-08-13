@@ -279,6 +279,21 @@ class OpenRouterAPI {
                         } catch {
                             resultContent = "Error executing doc lookup: \(error.localizedDescription)"
                         }
+                    } else if call.function?.name == "manage_calendar" {
+                        // Execute calendar tool
+                        toolMsg.toolCallId = call.id
+                        toolMsg.toolName = call.function?.name
+                        
+                        do {
+                            // Pass the arguments directly as they contain all needed info
+                            resultContent = try await ToolsManager().executeTool(
+                                named: "manage_calendar",
+                                arguments: call.function?.arguments ?? "{}"
+                            ).trimmingCharacters(in: .whitespacesAndNewlines)
+                            toolMsg.content = resultContent
+                        } catch {
+                            resultContent = "Error executing calendar operation: \(error.localizedDescription)"
+                        }
                     } else {
                         resultContent = #"{"error":"No handler for tool: \#(call.function?.name ?? "unknown")"}"#
                     }
@@ -314,7 +329,12 @@ class OpenRouterAPI {
         var payload: [String: Any] = [
             "model": selectedModel.code,
             "messages": messagesPayload,
-            "stream": true
+            "stream": true,
+            "reasoning": [
+                "effort": DefaultsManager.shared.getReasoningEffort(),
+                "exclude": true,
+                "enabled": DefaultsManager.shared.getReasoningEnabled()
+            ]
         ]
         
         // Tools

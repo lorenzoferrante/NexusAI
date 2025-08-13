@@ -11,6 +11,9 @@ struct SettingsView: View {
     @State var models: [OpenRouterModel] = ModelsList.models
     @State var selectedModel: OpenRouterModel = DefaultsManager.shared.getModel()
     @State var selectedThemeColor: ThemeColors = DefaultsManager.shared.getThemeColor()
+    @State var selectedReasoningEffort: String = DefaultsManager.shared.getReasoningEffort()
+    @State var isReasoningEnabled: Bool = DefaultsManager.shared.getReasoningEnabled()
+    @State var efforts = ReasoningEffort.allCases
     
     var body: some View {
         NavigationStack {
@@ -19,16 +22,23 @@ struct SettingsView: View {
                 
                 List {
                     Group {
-                        Section {
+                        Section(header: Text("Personal Area")) {
                             destinationCell("Profile", icon: "person.crop.circle.fill", destination: AnyView(CreateProfileView()))
                         }
                         
-                        Section {
-                            modelPickerCell("Default model", icon: "brain.fill")
+                        Section(header: Text("Model Settings")) {
+                            modelPickerCell("Default model", icon: "sparkles")
+                            toggleCell()
+                            if isReasoningEnabled {
+                                reasoningEffortCell("Reasoning effort", icon: "brain.fill")
+                            }
+                        }
+                        
+                        Section(header: Text("App Settings")) {
                             themeCell("Theme color", icon: "swatchpalette.fill") {}
                         }
                         
-                        Section {
+                        Section(header: Text("Warning Zone")) {
                             actionCell("Log out", icon: "person.slash.fill", action: logOut)
                             actionCell("Delete account", icon: "trash.fill", isDestructive: true) {}
                         }
@@ -48,6 +58,15 @@ struct SettingsView: View {
         }
         .onChange(of: selectedThemeColor) { _, newValue in
             DefaultsManager.shared.saveThemeColor(newValue)
+        }
+        .onChange(of: selectedReasoningEffort) { _, newValue in
+            DefaultsManager.shared.saveReasoningEffort(ReasoningEffort(rawValue: newValue) ?? ReasoningEffort.medium)
+        }
+        .onChange(of: isReasoningEnabled) { _, newValue in
+            withAnimation {
+                isReasoningEnabled = newValue
+                DefaultsManager.shared.saveReasoningEnabled(newValue)
+            }
         }
     }
     
@@ -146,6 +165,37 @@ struct SettingsView: View {
                         .frame(width: 20)
                 }
                 
+            }
+        }
+        .tint(.primary)
+    }
+    
+    private func toggleCell() -> some View {
+        VStack(alignment: .leading) {
+            Toggle("Enable reasoning", isOn: $isReasoningEnabled)
+            Text("Some models may use reasoning to improve their performance.")
+                .foregroundStyle(.secondary)
+        }
+    }
+    
+    private func reasoningEffortCell(
+        _ value: String,
+        icon: String
+    ) -> some View {
+        VStack(alignment: .leading) {
+            HStack {
+                Image(systemName: icon)
+                    .foregroundStyle(.secondary)
+                Text(value)
+                    .font(.default)
+                Spacer()
+                
+                Picker("", selection: $selectedReasoningEffort) {
+                    ForEach(efforts, id: \.rawValue) { effort in
+                        Text(effort.rawValue.capitalized)
+                            .tag(effort)
+                    }
+                }
             }
         }
         .tint(.primary)
