@@ -28,10 +28,16 @@ struct SettingsView: View {
                         
                         Section(header: Text("Model Settings")) {
                             modelPickerCell("Default model", icon: "sparkles")
-                            toggleCell()
+                            toggleCell(title: "Enable reasoning", isOn: $isReasoningEnabled, subtitle: "Some models may use reasoning to improve their performance.")
                             if isReasoningEnabled {
                                 reasoningEffortCell("Reasoning effort", icon: "brain.fill")
                             }
+                        }
+                        
+                        Section(header: Text("Tools")) {
+                            toggleCell(icon: "network", title: "Web search", isOn: $isReasoningEnabled)
+                            toggleCell(icon: "network", title: "Calendar access", isOn: $isReasoningEnabled)
+                            toggleCell(icon: "network", title: "Reminder access", isOn: $isReasoningEnabled)
                         }
                         
                         Section(header: Text("App Settings")) {
@@ -129,6 +135,7 @@ struct SettingsView: View {
                 }
             }
             Text("This will be the default model selected when you start a new chat")
+                .font(.caption)
                 .foregroundStyle(.secondary)
         }
         .tint(.primary)
@@ -170,11 +177,25 @@ struct SettingsView: View {
         .tint(.primary)
     }
     
-    private func toggleCell() -> some View {
+    private func toggleCell(
+        icon: String? = nil,
+        title: String,
+        isOn: Binding<Bool>,
+        subtitle: String? = nil
+    ) -> some View {
         VStack(alignment: .leading) {
-            Toggle("Enable reasoning", isOn: $isReasoningEnabled)
-            Text("Some models may use reasoning to improve their performance.")
-                .foregroundStyle(.secondary)
+            HStack {
+                if let icon = icon {
+                    Image(systemName: icon)
+                        .foregroundStyle(.secondary)
+                }
+                Toggle(title, isOn: isOn)
+            }
+            if let subtitle = subtitle {
+                Text(subtitle)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
         }
     }
     

@@ -135,14 +135,18 @@ struct MessageView: View {
     private var toolMessage: some View {
         Group {
             if let toolName = message.toolName {
-                let toolType = ToolsManager().getToolTypeFrom(toolName)
-                let info = ToolsManager().getInfoFor(toolType) // [title, systemIconName].
+                let toolType = ToolsManager.shared.getToolTypeFrom(toolName)
+                let toolInfo = ToolsManager.shared.getInfoFor(toolType)
                 
                 VStack(alignment: .leading, spacing: 8) {
+                    Text("Using tool".uppercased())
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                    
                     HStack {
-                        Image(systemName: info[1])
-                            .foregroundColor(.secondary)
-                        Text(info[0])
+                        Image(systemName: toolInfo.icon)
+                            .foregroundColor(toolInfo.accentColor)
+                        Text(toolInfo.name)
                             .foregroundStyle(.white)
                     }
                     

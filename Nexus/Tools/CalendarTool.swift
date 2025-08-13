@@ -10,7 +10,7 @@ import Foundation
 struct CalendarTool: Tool {
     let name = "manage_calendar"
     let description = "Create, edit, or delete calendar events. Can add events with title, date/time, duration, location, and notes."
-    let type = ToolType.genericTool
+    let type = ToolType.calendarTool
     
     var parameters: [String: Any] {
         [

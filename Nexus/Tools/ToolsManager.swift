@@ -6,12 +6,19 @@
 //
 
 import Foundation
+import SwiftUI
 
-enum ToolType {
+enum ToolType: CaseIterable {
     case webSearch
     case calendarTool
     case genericTool
     case docLookUp
+}
+
+struct ToolInfo {
+    let name: String
+    let icon: String
+    let accentColor: Color
 }
 
 @MainActor
@@ -92,18 +99,19 @@ class ToolsManager {
         getTool(named: name)?.type ?? .genericTool
     }
     
-    func getInfoFor(_ toolType: ToolType) -> [String] {
+    func getInfoFor(_ toolType: ToolType) -> ToolInfo {
         switch toolType {
         case .webSearch:
-            return ["Performing web search", "network"]
+            return .init(name: "Performing web search", icon: "network", accentColor: .blue)
         case .docLookUp:
-            return ["Analyzing document", "text.document"]
+            return .init(name: "Analyzing document", icon: "text.document", accentColor: .yellow)
         case .calendarTool:
-            return ["Adding calendar event", "calendar.badge"]
+            return .init(name: "Adding calendar event", icon: "calendar.badge", accentColor: .red)
         case .genericTool:
-            return ["Performing tool call", "cpu.fill"]
+            return .init(name: "Performing tool call", icon: "cpu.fill", accentColor: .secondary)
         }
     }
+    
 }
 
 // MARK: - Error Types
