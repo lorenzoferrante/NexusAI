@@ -63,6 +63,12 @@ class OpenRouterAPI {
             let promptTokens: Int?
             let completionTokens: Int?
             let totalTokens: Int?
+            
+            private enum CodingKeys: String, CodingKey {
+                case promptTokens = "prompt_tokens"
+                case completionTokens = "completion_tokens"
+                case totalTokens = "total_tokens"
+            }
         }
         let usage: Usage?
     }
@@ -109,6 +115,10 @@ class OpenRouterAPI {
     /// by starting a new streamed request (with a new placeholder) until a normal stop.
     func stream() async throws {
         guard let currentChat = SupabaseManager.shared.currentChat else { return }
+        
+        let userLocation = SupabaseManager.shared.profile?.country
+        let systemMessage = SystemPrompts.shared.getSystemMessage(currentChat.id, userLocation: userLocation ?? "")
+        SupabaseManager.shared.currentMessages.insert(systemMessage, at: 0)
         
         // 1) Insert a placeholder assistant message in DB/UI to stream deltas into.
         let placeholder = Message(
@@ -178,6 +188,8 @@ class OpenRouterAPI {
 
                 if raw == "[DONE]" { break }
                 guard let data = raw.data(using: .utf8) else { continue }
+                
+                debugPrint("[DEBUG - chunk data] \(String(data: data, encoding: .utf8) ?? "")")
 
                 // Attempt to decode
                 let chunk: StreamChunk
@@ -196,6 +208,10 @@ class OpenRouterAPI {
 #if DEBUG
                     print("[DEBUG] usage prompt=\(usage.promptTokens ?? 0) completion=\(usage.completionTokens ?? 0) total=\(usage.totalTokens ?? 0)")
 #endif
+                    if SupabaseManager.shared.currentChat != nil {
+//                        debugPrint("[DEBUG] Total tokens: \(usage.totalTokens ?? 0)")
+                        SupabaseManager.shared.currentChat!.totalTokens = usage.totalTokens ?? 0
+                    }
                 }
 
                 guard let choice = chunk.choices.first else { continue }
@@ -374,6 +390,9 @@ class OpenRouterAPI {
                 "effort": DefaultsManager.shared.getReasoningEffort(),
                 "exclude": false,
                 "enabled": DefaultsManager.shared.getReasoningEnabled()
+            ],
+            "usage": [
+                "include": true
             ]
         ]
         

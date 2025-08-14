@@ -87,15 +87,7 @@ struct BottomView: View {
                     }
                     
                     HStack(alignment: .center) {
-                        Menu {
-                            Button {
-                                feedbackGenerator.impactOccurred()
-                                isWebSearch.toggle()
-                            } label: {
-                                Label("Web Search", systemImage: "network")
-                                    .tint(isWebSearch ? Color.accent : .primary)
-                            }
-                            
+                        Menu {                            
                             Button {
                                 feedbackGenerator.impactOccurred()
                                 photosPickerIsPresented.toggle()

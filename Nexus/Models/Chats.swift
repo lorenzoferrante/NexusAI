@@ -16,6 +16,7 @@ struct Chat: Codable, Identifiable, Hashable {
     let createdAt: Date
     var updatedAt: Date
     var deletedAt: Date? // nil = active (soft-delete flag)
+    var totalTokens: Int?
     
     private enum CodingKeys: String, CodingKey {
         case id
@@ -26,6 +27,7 @@ struct Chat: Codable, Identifiable, Hashable {
         case createdAt    = "created_at"
         case updatedAt    = "updated_at"
         case deletedAt    = "deleted_at"
+        case totalTokens  = "total_tokens"
     }
 }
 

@@ -7,6 +7,14 @@
 
 import Foundation
 
+extension NumberFormatter {
+    static let tokenCount: NumberFormatter = {
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .decimal // Adds grouping separators
+        return formatter
+    }()
+}
+
 class DateUtils {
     
     static func formatDate(_ date: Date) -> String {

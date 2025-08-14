@@ -82,6 +82,21 @@ struct Message: Codable, Identifiable, Hashable {
     
 
     func asDictionary() -> [String: Any] {
+        if role == .system {
+            return [
+                "role": role.rawValue,
+                "content": [
+                    [
+                        "type": "text",
+                        "text": content ?? "",
+                        "cache_control": [
+                            "type": "ephemeral"
+                        ]
+                    ]
+                ]
+            ]
+        }
+        
         if let imageURL = imageURL {
             return [
                 "role": role.rawValue,

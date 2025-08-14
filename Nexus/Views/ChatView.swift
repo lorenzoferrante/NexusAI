@@ -27,9 +27,14 @@ struct ChatView: View {
                             .padding([.trailing, .leading])
                     }
                 }
-                Color.clear
-                    .frame(height: 1)
-                    .id(bottomID)
+                
+                if !supabaseManager.currentMessages.isEmpty {
+                    chatStats()
+                        .padding([.leading, .trailing])
+                        .padding(.bottom, 0)
+                        .id(bottomID)
+                }
+                    
             }
             .onChange(of: lastMessageContent) { _, _ in
                 withAnimation {
@@ -51,15 +56,35 @@ struct ChatView: View {
 //            }
         }
     }
+    
+    private func chatStats() -> some View {
+        Group {
+            if let currentChat = supabaseManager.currentChat {
+                HStack {
+                    Image(systemName: "text.word.spacing")
+                    Text("Token count: ")
+                    Text((currentChat.totalTokens ?? 0) as NSNumber, formatter: NumberFormatter.tokenCount)
+                    Spacer()
+                }
+                .font(.caption)
+                .foregroundStyle(.secondary)
+            }
+        }
+    }
 }
 
 #Preview {
     @Previewable @State var openRouterAPI = OpenRouterAPI.shared
-    ChatView()
-        .onAppear {
-            openRouterAPI.chat.append(contentsOf: [
-                .init(chatId: UUID(), role: .user, content: "Hello!", createdAt: Date()),
-                .init(chatId: UUID(), role: .assistant, content: "I am an LLM developed by DMP! How can I help you?", createdAt: Date())
-            ])
-        }
+    ZStack {
+        BackView()
+            
+        ChatView()
+            .onAppear {
+                openRouterAPI.chat.append(contentsOf: [
+                    .init(chatId: UUID(), role: .user, content: "Hello!", createdAt: Date()),
+                    .init(chatId: UUID(), role: .assistant, content: "I am an LLM developed by DMP! How can I help you?", createdAt: Date())
+                ])
+            }
+            .preferredColorScheme(.dark)
+    }
 }
