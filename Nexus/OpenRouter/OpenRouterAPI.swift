@@ -203,7 +203,7 @@ class OpenRouterAPI {
                 // 0) Reasoning content streaming
                 if let deltaReasoning = choice.delta.reasoning, !deltaReasoning.isEmpty {
                     debugPrint("[DEBUG] Reasoning: \(deltaReasoning)")
-                    await appendReasoningToMessage(placeholderId: placeholderId, reasoning: deltaReasoning)
+                    appendReasoningToMessage(placeholderId: placeholderId, reasoning: deltaReasoning)
                 }
 
                 // 1) Normal content streaming
@@ -404,16 +404,12 @@ class OpenRouterAPI {
         }
     }
     
-    private func appendReasoningToMessage(placeholderId: UUID, reasoning: String) async {
+    private func appendReasoningToMessage(placeholderId: UUID, reasoning: String) {
         guard let idx = SupabaseManager.shared.currentMessages.lastIndex(where: { $0.id == placeholderId }) else { return }
         if SupabaseManager.shared.currentMessages[idx].reasoning == nil {
-            await MainActor.run {
-                SupabaseManager.shared.currentMessages[idx].reasoning = reasoning
-            }
+            SupabaseManager.shared.currentMessages[idx].reasoning = reasoning
         } else {
-            await MainActor.run {
-                SupabaseManager.shared.currentMessages[idx].reasoning! += reasoning
-            }
+            SupabaseManager.shared.currentMessages[idx].reasoning! += reasoning
         }
     }
     
