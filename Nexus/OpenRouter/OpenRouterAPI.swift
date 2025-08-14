@@ -574,4 +574,40 @@ class OpenRouterAPI {
         let decoded = try JSONDecoder().decode(CompletionResponse.self, from: data)
         return decoded.choices.first?.text
     }
+    
+    // MARK: - Credits
+    public func getCreditsRequest() async throws -> Double {
+        struct CreditsResponse: Codable {
+            struct Credits: Codable {
+                let totalCredits: Double
+                let totalUsage: Double
+                
+                private enum CodingKeys: String, CodingKey {
+                    case totalCredits = "total_credits"
+                    case totalUsage = "total_usage"
+                }
+            }
+            
+            let data: Credits
+        }
+        
+        let creditsURL = URL(string: "https://openrouter.ai/api/v1/credits")!
+        var request = URLRequest(url: creditsURL)
+        request.httpMethod = "GET"
+        request.setValue("Bearer \(API_KEY)", forHTTPHeaderField: "Authorization")
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        
+        let (data, response) = try await URLSession.shared.data(for: request)
+        
+        guard let http = response as? HTTPURLResponse else {
+            throw makeError("Invalid HTTP response.")
+        }
+        guard (200..<300).contains(http.statusCode) else {
+            throw makeError("HTTP \(http.statusCode)")
+        }
+        
+        let decoder = JSONDecoder()
+        let creditsResponse = try decoder.decode(CreditsResponse.self, from: data)
+        return creditsResponse.data.totalCredits - creditsResponse.data.totalUsage
+    }
 }

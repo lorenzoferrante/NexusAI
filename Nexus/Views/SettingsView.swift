@@ -23,6 +23,8 @@ struct SettingsView: View {
     @State var isCalendarEnabled: Bool = false
     @State var isReminderEnabled: Bool = false
     
+    @State var credits: Double = 0.0
+    
     var body: some View {
         NavigationStack {
             ZStack {
@@ -32,6 +34,7 @@ struct SettingsView: View {
                     Group {
                         Section(header: Text("Personal Area")) {
                             destinationCell("Profile", icon: "person.crop.circle.fill", destination: AnyView(CreateProfileView()))
+                            creditsCell()
                         }
                         
                         Section(header: Text("Model Settings")) {
@@ -88,6 +91,7 @@ struct SettingsView: View {
         .onAppear {
             Task {
                 isCalendarEnabled = await CalendarManager.shared.requestAccess()
+                credits = try await OpenRouterAPI.shared.getCreditsRequest()
             }
         }
     }
@@ -236,6 +240,20 @@ struct SettingsView: View {
             }
         }
         .tint(.primary)
+    }
+    
+    private func creditsCell() -> some View {
+        HStack {
+            Image(systemName: "creditcard.fill")
+                .symbolRenderingMode(.hierarchical)
+                .foregroundStyle(.secondary)
+            Text("Credits")
+                .font(.default)
+            Spacer()
+            
+            Text("\(credits, format: .currency(code: "USD"))")
+                .fontDesign(.rounded)
+        }
     }
     
     

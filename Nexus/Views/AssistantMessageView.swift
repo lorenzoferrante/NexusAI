@@ -11,6 +11,8 @@ import MarkdownUI
 struct AssistantMessageView: View {
     let message: Message
     
+    @State var isReasoningExpanded: Bool = false
+    
     private let bottomID = "bottomID"
     
     var body: some View {
@@ -21,27 +23,28 @@ struct AssistantMessageView: View {
     }
     
     private var assistantMessage: some View {
-        Group {
-            VStack(alignment: .leading, spacing: 8) {
-                withAnimation {
-                    Group {
-                        if !message.content!.isEmpty {
-                            HStack {
-                                Image(systemName: "brain.fill")
-                                    .foregroundColor(.secondary)
-                                Text(
-                                    message.modelName ??
-                                    OpenRouterAPI.shared.selectedModel.code
-                                )
-                                    .font(.caption)
-                                    .foregroundStyle(.secondary)
-                            }
-                            
-                            if message.reasoning != nil {
-                                reasoningView()
-                            }
-                            
-                            Markdown(message.content!)
+    Group {
+        VStack(alignment: .leading, spacing: 8) {
+            withAnimation {
+                Group {
+                    if (message.content != nil && !message.content!.isEmpty) || message.reasoning != nil {
+                        HStack {
+                            Image(systemName: "brain.fill")
+                                .foregroundColor(.secondary)
+                            Text(
+                                message.modelName ??
+                                OpenRouterAPI.shared.selectedModel.code
+                            )
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                        }
+                        
+                        if message.reasoning != nil {
+                            reasoningView()
+                        }
+                        
+                        if let content = message.content, !content.isEmpty {
+                            Markdown(content)
                                 .markdownTheme(.defaultDark)
                                 .textSelection(.enabled)
                                 .frame(
@@ -49,44 +52,91 @@ struct AssistantMessageView: View {
                                     alignment: .leading
                                 )
                                 .opacity(1.0)
-                        } else {
-                            thinkingAssistant()
                         }
-                    }
-                }
-            }
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .padding([.top, .bottom])
-        }
-    }
-    
-    private func reasoningView() -> some View {
-        Group {
-            VStack(alignment: .leading) {
-                Markdown("Reasoning")
-                    .markdownTheme(.defaultDark)
-                    .bold()
-                    .tint(.secondary)
-                    .foregroundStyle(.secondary)
-                ScrollViewReader { proxy in
-                    ScrollView {
-                        Markdown(message.reasoning ?? "")
-                            .markdownTheme(.secondaryDark)
-                        Color.clear
-                            .frame(height: .zero)
-                            .id(bottomID)
-                    }
-                    .scrollIndicators(.hidden)
-                    .frame(maxHeight: 50)
-                    .onChange(of: message.reasoning) { _, _ in
-                        proxy.scrollTo(bottomID)
+                    } else {
+                        thinkingAssistant()
                     }
                 }
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
+        .padding([.top, .bottom])
+        .sheet(isPresented: $isReasoningExpanded) {
+            NavigationStack {
+                ZStack {
+                    reasoningBoxDetails()
+                }
+                .background(Material.ultraThinMaterial)
+                .toolbarTitleDisplayMode(.inlineLarge)
+                .navigationTitle("Reasoning")
+            }
+            .presentationDetents([.medium, .large])
+        }
+    }
+}
+    
+    private func reasoningView() -> some View {
+        Group {
+            VStack(alignment: .leading) {
+                Button {
+                    isReasoningExpanded.toggle()
+                } label: {
+                    HStack {
+                        Markdown("Reasoning")
+                            .markdownTheme(.defaultDark)
+                            .bold()
+                            .tint(.secondary)
+                            .foregroundStyle(.secondary)
+                        Image(systemName: "chevron.right")
+                            .imageScale(.small)
+                    }
+                }
+                .tint(.primary)
+                
+                reasoningBox()
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
         .padding()
         .glassEffect(.clear.interactive(), in: .rect(cornerRadius: 16.0))
+    }
+    
+    private func reasoningBox() -> some View {
+        ScrollViewReader { proxy in
+            ScrollView {
+                VStack(alignment: .leading, spacing: 0) {
+                    Markdown(message.reasoning ?? "")
+                        .markdownTheme(.secondaryDark)
+                    Color.clear
+                        .frame(height: .zero)
+                        .id(bottomID)
+                }
+            }
+            .scrollIndicators(.hidden)
+            .frame(maxHeight: 50)
+            .onChange(of: message.reasoning) { _, _ in
+                proxy.scrollTo(bottomID)
+            }
+        }
+    }
+    
+    private func reasoningBoxDetails() -> some View {
+        ScrollViewReader { proxy in
+            ScrollView {
+                VStack(alignment: .leading, spacing: 0) {
+                    Markdown(message.reasoning ?? "")
+                        .markdownTheme(.secondaryDark)
+                    Color.clear
+                        .frame(height: .zero)
+                        .id(bottomID)
+                }
+            }
+            .padding()
+            .scrollIndicators(.hidden)
+            .onChange(of: message.reasoning) { _, _ in
+                proxy.scrollTo(bottomID)
+            }
+        }
     }
     
     private func thinkingAssistant() -> some View {
