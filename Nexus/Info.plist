@@ -2,6 +2,12 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<key>OPENROUTER_API_KEY</key>
+	<string>$(OPENROUTER_API_KEY)</string>
+	<key>SUPABASE_API_KEY</key>
+	<string>$(SUPABASE_API_KEY)</string>
+	<key>EXA_API_KEY</key>
+	<string>$(EXA_API_KEY)</string>
 	<key>NSCalendarsWriteOnlyAccessUsageDescription</key>
 	<string>MercuryAI needs access to your calendar to create and manage events based on your requests</string>
 </dict>

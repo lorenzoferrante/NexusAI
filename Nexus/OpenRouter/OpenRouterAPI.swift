@@ -70,7 +70,7 @@ class OpenRouterAPI {
     
     static let shared = OpenRouterAPI()
     
-    private let API_KEY = ""
+    private let API_KEY = Secrets.openRouterAPIKey
     private let completionsURL = URL(string: "https://openrouter.ai/api/v1/chat/completions")!
     
     // MARK: - Bindings/State you already had
