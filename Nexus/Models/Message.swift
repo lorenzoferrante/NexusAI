@@ -45,6 +45,7 @@ struct Message: Codable, Identifiable, Hashable {
     let chatId: UUID
     let role: Role
     var content: String?
+    var reasoning: String?
     var tokenCount: Int?
     var finishReason: String?
     var imageURL: String?

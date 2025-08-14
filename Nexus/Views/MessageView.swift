@@ -16,7 +16,7 @@ struct MessageView: View {
         VStack {
             switch message.role {
             case .assistant:
-                assistantMessage
+                AssistantMessageView(message: message)
             case .user:
                 userMessage
             case .tool:

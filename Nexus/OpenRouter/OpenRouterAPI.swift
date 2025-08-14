@@ -51,6 +51,7 @@ class OpenRouterAPI {
                     let type: String?
                     let function: FunctionDelta?
                 }
+                let reasoning: String?
                 let content: String?
                 let toolCalls: [ToolCallDelta]?
             }
@@ -84,6 +85,22 @@ class OpenRouterAPI {
     var output: String = ""
     var chat: [Message] = []
     var selectedModel: OpenRouterModel = DefaultsManager.shared.getModel()
+
+    // MARK: - SSE keep-alive + long-lived session
+    private var sseSession: URLSession = {
+        let config = URLSessionConfiguration.default
+        // Allow slow starts and very long-lived streams
+        config.timeoutIntervalForRequest = 120 // seconds
+        config.timeoutIntervalForResource = 7 * 24 * 60 * 60 // 7 days
+        config.waitsForConnectivity = true
+        return URLSession(configuration: config)
+    }()
+
+    /// Updated whenever we receive any SSE activity (data or comment)
+    private var lastActivityAt: Date = Date()
+
+    /// Optional UI hint you can bind to show processing messages from server comments
+    var keepAliveHint: String? = nil
     
     // MARK: - Public entry point
     
@@ -113,7 +130,7 @@ class OpenRouterAPI {
         let request = try buildStreamRequest(excludingMessageId: placeholderId)
         
         // Start streaming
-        let (bytes, response) = try await URLSession.shared.bytes(for: request)
+        let (bytes, response) = try await sseSession.bytes(for: request)
         
         guard let http = response as? HTTPURLResponse else {
             throw makeError("Invalid HTTP response.")
@@ -142,16 +159,31 @@ class OpenRouterAPI {
         // We read Server-Sent Events line-by-line: each `data: {json}`.
         do {
             for try await line in bytes.lines {
-                if line.isEmpty || !line.hasPrefix("data:") { continue }
+                if line.isEmpty { continue }
+
+                // Handle SSE keep-alive comments (e.g., ": OPENROUTER PROCESSING")
+                if line.hasPrefix(":") {
+                    lastActivityAt = Date()
+                    keepAliveHint = String(line.dropFirst()).trimmingCharacters(in: .whitespaces)
+
+                    print("[DEBUG] SSE keep-alive: \(keepAliveHint ?? "")")
+
+                    continue
+                }
+
+                // Only parse actual SSE data events
+                guard line.hasPrefix("data:") else { continue }
                 let raw = line.dropFirst(5).trimmingCharacters(in: .whitespaces)
-                
+                lastActivityAt = Date()
+
                 if raw == "[DONE]" { break }
                 guard let data = raw.data(using: .utf8) else { continue }
-                
+
                 // Attempt to decode
                 let chunk: StreamChunk
                 do {
                     chunk = try decoder.decode(StreamChunk.self, from: data)
+                    lastActivityAt = Date()
                 } catch {
                     // Keep going on decode errors (useful for resilience).
 #if DEBUG
@@ -159,20 +191,26 @@ class OpenRouterAPI {
 #endif
                     continue
                 }
-                
+
                 if let usage = chunk.usage {
 #if DEBUG
                     print("[DEBUG] usage prompt=\(usage.promptTokens ?? 0) completion=\(usage.completionTokens ?? 0) total=\(usage.totalTokens ?? 0)")
 #endif
                 }
-                
+
                 guard let choice = chunk.choices.first else { continue }
                 
+                // 0) Reasoning content streaming
+                if let deltaReasoning = choice.delta.reasoning, !deltaReasoning.isEmpty {
+                    debugPrint("[DEBUG] Reasoning: \(deltaReasoning)")
+                    await appendReasoningToMessage(placeholderId: placeholderId, reasoning: deltaReasoning)
+                }
+
                 // 1) Normal content streaming
                 if let deltaText = choice.delta.content, !deltaText.isEmpty {
                     appendToMessage(placeholderId: placeholderId, content: deltaText)
                 }
-                
+
                 // 2) Tool call streaming: accumulate fragments per index
                 if let deltas = choice.delta.toolCalls, !deltas.isEmpty {
                     for d in deltas {
@@ -181,13 +219,13 @@ class OpenRouterAPI {
                         if let id = d.id { toolsByIndex[idx]?.id = id }
                         if let name = d.function?.name { toolsByIndex[idx]?.name = name }
                         if let frag = d.function?.arguments, !frag.isEmpty { toolsByIndex[idx]?.arguments += frag }
-                        
+
 #if DEBUG
                         print("[DEBUG] tool Δ idx=\(idx) id=\(d.id ?? "—") name=\(d.function?.name ?? "—") args+=\(d.function?.arguments ?? "")")
 #endif
                     }
                 }
-                
+
                 // 3) Finish handling
                 if let reason = choice.finishReason {
                     switch reason {
@@ -195,9 +233,11 @@ class OpenRouterAPI {
                         // Finalize tool calls, persist assistant-with-tool_calls, execute tools, and RECURSE.
                         let toolCalls = finalizedToolCalls(order: order, toolsByIndex: toolsByIndex)
                         try await handleToolCalls(toolCalls, placeholderId: placeholderId)
+                        keepAliveHint = nil
                         return // stop this stream; `handleToolCalls` kicks off the next one.
                     default:
                         // Normal stop (or other reasons like "length" or "content_filter")
+                        keepAliveHint = nil
                         return
                     }
                 }
@@ -332,7 +372,7 @@ class OpenRouterAPI {
             "stream": true,
             "reasoning": [
                 "effort": DefaultsManager.shared.getReasoningEffort(),
-                "exclude": true,
+                "exclude": false,
                 "enabled": DefaultsManager.shared.getReasoningEnabled()
             ]
         ]
@@ -361,6 +401,19 @@ class OpenRouterAPI {
             SupabaseManager.shared.currentMessages[idx].content = content
         } else {
             SupabaseManager.shared.currentMessages[idx].content! += content
+        }
+    }
+    
+    private func appendReasoningToMessage(placeholderId: UUID, reasoning: String) async {
+        guard let idx = SupabaseManager.shared.currentMessages.lastIndex(where: { $0.id == placeholderId }) else { return }
+        if SupabaseManager.shared.currentMessages[idx].reasoning == nil {
+            await MainActor.run {
+                SupabaseManager.shared.currentMessages[idx].reasoning = reasoning
+            }
+        } else {
+            await MainActor.run {
+                SupabaseManager.shared.currentMessages[idx].reasoning! += reasoning
+            }
         }
     }
     

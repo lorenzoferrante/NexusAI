@@ -45,6 +45,7 @@ struct SidebarView: View {
                 }
             }
         }
+        .toolbarTitleDisplayMode(.inlineLarge)
         .navigationDestination(isPresented: $createNewChat) {
             ContentView()
         }
@@ -147,20 +148,6 @@ struct SidebarView: View {
             .glassEffect(.regular.interactive(), in: .capsule)
             
             Spacer()
-            
-            Button {
-                Task {
-                    feedbackGenerator.impactOccurred()
-                    await supabaseClient.logOut()
-                }
-            } label: {
-                Label("Log out", systemImage: "person.fill.xmark")
-                    .labelStyle(.iconOnly)
-                    .tint(.secondary)
-            }
-            .padding()
-            .glassEffect(.regular.interactive(), in: .capsule)
-            
         }
         .padding()
     }
@@ -177,5 +164,7 @@ struct SidebarView: View {
 }
 
 #Preview {
-    SidebarView()
+    NavigationStack {
+        SidebarView()
+    }
 }

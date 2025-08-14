@@ -3,7 +3,6 @@
 //  Nexus
 //
 //  Created by Lorenzo Ferrante on 8/2/25.
-// Brilletta96_
 
 import Foundation
 import Supabase
