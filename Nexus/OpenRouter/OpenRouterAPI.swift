@@ -411,10 +411,22 @@ class OpenRouterAPI {
         request.setValue("text/event-stream", forHTTPHeaderField: "Accept")
         
         // Use your Message.asDictionary() to preserve formatting (text, images, files, tools).
+//        let messagesPayload = SupabaseManager.shared.currentMessages
+//            .filter { $0.id != excludingMessageId }
+//            .filter { $0.role != .tool }
+//            .map { $0.asDictionary() }
+        
+        /*
+         * There is a problem here:
+         * when the chat gets too long, I need to cut-out the old tool calls
+         * and keep only the last one, otherwhise I will encounter an empty response.
+         */
+        
         let messagesPayload = SupabaseManager.shared.currentMessages
             .filter { $0.id != excludingMessageId }
-//            .filter { $0.role != .tool }
+            .filter { !($0.role == .assistant && ($0.content?.isEmpty ?? true) && $0.toolCalls == nil) }
             .map { $0.asDictionary() }
+        
         
         var payload: [String: Any] = [
             "model": selectedModel.code,
