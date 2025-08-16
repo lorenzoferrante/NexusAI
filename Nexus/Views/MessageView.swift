@@ -172,6 +172,7 @@ struct MessageView: View {
         chatId: UUID(),
         role: .tool,
         content: "",
+        toolName: "search_web",
         createdAt: Date()
     )
     

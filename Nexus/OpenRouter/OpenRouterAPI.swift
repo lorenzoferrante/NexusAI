@@ -245,9 +245,24 @@ class OpenRouterAPI {
                 if let reason = choice.finishReason {
                     switch reason {
                     case "tool_calls":
+                        var newPlaceholderId = placeholderId
+                        
+                        if let message = SupabaseManager.shared.currentMessages.first(where: { $0.id == placeholderId }),
+                           let _ = message.content {
+                            SupabaseManager.shared.updateLastMessage()
+                            
+                            let newToolCallMessage = Message(
+                                chatId: SupabaseManager.shared.currentChat!.id,
+                                role: .tool,
+                                createdAt: Date()
+                            )
+                            SupabaseManager.shared.currentMessages.append(newToolCallMessage)
+                            newPlaceholderId = newToolCallMessage.id
+                        }
+                        
                         // Finalize tool calls, persist assistant-with-tool_calls, execute tools, and RECURSE.
                         let toolCalls = finalizedToolCalls(order: order, toolsByIndex: toolsByIndex)
-                        try await handleToolCalls(toolCalls, placeholderId: placeholderId)
+                        try await handleToolCalls(toolCalls, placeholderId: newPlaceholderId)
                         keepAliveHint = nil
                         return // stop this stream; `handleToolCalls` kicks off the next one.
                     default:
@@ -287,10 +302,9 @@ class OpenRouterAPI {
         
         // Update the placeholder message with the ID we already have
         if let idx = SupabaseManager.shared.currentMessages.firstIndex(where: { $0.id == placeholderId }) {
+            // Preserve any partial content that was streamed before tool calls
+            // and simply attach the toolCalls to the same assistant message.
             SupabaseManager.shared.currentMessages[idx].toolCalls = toolCalls
-            if SupabaseManager.shared.currentMessages[idx].content?.isEmpty == true {
-                SupabaseManager.shared.currentMessages[idx].content = nil
-            }
         }
         
         // 2) Execute tools (in parallel) and store each tool result message.
