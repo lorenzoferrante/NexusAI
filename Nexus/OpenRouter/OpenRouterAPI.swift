@@ -349,13 +349,13 @@ class OpenRouterAPI {
                         } catch {
                             resultContent = "Error executing calendar operation: \(error.localizedDescription)"
                         }
-                    } else if call.function?.name == "crawl_webpage" {
+                    } else if call.function?.name == "get_webpage_info" {
                         toolMsg.toolCallId = call.id
                         toolMsg.toolName = call.function?.name
                         
                         do {
                             let args = try JSONDecoder().decode(CrawlToolArgs.self, from: Data((call.function?.arguments ?? "").utf8))
-                            resultContent = try await ToolsManager().executeTool(named: "crawl_webpage", arguments: args.urls.joined(separator: ";"))
+                            resultContent = try await ToolsManager().executeTool(named: "get_webpage_info", arguments: args.urls.joined(separator: ";"))
                                 .trimmingCharacters(in: .whitespacesAndNewlines)
                             toolMsg.content = resultContent
                         } catch {

@@ -8,9 +8,9 @@
 import Foundation
 
 struct CrawlTool: Tool {
-    var name: String = "crawl_webpage"
-    
-    var description: String = "Obtain the content of a webpages with specified urls"
+    let name: String = "get_webpage_info"
+    let description: String = "Obtain the content of a webpages with specified urls"
+    let type = ToolType.crawlTool
     
     var parameters: [String: Any] {
         [
@@ -18,18 +18,22 @@ struct CrawlTool: Tool {
             "properties": [
                 "urls": [
                     "type": "array",
-                    "description": "array containing the urls of the webpages"
+                    "description": "Array of webpage URLs to fetch",
+                    "items": [
+                        "type": "string",
+                        "format": "uri"
+                    ],
+                    "minItems": 1
                 ]
             ],
-            "required": ["urls"]
+            "required": ["urls"],
+            "additionalProperties": false
         ]
     }
     
-    var type: ToolType = .crawlTool
+    struct Args: Decodable { let urls: [String] }
     
     func execute(arguments: String, others: String?) async throws -> String {
-        struct Args: Decodable { let urls: [String] }
-        
         // Prefer JSON args (as per tool schema), but support legacy ";"-separated string.
         let urls: [String]
         if let data = arguments.data(using: .utf8),
@@ -41,7 +45,9 @@ struct CrawlTool: Tool {
                 .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
                 .filter { !$0.isEmpty  }
         }
-        
+        if urls.isEmpty {
+            return "{\"error\":\"get_webpage_info: 'urls' cannot be empty.\"}"
+        }
         let exaClient = ExaClient()
         let results = try await exaClient.crawl(ids: urls)
         var stringResults = ""

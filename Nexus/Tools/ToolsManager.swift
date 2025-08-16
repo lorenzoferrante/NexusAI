@@ -40,7 +40,7 @@ class ToolsManager {
         self.tools = [
             WebSearchTool(),
             CalendarTool(),
-            CrawlTool()
+            CrawlTool(),
 //            DocLookupTool(),
         ]
     }
@@ -86,15 +86,6 @@ class ToolsManager {
                 "parameters": parameters
             ]
         ]
-    }
-    
-    func makeWebSearchTool() -> [String: Any] {
-        WebSearchTool().asFunctionDefinition()
-    }
-    
-    func executeWebSearch(_ query: String) async throws -> String {
-        let args = #"{"query":"\#(query)"}"#
-        return try await executeTool(named: "search_web", arguments: args)
     }
     
     func getToolTypeFrom(_ name: String) -> ToolType {
