@@ -245,6 +245,15 @@ class OpenRouterAPI {
                 if let reason = choice.finishReason {
                     switch reason {
                     case "tool_calls":
+                        /*
+                         * This is necessary becuase sometimes the assistant tell what he's going to do before making the tool call.
+                         * Without this we lose the partial message. So this is what we do here:
+                         * Before executing a tool call we:
+                         * 1) get the placeholderId message
+                         * 2) verify if the message has content (the assistant said something)
+                         * 3) update the UI and the supabase database
+                         * 4) create a new message with the tool role for the tool call
+                         */
                         var newPlaceholderId = placeholderId
                         
                         if let message = SupabaseManager.shared.currentMessages.first(where: { $0.id == placeholderId }),
