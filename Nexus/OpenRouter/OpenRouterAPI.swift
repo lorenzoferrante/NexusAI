@@ -36,6 +36,7 @@ class OpenRouterAPI {
     
     private struct WebSearchArgs: Codable { let query: String }
     private struct DocLookupArgs: Codable { let docID: String }
+    private struct CrawlToolArgs: Codable { let urls: [String] }
     
     // Server-Sent Events (SSE) decoded structure (kept tiny).
     private struct StreamChunk: Decodable {
@@ -188,8 +189,6 @@ class OpenRouterAPI {
 
                 if raw == "[DONE]" { break }
                 guard let data = raw.data(using: .utf8) else { continue }
-                
-                debugPrint("[DEBUG - chunk data] \(String(data: data, encoding: .utf8) ?? "")")
 
                 // Attempt to decode
                 let chunk: StreamChunk
@@ -218,7 +217,7 @@ class OpenRouterAPI {
                 
                 // 0) Reasoning content streaming
                 if let deltaReasoning = choice.delta.reasoning, !deltaReasoning.isEmpty {
-                    debugPrint("[DEBUG] Reasoning: \(deltaReasoning)")
+//                    debugPrint("[DEBUG] Reasoning: \(deltaReasoning)")
                     appendReasoningToMessage(placeholderId: placeholderId, reasoning: deltaReasoning)
                 }
 
@@ -349,6 +348,18 @@ class OpenRouterAPI {
                             toolMsg.content = resultContent
                         } catch {
                             resultContent = "Error executing calendar operation: \(error.localizedDescription)"
+                        }
+                    } else if call.function?.name == "crawl_webpage" {
+                        toolMsg.toolCallId = call.id
+                        toolMsg.toolName = call.function?.name
+                        
+                        do {
+                            let args = try JSONDecoder().decode(CrawlToolArgs.self, from: Data((call.function?.arguments ?? "").utf8))
+                            resultContent = try await ToolsManager().executeTool(named: "crawl_webpage", arguments: args.urls.joined(separator: ";"))
+                                .trimmingCharacters(in: .whitespacesAndNewlines)
+                            toolMsg.content = resultContent
+                        } catch {
+                            resultContent = "Error executing crawl webpage: \(error.localizedDescription)"
                         }
                     } else {
                         resultContent = #"{"error":"No handler for tool: \#(call.function?.name ?? "unknown")"}"#

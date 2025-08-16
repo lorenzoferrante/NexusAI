@@ -29,6 +29,11 @@ class SystemPrompts {
             - Generate concise summaries of search results with key findings \
             - Powered by Exa API for high-quality web search \
              \
+            **Crawl Web Pages** (`crawl_webpage`): \
+            - Given a raw URL you can extract the content of that web page \
+            - Retrieve the content of a web page \
+            - The user can give one or more URLs and you can extract the exact content of these
+            \
             **Calendar Management** (`manage_calendar`): \
             - Create calendar events with title, date/time, location, and notes \
             - Set reminders for events \

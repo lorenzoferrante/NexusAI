@@ -10,6 +10,7 @@ import SwiftUI
 
 enum ToolType: CaseIterable {
     case webSearch
+    case crawlTool
     case calendarTool
     case genericTool
     case docLookUp
@@ -38,7 +39,8 @@ class ToolsManager {
         // Register all available tools here
         self.tools = [
             WebSearchTool(),
-            CalendarTool()
+            CalendarTool(),
+            CrawlTool()
 //            DocLookupTool(),
         ]
     }
@@ -103,6 +105,8 @@ class ToolsManager {
         switch toolType {
         case .webSearch:
             return .init(name: "Performing web search", icon: "network", accentColor: .blue)
+        case .crawlTool:
+            return .init(name: "Reading web page content", icon: "text.page.badge.magnifyingglass", accentColor: .purple)
         case .docLookUp:
             return .init(name: "Analyzing document", icon: "text.document", accentColor: .yellow)
         case .calendarTool:

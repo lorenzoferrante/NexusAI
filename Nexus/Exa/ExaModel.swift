@@ -39,3 +39,9 @@ public struct ExaSearchPayload: Encodable {
         let context: Bool
     }
 }
+
+// Payload for `/contents` endpoint
+public struct ExaContentsPayload: Encodable {
+    let ids: [String]
+    let text: Bool?
+}
