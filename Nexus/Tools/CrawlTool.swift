@@ -48,8 +48,8 @@ struct CrawlTool: Tool {
         if urls.isEmpty {
             return "{\"error\":\"get_webpage_info: 'urls' cannot be empty.\"}"
         }
-        let exaClient = ExaClient()
-        let results = try await exaClient.crawl(ids: urls)
+        
+        let results = try await SupabaseManager.shared.crawl(ids: urls)
         var stringResults = ""
         
         for result in results {

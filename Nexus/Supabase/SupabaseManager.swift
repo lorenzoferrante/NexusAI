@@ -16,7 +16,7 @@ class SupabaseManager {
     static let shared = SupabaseManager()
     
     private let supabaseURLString = "https://mtsrrteuvxdzexlhcpoo.supabase.co"
-    private let supabaseKey = Secrets.supabaseAPIKey
+    private let supabaseKey = "sb_publishable_q4F3wwoAbW9hQUa2p7T26A_zvEx-pVO"
     let client: SupabaseClient
     
     public var isAuthenticated: Bool = false
@@ -357,7 +357,7 @@ class SupabaseManager {
                     .execute()
                 
                 debugPrint("[DEBUG] Deleted messages for chat \(chatId)")
-
+                
                 try await client.from("chats")
                     .delete()
                     .eq("id", value: chatId)
@@ -381,7 +381,7 @@ class SupabaseManager {
                     .execute()
                 
                 debugPrint("[DEBUG] Deleted messages for chat \(chatId)")
-
+                
                 try await client.from("chats")
                     .delete()
                     .eq("id", value: chatId)
@@ -392,5 +392,68 @@ class SupabaseManager {
                 debugPrint("[DEBUG - deleteChat] Error: \(error.localizedDescription)")
             }
         }
+    }
+    
+    public func ensureOpenRouterKey() async throws -> String {
+        struct KeyResponse: Decodable {
+            let key: String
+        }
+        
+        if let cached = Keychain.load(Keychain.OPENROUTER_USER_KEY) { return cached }
+        let response: KeyResponse = try await client.functions
+            .invoke(
+                "openrouter-issue-key",
+                options: FunctionInvokeOptions(
+                    body: ["forceRotate": false]
+                )
+            )
+        let key = response.key
+        Keychain.save(key, for: Keychain.OPENROUTER_USER_KEY)
+        return key
+    }
+    
+    @discardableResult
+    public func search(
+        query: String,
+        numResults: Int = 5,
+        type: String = "keyword",
+        includeText: Bool = true,
+        includeContext: Bool = true
+    ) async throws -> [ExaResult] {
+        let payload: [String: Any] = [
+            "query": query,
+            "type": type,
+            "numResults": numResults,
+            "contents": ["text": includeText, "context": includeContext]
+        ]
+        
+        let result: ExaResultsEnvelope = try await client.functions
+            .invoke(
+                "exa-search",
+                options: FunctionInvokeOptions(
+                    body: try JSONSerialization.data(withJSONObject: payload)
+                )
+            )
+        return result.results
+    }
+    
+    @discardableResult
+    public func crawl(
+        ids: [String],
+        includeText: Bool = true
+    ) async throws -> [ExaResult] {
+        let payload: [String: Any] = [
+            "ids": ids,
+            "text": includeText
+        ]
+        
+        let result: ExaResultsEnvelope = try await client.functions
+            .invoke(
+                "exa-crawl",
+                options: FunctionInvokeOptions(
+                    body: try JSONSerialization.data(withJSONObject: payload)
+                )
+            )
+        return result.results
     }
 }

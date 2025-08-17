@@ -78,7 +78,7 @@ class OpenRouterAPI {
     
     static let shared = OpenRouterAPI()
     
-    private let API_KEY = Secrets.openRouterAPIKey
+    private var API_KEY: String = ""
     private let completionsURL = URL(string: "https://openrouter.ai/api/v1/chat/completions")!
     
     // MARK: - Bindings/State you already had
@@ -108,6 +108,14 @@ class OpenRouterAPI {
 
     /// Optional UI hint you can bind to show processing messages from server comments
     var keepAliveHint: String? = nil
+    
+    // MARK: - Init
+    private init() {
+        Task {
+            API_KEY = try await SupabaseManager.shared.ensureOpenRouterKey()
+            debugPrint("[DEBUG - OpenRouterAPI init] obtained API_KEY: \(API_KEY)")
+        }
+    }
     
     // MARK: - Public entry point
     

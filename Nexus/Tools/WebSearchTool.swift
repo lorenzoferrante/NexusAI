@@ -44,30 +44,8 @@ struct WebSearchTool: Tool {
         }
         
         // Execute search
-        let results = try await ExaClient().search(query: query, numResults: 5)
+        let results = try await SupabaseManager.shared.search(query: query, numResults: 5)
         if results.isEmpty { return "No results found." }
-        
-//        let summaries: [String] = try await withThrowingTaskGroup(of: String.self) { group in
-//            for result in results {
-//                group.addTask {
-//                    let fileUUID = UUID().uuidString
-//                    
-//                    let content = (result.text ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
-//                    await SupabaseManager.shared.uploadFileToBucket(content, fileName: fileUUID)
-//                    return """
-//                        - URL: \(result.url)\
-//                        - Title: \(result.title ?? "No title avaiable")\
-//                        - DocID: \(fileUUID)
-//                        """
-//                }
-//            }
-//            
-//            var collected: [String] = []
-//            for try await s in group { collected.append(s) }
-//            return collected
-//        }
-//        
-//        return summaries.joined(separator: "\n\n")
         
         
         // Summarize each result (concurrently). Avoid async in .map by using a task group.

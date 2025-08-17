@@ -9,6 +9,12 @@ import Foundation
 
 // MARK: - Models
 
+public enum ExaClientError: Error {
+    case invalidURL
+    case badStatus(Int, String)
+    case decoding(Error)
+}
+
 public struct ExaResult: Decodable {
     public let id: String
     public let title: String?
@@ -45,3 +51,5 @@ public struct ExaContentsPayload: Encodable {
     let ids: [String]
     let text: Bool?
 }
+
+public struct ExaResultsEnvelope: Decodable { let results: [ExaResult] }

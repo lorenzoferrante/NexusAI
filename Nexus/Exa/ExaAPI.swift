@@ -10,12 +10,6 @@ import Foundation
 
 // MARK: - Client
 
-public enum ExaClientError: Error {
-    case invalidURL
-    case badStatus(Int, String)
-    case decoding(Error)
-}
-
 public final class ExaClient {
     private let apiKey: String = Secrets.exaAPIKey
     private let session: URLSession
