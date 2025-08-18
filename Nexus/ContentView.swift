@@ -8,6 +8,7 @@
 import SwiftUI
 
 struct ContentView: View {
+    @State var supabaseManager = SupabaseManager.shared
     @State var openRouterAPI = OpenRouterAPI.shared
     
     @State var showModelSelection: Bool = false
@@ -24,14 +25,6 @@ struct ContentView: View {
                     }
             }
             .toolbar {
-                ToolbarItem(placement: .topBarLeading) {
-                    Button {
-                        
-                    } label: {
-                        Image(systemName: "list.dash")
-                    }
-                }
-                
                 ToolbarItem(placement: .topBarTrailing) {
                     Button {
                         reset()
@@ -53,7 +46,7 @@ struct ContentView: View {
     
     private func bottomBar() -> some View {
         ZStack {
-            RaycastBottomView(prompt: $prompt)
+            BottomView(prompt: $prompt)
                 .fixedSize(horizontal: false, vertical: true)
                 .progressiveBlur()
         }
@@ -67,11 +60,12 @@ struct ContentView: View {
     let answer = """
         Hello! I'm an AI language model here to assist you with a variety of questions and topics. How can I help you today?
         """
+    let chatID = UUID()
     ContentView()
         .onAppear {
             openRouterAPI.chat = [
-                .init(role: .user, content: "Hello, who are you?"),
-                .init(role: .assistant, content: answer),
+                .init(chatId: chatID, role: .user, content: "Hello, who are you?", createdAt: Date()),
+                .init(chatId: chatID, role: .assistant, content: answer, createdAt: Date()),
             ]
         }
 }

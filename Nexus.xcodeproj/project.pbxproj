@@ -9,15 +9,36 @@
 /* Begin PBXBuildFile section */
 		50138E992E3A6A0000D17926 /* VariableBlur in Frameworks */ = {isa = PBXBuildFile; productRef = 50138E982E3A6A0000D17926 /* VariableBlur */; };
 		50E425DA2E3B703B009A418D /* MarkdownUI in Frameworks */ = {isa = PBXBuildFile; productRef = 50E425D92E3B703B009A418D /* MarkdownUI */; };
+		50F723532E3E25C0005D247A /* Auth in Frameworks */ = {isa = PBXBuildFile; productRef = 50F723522E3E25C0005D247A /* Auth */; };
+		50F723552E3E25C0005D247A /* Functions in Frameworks */ = {isa = PBXBuildFile; productRef = 50F723542E3E25C0005D247A /* Functions */; };
+		50F723572E3E25C0005D247A /* PostgREST in Frameworks */ = {isa = PBXBuildFile; productRef = 50F723562E3E25C0005D247A /* PostgREST */; };
+		50F723592E3E25C0005D247A /* Realtime in Frameworks */ = {isa = PBXBuildFile; productRef = 50F723582E3E25C0005D247A /* Realtime */; };
+		50F7235B2E3E25C0005D247A /* Storage in Frameworks */ = {isa = PBXBuildFile; productRef = 50F7235A2E3E25C0005D247A /* Storage */; };
+		50F723612E3E2788005D247A /* Supabase in Frameworks */ = {isa = PBXBuildFile; productRef = 50F723602E3E2788005D247A /* Supabase */; };
+		50FB263A2E42B65A0080475E /* MercuryAI.icon in Resources */ = {isa = PBXBuildFile; fileRef = 50FB26392E42B65A0080475E /* MercuryAI.icon */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		50E00D062E391CEF00E5A35B /* Nexus.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Nexus.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		50FB26392E42B65A0080475E /* MercuryAI.icon */ = {isa = PBXFileReference; lastKnownFileType = folder.iconcomposer.icon; path = MercuryAI.icon; sourceTree = "<group>"; };
 /* End PBXFileReference section */
+
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		50A186422E4BF96F0044FC2B /* Exceptions for "Nexus" folder in "Nexus" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = 50E00D052E391CEF00E5A35B /* Nexus */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		50E00D082E391CEF00E5A35B /* Nexus */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				50A186422E4BF96F0044FC2B /* Exceptions for "Nexus" folder in "Nexus" target */,
+			);
 			path = Nexus;
 			sourceTree = "<group>";
 		};
@@ -30,6 +51,12 @@
 			files = (
 				50138E992E3A6A0000D17926 /* VariableBlur in Frameworks */,
 				50E425DA2E3B703B009A418D /* MarkdownUI in Frameworks */,
+				50F7235B2E3E25C0005D247A /* Storage in Frameworks */,
+				50F723552E3E25C0005D247A /* Functions in Frameworks */,
+				50F723612E3E2788005D247A /* Supabase in Frameworks */,
+				50F723592E3E25C0005D247A /* Realtime in Frameworks */,
+				50F723532E3E25C0005D247A /* Auth in Frameworks */,
+				50F723572E3E25C0005D247A /* PostgREST in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -39,7 +66,9 @@
 		50E00CFD2E391CEF00E5A35B = {
 			isa = PBXGroup;
 			children = (
+				50FB26392E42B65A0080475E /* MercuryAI.icon */,
 				50E00D082E391CEF00E5A35B /* Nexus */,
+				50F7235F2E3E2788005D247A /* Frameworks */,
 				50E00D072E391CEF00E5A35B /* Products */,
 			);
 			sourceTree = "<group>";
@@ -50,6 +79,13 @@
 				50E00D062E391CEF00E5A35B /* Nexus.app */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		50F7235F2E3E2788005D247A /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Frameworks;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -74,6 +110,12 @@
 			packageProductDependencies = (
 				50138E982E3A6A0000D17926 /* VariableBlur */,
 				50E425D92E3B703B009A418D /* MarkdownUI */,
+				50F723522E3E25C0005D247A /* Auth */,
+				50F723542E3E25C0005D247A /* Functions */,
+				50F723562E3E25C0005D247A /* PostgREST */,
+				50F723582E3E25C0005D247A /* Realtime */,
+				50F7235A2E3E25C0005D247A /* Storage */,
+				50F723602E3E2788005D247A /* Supabase */,
 			);
 			productName = Nexus;
 			productReference = 50E00D062E391CEF00E5A35B /* Nexus.app */;
@@ -106,6 +148,7 @@
 			packageReferences = (
 				50138E972E3A6A0000D17926 /* XCRemoteSwiftPackageReference "VariableBlur" */,
 				50E425D82E3B703B009A418D /* XCRemoteSwiftPackageReference "swift-markdown-ui" */,
+				50F723512E3E25C0005D247A /* XCRemoteSwiftPackageReference "supabase-swift" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 50E00D072E391CEF00E5A35B /* Products */;
@@ -122,6 +165,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				50FB263A2E42B65A0080475E /* MercuryAI.icon in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -262,13 +306,16 @@
 		50E00D122E391CF100E5A35B /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_APPICON_NAME = MercuryAI;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = Nexus/Nexus.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = XYA85FESD6;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = Nexus/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = MercuryAI;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -287,7 +334,7 @@
 				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
-				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = nonisolated;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 				SWIFT_VERSION = 5.0;
@@ -298,13 +345,16 @@
 		50E00D132E391CF100E5A35B /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_APPICON_NAME = MercuryAI;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = Nexus/Nexus.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = XYA85FESD6;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = Nexus/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = MercuryAI;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -323,7 +373,7 @@
 				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
-				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = nonisolated;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 				SWIFT_VERSION = 5.0;
@@ -371,6 +421,14 @@
 				minimumVersion = 2.4.1;
 			};
 		};
+		50F723512E3E25C0005D247A /* XCRemoteSwiftPackageReference "supabase-swift" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/supabase/supabase-swift";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 2.5.1;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -383,6 +441,36 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 50E425D82E3B703B009A418D /* XCRemoteSwiftPackageReference "swift-markdown-ui" */;
 			productName = MarkdownUI;
+		};
+		50F723522E3E25C0005D247A /* Auth */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 50F723512E3E25C0005D247A /* XCRemoteSwiftPackageReference "supabase-swift" */;
+			productName = Auth;
+		};
+		50F723542E3E25C0005D247A /* Functions */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 50F723512E3E25C0005D247A /* XCRemoteSwiftPackageReference "supabase-swift" */;
+			productName = Functions;
+		};
+		50F723562E3E25C0005D247A /* PostgREST */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 50F723512E3E25C0005D247A /* XCRemoteSwiftPackageReference "supabase-swift" */;
+			productName = PostgREST;
+		};
+		50F723582E3E25C0005D247A /* Realtime */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 50F723512E3E25C0005D247A /* XCRemoteSwiftPackageReference "supabase-swift" */;
+			productName = Realtime;
+		};
+		50F7235A2E3E25C0005D247A /* Storage */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 50F723512E3E25C0005D247A /* XCRemoteSwiftPackageReference "supabase-swift" */;
+			productName = Storage;
+		};
+		50F723602E3E2788005D247A /* Supabase */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 50F723512E3E25C0005D247A /* XCRemoteSwiftPackageReference "supabase-swift" */;
+			productName = Supabase;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

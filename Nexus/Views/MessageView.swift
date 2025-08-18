@@ -10,43 +10,94 @@ import UIKit
 import MarkdownUI
 
 struct MessageView: View {
-    @State var message: Message
+    let message: Message
     
     var body: some View {
         VStack {
             switch message.role {
             case .assistant:
-                assistantMessage
+                AssistantMessageView(message: message)
             case .user:
                 userMessage
+            case .tool:
+                toolMessage
+            default:
+                EmptyView()
+                    .frame(width: .zero)
             }
         }
         .frame(maxWidth: .infinity)
     }
     
     private var userMessage: some View {
-        VStack(alignment: .trailing) {
-            if let imageData = message.imageData {
-                HStack {
-                    Spacer()
-                    Image(base64DataString: imageData)
-                        .resizable()
-                        .scaledToFit()
-                        .clipShape(RoundedRectangle(cornerRadius: 10))
-                        .frame(maxHeight: 100)
+        HStack {
+            Spacer()
+            
+            VStack(alignment: .trailing) {
+                if let imageURL = message.imageURL {
+                    HStack {
+                        Spacer()
+                        AsyncImage(url: URL(string: imageURL)!) { result in
+                            result.image?
+                                .resizable()
+                                .scaledToFit()
+                                .clipShape(RoundedRectangle(cornerRadius: 10))
+                                .frame(maxHeight: 100)
+                        }
+                    }
                 }
+                Markdown(message.content ?? "")
+                    .markdownTheme(.defaultDark)
+                    .textSelection(.enabled)
             }
-            Markdown(message.content)
-                .textSelection(.enabled)
+            //        .frame(maxWidth: .infinity, alignment: .trailing)
+            .padding()
+            .glassEffect(.regular.interactive(), in: .rect(cornerRadius: 16))
         }
-        .frame(maxWidth: .infinity, alignment: .trailing)
-        .padding()
     }
     
     private var assistantMessage: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            if !message.content.isEmpty {
+        Group {
+            VStack(alignment: .leading, spacing: 8) {
                 withAnimation {
+                    Group {
+                        if !message.content!.isEmpty {
+                            HStack {
+                                Image(systemName: "brain.fill")
+                                    .foregroundColor(.secondary)
+                                Text(
+                                    message.modelName ??
+                                    OpenRouterAPI.shared.selectedModel.code
+                                )
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                            }
+                            
+                            Markdown(message.content!)
+                                .markdownTheme(.defaultDark)
+                                .textSelection(.enabled)
+                                .frame(
+                                    maxWidth: .infinity,
+                                    alignment: .leading
+                                )
+                                .opacity(1.0)
+                        } else {
+                            thinkingAssistant()
+                        }
+                    }
+                }
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding([.top, .bottom])
+//            .glassEffect(.regular.interactive(), in: .rect(cornerRadius: 16))
+        }
+    }
+    
+    private func thinkingAssistant() -> some View {
+        Group {
+            if let lastMessage = SupabaseManager.shared.currentMessages.last,
+               lastMessage.id == message.id {
+                VStack(alignment: .leading) {
                     HStack {
                         Image(systemName: "brain.fill")
                             .foregroundColor(.secondary)
@@ -54,36 +105,90 @@ struct MessageView: View {
                             .font(.caption)
                             .foregroundStyle(.secondary)
                     }
-                }
-            }
-            if message.content.isEmpty {
-                HStack {
-                    ThinkingIndicatorView()
-                    Markdown("Thinking...")
+                    
+                    HStack {
+                        ThinkingIndicatorView()
+                        Markdown("Thinking...")
+                            .markdownTheme(.defaultDark)
+                            .frame(
+                                maxWidth: .infinity,
+                                alignment: .leading
+                            )
+                            .opacity(1.0)
+                    }
                 }
             } else {
-                Markdown(message.content)
-                    .textSelection(.enabled)
-                    .frame(
-                        maxWidth: .infinity,
-                        alignment: .leading
-                    )
+                EmptyView()
+                    .frame(width: .zero)
+                    .padding(0)
             }
         }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .padding()
-        .glassEffect(.regular.interactive(), in: .rect(cornerRadius: 16))
+    }
+    
+    // Changed from func to computed property and consolidated into one builder.
+    private var toolMessage: some View {
+        Group {
+            if let toolName = message.toolName {
+                let toolType = ToolsManager.shared.getToolTypeFrom(toolName)
+                let toolInfo = ToolsManager.shared.getInfoFor(toolType)
+                
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("Using tool".uppercased())
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                    
+                    HStack {
+                        Image(systemName: toolInfo.icon)
+                            .foregroundColor(toolInfo.accentColor)
+                        Text(toolInfo.name)
+                            .foregroundStyle(.white)
+                    }
+                    
+                    if let toolArgs = message.toolArgs {
+                        Text(toolArgs)
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding()
+                .glassEffect(.regular.interactive(), in: .rect(cornerRadius: 16))
+            } else {
+                EmptyView()
+            }
+        }
     }
 }
 
 #Preview {
     @Previewable @State var message: Message = .init(
+        chatId: UUID(),
         role: .user,
-        content: "Hello this is a user message with an image attached!")
+        content: "Hello this is a user message with an image attached!",
+        createdAt: Date()
+    )
+    
+    @Previewable @State var toolMessage: Message = .init(
+        chatId: UUID(),
+        role: .tool,
+        content: "",
+        toolName: "search_web",
+        createdAt: Date()
+    )
+    
+    @Previewable @State var emptyAssistant: Message = .init(
+        chatId: UUID(),
+        role: .assistant,
+        content: "",
+        createdAt: Date()
+    )
     
     @Previewable @State var assistantMessage: Message = .init(
+        chatId: UUID(),
         role: .assistant,
-        content: "Hello I am a simple AI assistant")
+        content: "Hello I am a simple AI assistant",
+        createdAt: Date()
+    )
     
     ZStack {
         BackView()
@@ -92,9 +197,18 @@ struct MessageView: View {
                 .padding()
                 .preferredColorScheme(.dark)
             
+            MessageView(message: toolMessage)
+                .padding()
+                .preferredColorScheme(.dark)
+            
+            MessageView(message: emptyAssistant)
+                .padding()
+                .preferredColorScheme(.dark)
+            
             MessageView(message: assistantMessage)
                 .padding()
                 .preferredColorScheme(.dark)
+            
         }
         
     }

@@ -1,8 +1,20 @@
 //
-//  OpenRouterAPI.swift
+//  OpenRouterAPI.swift (refactored for clarity)
 //  Nexus
 //
-//  Created by Lorenzo Ferrante on 7/29/25.
+//  Created by ChatGPT on 2025-08-10.
+//
+//  Goals:
+//  - Make streaming + tool-calls very clear and debuggable.
+//  - Keep compatibility with your existing `Message` model and Supabase/Tools managers.
+//  - Properly accumulate streamed tool_calls and send them as ONE assistant message.
+//  - Send tool results as `role:"tool"` messages with the correct `tool_call_id` and `name`.
+//  - Loop cleanly to continue the conversation after tools.
+//
+//  Notes:
+//  - This class is @MainActor and @Observable like your original.
+//  - We keep `Message.asDictionary()` to preserve your content (text/image/file/tool) shaping.
+//  - SSE parsing uses `URLSession.AsyncBytes.lines` for simple, line-by-line handling.
 //
 
 import Foundation
@@ -13,197 +25,662 @@ import PhotosUI
 @MainActor
 class OpenRouterAPI {
     
+    // MARK: - Types
+    
+    /// Internal builder to accumulate streamed tool call fragments.
+    private struct PendingToolCall {
+        var id: String?
+        var name: String?
+        var arguments: String = ""  // concatenated JSON string fragments
+    }
+    
+    private struct WebSearchArgs: Codable { let query: String }
+    private struct DocLookupArgs: Codable { let docID: String }
+    private struct CrawlToolArgs: Codable { let urls: [String] }
+    
+    // Server-Sent Events (SSE) decoded structure (kept tiny).
+    private struct StreamChunk: Decodable {
+        struct Choice: Decodable {
+            struct Delta: Decodable {
+                struct ToolCallDelta: Decodable {
+                    struct FunctionDelta: Decodable {
+                        let name: String?
+                        let arguments: String?
+                    }
+                    let index: Int?
+                    let id: String?
+                    let type: String?
+                    let function: FunctionDelta?
+                }
+                let reasoning: String?
+                let content: String?
+                let toolCalls: [ToolCallDelta]?
+            }
+            let delta: Delta
+            let finishReason: String?
+        }
+        let choices: [Choice]
+        struct Usage: Decodable {
+            let promptTokens: Int?
+            let completionTokens: Int?
+            let totalTokens: Int?
+            
+            private enum CodingKeys: String, CodingKey {
+                case promptTokens = "prompt_tokens"
+                case completionTokens = "completion_tokens"
+                case totalTokens = "total_tokens"
+            }
+        }
+        let usage: Usage?
+    }
+    
+    // MARK: - Config
+    
     static let shared = OpenRouterAPI()
     
-    private let API_KEY = ""
+    private var API_KEY: String = ""
     private let completionsURL = URL(string: "https://openrouter.ai/api/v1/chat/completions")!
+    
+    // MARK: - Bindings/State you already had
     
     var selectedFileURL: URL?
     var selectedImage: UIImage? = nil
     var photoPickerItems: PhotosPickerItem? = nil {
-        didSet {
-            Task {
-                await loadImage()
-            }
-        }
+        didSet { Task { await loadImage() } }
     }
+    
     var output: String = ""
     var chat: [Message] = []
     var selectedModel: OpenRouterModel = DefaultsManager.shared.getModel()
+
+    // MARK: - SSE keep-alive + long-lived session
+    private var sseSession: URLSession = {
+        let config = URLSessionConfiguration.default
+        // Allow slow starts and very long-lived streams
+        config.timeoutIntervalForRequest = 120 // seconds
+        config.timeoutIntervalForResource = 7 * 24 * 60 * 60 // 7 days
+        config.waitsForConnectivity = true
+        return URLSession(configuration: config)
+    }()
+
+    /// Updated whenever we receive any SSE activity (data or comment)
+    private var lastActivityAt: Date = Date()
+
+    /// Optional UI hint you can bind to show processing messages from server comments
+    var keepAliveHint: String? = nil
     
-    func stream(isWebSearch: Bool = false) async throws {
+    // MARK: - Init
+    private init() {
+        Task {
+            API_KEY = try await SupabaseManager.shared.ensureOpenRouterKey()
+            debugPrint("[DEBUG - OpenRouterAPI init] obtained API_KEY: \(API_KEY)")
+        }
+    }
+    
+    // MARK: - Public entry point
+    
+    /// Starts a streamed completion, creating a placeholder assistant message immediately.
+    /// If the model requests tools, this method will execute them and then *continue streaming*
+    /// by starting a new streamed request (with a new placeholder) until a normal stop.
+    func stream() async throws {
+        guard let currentChat = SupabaseManager.shared.currentChat else { return }
+        
+        let userLocation = SupabaseManager.shared.profile?.country
+        let systemMessage = SystemPrompts.shared.getSystemMessage(currentChat.id, userLocation: userLocation ?? "")
+        SupabaseManager.shared.currentMessages.insert(systemMessage, at: 0)
+        
+        // 1) Insert a placeholder assistant message in DB/UI to stream deltas into.
+        let placeholder = Message(
+            chatId: currentChat.id,
+            role: .assistant,
+            content: "",
+            createdAt: Date(),
+        )
+        try await SupabaseManager.shared.addMessageToChat(placeholder)
+        
+        // 2) Perform streaming into that placeholder.
+        try await performStreaming(intoPlaceholderId: placeholder.id)
+    }
+    
+    // MARK: - Core streaming
+    
+    private func performStreaming(intoPlaceholderId placeholderId: UUID) async throws {
+        // Build request from current messages, excluding the placeholder we just created.
+        let request = try buildStreamRequest(excludingMessageId: placeholderId)
+        
+        // Start streaming
+        let (bytes, response) = try await sseSession.bytes(for: request)
+        
+        guard let http = response as? HTTPURLResponse else {
+            throw makeError("Invalid HTTP response.")
+        }
+        guard (200..<300).contains(http.statusCode) else {
+            // Try to read a bit of the body (if it's not SSE) for debugging.
+            var bodySnippet = ""
+            do {
+                var collected = Data()
+                for try await b in bytes {
+                    collected.append(b)
+                    if collected.count > 64 * 1024 { break } // cap 64KB
+                }
+                bodySnippet = String(data: collected, encoding: .utf8) ?? ""
+            } catch { /* ignore */ }
+            throw makeError("HTTP \(http.statusCode). Body: \(bodySnippet)")
+        }
+        
+        let decoder = JSONDecoder()
+        decoder.keyDecodingStrategy = .convertFromSnakeCase
+        
+        // Accumulate tool calls by index as they stream in.
+        var toolsByIndex: [Int: PendingToolCall] = [:]
+        var order: [Int] = []
+        
+        // We read Server-Sent Events line-by-line: each `data: {json}`.
+        do {
+            for try await line in bytes.lines {
+                if line.isEmpty { continue }
+
+                // Handle SSE keep-alive comments (e.g., ": OPENROUTER PROCESSING")
+                if line.hasPrefix(":") {
+                    lastActivityAt = Date()
+                    keepAliveHint = String(line.dropFirst()).trimmingCharacters(in: .whitespaces)
+
+                    print("[DEBUG] SSE keep-alive: \(keepAliveHint ?? "")")
+
+                    continue
+                }
+
+                // Only parse actual SSE data events
+                guard line.hasPrefix("data:") else { continue }
+                let raw = line.dropFirst(5).trimmingCharacters(in: .whitespaces)
+                lastActivityAt = Date()
+
+                if raw == "[DONE]" { break }
+                guard let data = raw.data(using: .utf8) else { continue }
+
+                // Attempt to decode
+                let chunk: StreamChunk
+                do {
+                    chunk = try decoder.decode(StreamChunk.self, from: data)
+                    lastActivityAt = Date()
+                } catch {
+                    // Keep going on decode errors (useful for resilience).
+#if DEBUG
+                    print("[DEBUG] Stream decode error: \(error)\nRAW: \(raw)")
+#endif
+                    continue
+                }
+
+                if let usage = chunk.usage {
+#if DEBUG
+                    print("[DEBUG] usage prompt=\(usage.promptTokens ?? 0) completion=\(usage.completionTokens ?? 0) total=\(usage.totalTokens ?? 0)")
+#endif
+                    if SupabaseManager.shared.currentChat != nil {
+//                        debugPrint("[DEBUG] Total tokens: \(usage.totalTokens ?? 0)")
+                        SupabaseManager.shared.currentChat!.totalTokens = usage.totalTokens ?? 0
+                    }
+                }
+
+                guard let choice = chunk.choices.first else { continue }
+                
+                // 0) Reasoning content streaming
+                if let deltaReasoning = choice.delta.reasoning, !deltaReasoning.isEmpty {
+//                    debugPrint("[DEBUG] Reasoning: \(deltaReasoning)")
+                    appendReasoningToMessage(placeholderId: placeholderId, reasoning: deltaReasoning)
+                }
+
+                // 1) Normal content streaming
+                if let deltaText = choice.delta.content, !deltaText.isEmpty {
+                    appendToMessage(placeholderId: placeholderId, content: deltaText)
+                }
+
+                // 2) Tool call streaming: accumulate fragments per index
+                if let deltas = choice.delta.toolCalls, !deltas.isEmpty {
+                    for d in deltas {
+                        let idx = d.index ?? 0
+                        if toolsByIndex[idx] == nil { toolsByIndex[idx] = PendingToolCall(); order.append(idx) }
+                        if let id = d.id { toolsByIndex[idx]?.id = id }
+                        if let name = d.function?.name { toolsByIndex[idx]?.name = name }
+                        if let frag = d.function?.arguments, !frag.isEmpty { toolsByIndex[idx]?.arguments += frag }
+
+#if DEBUG
+                        print("[DEBUG] tool Δ idx=\(idx) id=\(d.id ?? "—") name=\(d.function?.name ?? "—") args+=\(d.function?.arguments ?? "")")
+#endif
+                    }
+                }
+
+                // 3) Finish handling
+                if let reason = choice.finishReason {
+                    switch reason {
+                    case "tool_calls":
+                        /*
+                         * This is necessary becuase sometimes the assistant tell what he's going to do before making the tool call.
+                         * Without this we lose the partial message. So this is what we do here:
+                         * Before executing a tool call we:
+                         * 1) get the placeholderId message
+                         * 2) verify if the message has content (the assistant said something)
+                         * 3) update the UI and the supabase database
+                         * 4) create a new message with the tool role for the tool call
+                         */
+                        var newPlaceholderId = placeholderId
+                        
+                        if let message = SupabaseManager.shared.currentMessages.first(where: { $0.id == placeholderId }),
+                           let _ = message.content {
+                            SupabaseManager.shared.updateLastMessage()
+                            
+                            let newToolCallMessage = Message(
+                                chatId: SupabaseManager.shared.currentChat!.id,
+                                role: .tool,
+                                createdAt: Date()
+                            )
+                            SupabaseManager.shared.currentMessages.append(newToolCallMessage)
+                            newPlaceholderId = newToolCallMessage.id
+                        }
+                        
+                        // Finalize tool calls, persist assistant-with-tool_calls, execute tools, and RECURSE.
+                        let toolCalls = finalizedToolCalls(order: order, toolsByIndex: toolsByIndex)
+                        try await handleToolCalls(toolCalls, placeholderId: newPlaceholderId)
+                        keepAliveHint = nil
+                        return // stop this stream; `handleToolCalls` kicks off the next one.
+                    default:
+                        // Normal stop (or other reasons like "length" or "content_filter")
+                        keepAliveHint = nil
+                        return
+                    }
+                }
+            }
+        } catch is CancellationError {
+            // Bubble up cancellation for callers to decide.
+            throw makeError("Streaming cancelled.")
+        } catch {
+            throw makeError("Streaming failed: \(error.localizedDescription)")
+        }
+    }
+    
+    /// Convert accumulated pending calls into your `ToolCall` model array.
+    private func finalizedToolCalls(order: [Int], toolsByIndex: [Int: PendingToolCall]) -> [ToolCall] {
+        order.compactMap { idx in
+            guard let b = toolsByIndex[idx],
+                  let id = b.id,
+                  let name = b.name
+            else { return nil }
+            return ToolCall(
+                id: id,
+                type: "function",
+                function: ToolFunction(name: name, arguments: b.arguments)
+            )
+        }
+    }
+    
+    // MARK: - Tool calls pipeline
+    
+    private func handleToolCalls(_ toolCalls: [ToolCall], placeholderId: UUID) async throws {
+        guard let currentChat = SupabaseManager.shared.currentChat else { return }
+        
+        // Update the placeholder message with the ID we already have
+        if let idx = SupabaseManager.shared.currentMessages.firstIndex(where: { $0.id == placeholderId }) {
+            // Preserve any partial content that was streamed before tool calls
+            // and simply attach the toolCalls to the same assistant message.
+            SupabaseManager.shared.currentMessages[idx].toolCalls = toolCalls
+        }
+        
+        // 2) Execute tools (in parallel) and store each tool result message.
+        try await withThrowingTaskGroup(of: Message.self) { group in
+            for call in toolCalls {
+                group.addTask {
+                    let resultContent: String
+                    var toolMsg: Message = Message(
+                        chatId: currentChat.id,
+                        role: .tool,
+                        createdAt: Date()
+                    )
+                    
+                    if call.function?.name == "search_web" {
+                        // Execute your web search tool
+                        do {
+                            let args = try JSONDecoder().decode(WebSearchArgs.self, from: Data((call.function?.arguments ?? "").utf8))
+                            let lastUserMessage = await SupabaseManager.shared.currentMessages.last(where: { $0.role == .user })!.content
+                                
+                            toolMsg.toolCallId = call.id
+                            toolMsg.toolName = call.function?.name
+                            toolMsg.toolArgs = "Searching for \"\(args.query)\""
+                            
+                            resultContent = try await ToolsManager().executeTool(named: "search_web", arguments: args.query, other: lastUserMessage)
+                                .trimmingCharacters(in: .whitespacesAndNewlines)
+                            toolMsg.content = resultContent
+                        } catch {
+                            resultContent = "Error executing web search: \(error.localizedDescription)"
+                        }
+                    } else if call.function?.name == "doc_lookup"  {
+                        // Execute doc lookup tool
+                        toolMsg.toolCallId = call.id
+                        toolMsg.toolName = call.function?.name
+                        
+                        do {
+                            let args = try JSONDecoder().decode(DocLookupArgs.self, from: Data((call.function?.arguments ?? "").utf8))
+                            let lastUserMessage = await SupabaseManager.shared.currentMessages.last(where: { $0.role == .user })!.content
+                            resultContent = try await ToolsManager().executeTool(named: "doc_lookup", arguments: args.docID, other: lastUserMessage)
+                                .trimmingCharacters(in: .whitespacesAndNewlines)
+                            toolMsg.content = resultContent
+                        } catch {
+                            resultContent = "Error executing doc lookup: \(error.localizedDescription)"
+                        }
+                    } else if call.function?.name == "manage_calendar" {
+                        // Execute calendar tool
+                        toolMsg.toolCallId = call.id
+                        toolMsg.toolName = call.function?.name
+                        
+                        do {
+                            // Pass the arguments directly as they contain all needed info
+                            resultContent = try await ToolsManager().executeTool(
+                                named: "manage_calendar",
+                                arguments: call.function?.arguments ?? "{}"
+                            ).trimmingCharacters(in: .whitespacesAndNewlines)
+                            toolMsg.content = resultContent
+                        } catch {
+                            resultContent = "Error executing calendar operation: \(error.localizedDescription)"
+                        }
+                    } else if call.function?.name == "get_webpage_info" {
+                        toolMsg.toolCallId = call.id
+                        toolMsg.toolName = call.function?.name
+                        
+                        do {
+                            let args = try JSONDecoder().decode(CrawlToolArgs.self, from: Data((call.function?.arguments ?? "").utf8))
+                            resultContent = try await ToolsManager().executeTool(named: "get_webpage_info", arguments: args.urls.joined(separator: ";"))
+                                .trimmingCharacters(in: .whitespacesAndNewlines)
+                            toolMsg.content = resultContent
+                        } catch {
+                            resultContent = "Error executing crawl webpage: \(error.localizedDescription)"
+                        }
+                    } else {
+                        resultContent = #"{"error":"No handler for tool: \#(call.function?.name ?? "unknown")"}"#
+                    }
+                    
+                    try await SupabaseManager.shared.addMessageToChat(toolMsg)
+                    return toolMsg
+                }
+            }
+            
+            // Drain the group to ensure all tool messages are saved before continuing.
+            for try await _ in group { /* no-op */ }
+        }
+        
+        // 3) Continue the conversation: start a fresh streamed request.
+        try await stream()
+    }
+    
+    // MARK: - Request builder
+    
+    private func buildStreamRequest(excludingMessageId: UUID) throws -> URLRequest {
         var request = URLRequest(url: completionsURL)
         request.httpMethod = "POST"
         request.setValue("Bearer \(API_KEY)", forHTTPHeaderField: "Authorization")
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.setValue("text/event-stream", forHTTPHeaderField: "Accept")
         
-        let messageDicts = chat.map { $0.asDictionary() }
-        var payload: [String: Any] = [:]
-        print(messageDicts)
-        if isWebSearch {
-            payload = [
-                "model": selectedModel.code,
-                "messages": messageDicts,
-                "plugins": [["id": "web"]],
-                "stream": true,
-                "reasoning": [
-                    "effort": "medium",
-                    "enabled": true,
-                    "exclude": true,
-                ]
+        // Use your Message.asDictionary() to preserve formatting (text, images, files, tools).
+//        let messagesPayload = SupabaseManager.shared.currentMessages
+//            .filter { $0.id != excludingMessageId }
+//            .filter { $0.role != .tool }
+//            .map { $0.asDictionary() }
+        
+        /*
+         * There is a problem here:
+         * when the chat gets too long, I need to cut-out the old tool calls
+         * and keep only the last one, otherwhise I will encounter an empty response.
+         */
+        
+        let messagesPayload = SupabaseManager.shared.currentMessages
+            .filter { $0.id != excludingMessageId }
+            .filter { !($0.role == .assistant && ($0.content?.isEmpty ?? true) && $0.toolCalls == nil) }
+            .map { $0.asDictionary() }
+        
+        
+        var payload: [String: Any] = [
+            "model": selectedModel.code,
+            "messages": messagesPayload,
+            "stream": true,
+            "reasoning": [
+                "effort": DefaultsManager.shared.getReasoningEffort(),
+                "exclude": false,
+                "enabled": DefaultsManager.shared.getReasoningEnabled()
+            ],
+            "usage": [
+                "include": true
             ]
-        } else {
-            payload = [
-                "model": selectedModel.code,
-                "messages": messageDicts,
-                "stream": true,
-                "reasoning": [
-                    "effort": "medium",
-                    "enabled": true,
-                    "exclude": true,
-                ]
-            ]
-        }
+        ]
+        
+        // Tools
+        let tools = ToolsManager().getAllToolDefinitions()
+        payload["tools"] = tools
+        payload["tool_choice"] = "auto"
         
         request.httpBody = try JSONSerialization.data(withJSONObject: payload)
-        print(String(data: try! JSONSerialization.data(withJSONObject: payload, options: .prettyPrinted), encoding: .utf8)!)
         
-        let (bytes, response) = try await URLSession.shared.bytes(for: request)
-        guard let httpResponse = response as? HTTPURLResponse else {
-            print("[DEBUG] Error: invalid response")
-            return
+        // Debug pretty payload
+        if let pretty = try? JSONSerialization.data(withJSONObject: payload, options: .prettyPrinted),
+           let s = String(data: pretty, encoding: .utf8) {
+            print("[DEBUG] Request payload:\n\(s)")
         }
         
-        if httpResponse.statusCode != 200 {
-            print("[DEBUG] Error: invalid code (\(httpResponse.statusCode))")
-            // Optional: print body for debugging
-            var debugData = Data()
-            for try await byte in bytes {
-                debugData.append(byte)
-            }
-            if let body = String(data: debugData, encoding: .utf8) {
-                print("[DEBUG] Body: \(body)")
-            }
-            return
-        }
-        
-        // Append the assistant message ONCE before streaming
-        await MainActor.run {
-            chat.append(Message(role: .assistant, content: ""))
-        }
-        
-        var buffer = Data()
-        for try await byte in bytes {
-            buffer.append(byte)
-            
-            while let range = buffer.range(of: Data([0x0A])) { // 0x0A = \n
-                let lineData = buffer.prefix(upTo: range.lowerBound)
-                buffer.removeSubrange(..<range.upperBound)
-                
-                guard let line = String(data: lineData, encoding: .utf8)?.trimmingCharacters(in: .whitespacesAndNewlines),
-                      line.hasPrefix("data: ") else {
-                    continue
-                }
-                
-                let dataString = String(line.dropFirst("data: ".count))
-                if dataString == "[DONE]" {
-                    return
-                }
-                
-                if let data = dataString.data(using: .utf8) {
-                    do {
-                        if let json = try JSONSerialization.jsonObject(with: data) as? [String: Any],
-                           let choices = json["choices"] as? [[String: Any]],
-                           let delta = choices.first?["delta"] as? [String: Any],
-                           let content = delta["content"] as? String {
-                            
-                            // Append to last assistant message
-                            await MainActor.run {
-                                if !chat.isEmpty {
-                                    chat[chat.count - 1].content += content
-                                }
-                            }
-                            fflush(stdout)
-                        }
-                    } catch {
-                        print("[DEBUG] Parsing error...")
-                    }
-                }
-            }
+        return request
+    }
+    
+    // MARK: - Helpers
+    
+    private func appendToMessage(placeholderId: UUID, content: String) {
+        guard let idx = SupabaseManager.shared.currentMessages.lastIndex(where: { $0.id == placeholderId }) else { return }
+        if SupabaseManager.shared.currentMessages[idx].content == nil {
+            SupabaseManager.shared.currentMessages[idx].content = content
+        } else {
+            SupabaseManager.shared.currentMessages[idx].content! += content
         }
     }
+    
+    private func appendReasoningToMessage(placeholderId: UUID, reasoning: String) {
+        guard let idx = SupabaseManager.shared.currentMessages.lastIndex(where: { $0.id == placeholderId }) else { return }
+        if SupabaseManager.shared.currentMessages[idx].reasoning == nil {
+            SupabaseManager.shared.currentMessages[idx].reasoning = reasoning
+        } else {
+            SupabaseManager.shared.currentMessages[idx].reasoning! += reasoning
+        }
+    }
+    
+    private func makeError(_ text: String) -> Swift.Error {
+        NSError(domain: "OpenRouterAPI", code: -1, userInfo: [NSLocalizedDescriptionKey: text])
+    }
+    
+    // MARK: - Image/File helpers (unchanged)
     
     private func loadImage() async {
         guard let item = photoPickerItems else { return }
         if let data = try? await item.loadTransferable(type: Data.self),
            let uiImage = UIImage(data: data) {
-            await MainActor.run {
-                self.selectedImage = uiImage
-            }
+            self.selectedImage = uiImage
         }
     }
     
     public func base64FromSwiftUIImage() -> String? {
-        guard let image = selectedImage else {
-            return nil
-        }
-        guard let imageData = image.pngData() else { return nil }
-        return "data:image/jpeg;base64,\(imageData.base64EncodedString())"
+        guard let image = selectedImage, let png = image.pngData() else { return nil }
+        return "data:image/jpeg;base64,\(png.base64EncodedString())"
     }
     
     public func fileContent() -> String? {
-        guard let fileURL = selectedFileURL else {
-            return nil
-        }
-        
-        do {
-            return try String(contentsOf: fileURL, encoding: .utf8)
-        } catch {
-            return nil
-        }
+        guard let fileURL = selectedFileURL else { return nil }
+        return try? String(contentsOf: fileURL, encoding: .utf8)
     }
     
     public func base64FromFileURL() -> String? {
-        guard let fileURL = selectedFileURL else {
+        guard let fileURL = selectedFileURL else { return nil }
+        let prefix = dataURIPrefix(for: fileURL.pathExtension)
+        do {
+            let encoded = try Data(contentsOf: fileURL).base64EncodedString()
+            return "\(prefix)\(encoded)"
+        } catch {
+            print("[DEBUG] Error encoding file: \(error.localizedDescription)")
+            return nil
+        }
+    }
+    
+    private func dataURIPrefix(for ext: String) -> String {
+        switch ext.lowercased() {
+        case "pdf": return "data:application/pdf;base64,"
+        case "txt": return "data:text/plain;base64,"
+        case "csv": return "data:text/csv;base64,"
+        case "json": return "data:application/json;base64,"
+        case "xml": return "data:application/xml;base64,"
+        case "html", "htm": return "data:text/html;base64,"
+        case "md": return "data:text/markdown;base64,"
+        case "rtf": return "data:application/rtf;base64,"
+        case "png": return "data:image/png;base64,"
+        case "jpg", "jpeg": return "data:image/jpeg;base64,"
+        default: return "data:application/octet-stream;base64,"
+        }
+    }
+    
+    // MARK: - Title generation (unchanged logic, minor cleanups)
+    
+    public func generateChatTitle(from query: String) async throws -> String? {
+        let url = URL(string: "https://openrouter.ai/api/v1/completions")!
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("Bearer \(API_KEY)", forHTTPHeaderField: "Authorization")
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        
+        let prompt = """
+        Given the user prompt, generate a short, concise yet effective title for a chat.
+        RESPOND ONLY WITH THE TITLE.
+        QUERY: \(query.trimmingCharacters(in: .whitespacesAndNewlines))
+        """
+        
+        let payload: [String: Any] = [
+            "model": "google/gemini-2.5-flash-lite",
+            "prompt": prompt
+        ]
+        request.httpBody = try JSONSerialization.data(withJSONObject: payload)
+        
+        let (data, response) = try await URLSession.shared.data(for: request)
+        guard let http = response as? HTTPURLResponse, http.statusCode == 200 else {
+            print("[DEBUG] Failed to generate chat title: Invalid response")
             return nil
         }
         
-        let fileExtension = fileURL.pathExtension
-        let dataURI = dataURIPrefix(for: fileExtension)
-        
-        do {
-            let encodedFile = try Data(contentsOf: fileURL).base64EncodedString()
-            return "\(dataURI)\(encodedFile)"
-        } catch {
-            print("[DEBUG] Error encoding file: \(error.localizedDescription)")
+        struct CompletionResponse: Decodable {
+            struct Choice: Decodable { let text: String }
+            let choices: [Choice]
         }
         
-        return nil
+        let decoded = try JSONDecoder().decode(CompletionResponse.self, from: data)
+        return decoded.choices.first?.text
     }
     
-    private func dataURIPrefix(for fileExtension: String) -> String {
-        switch fileExtension.lowercased() {
-        case "pdf":
-            return "data:application/pdf;base64,"
-        case "txt":
-            return "data:text/plain;base64,"
-        case "csv":
-            return "data:text/csv;base64,"
-        case "json":
-            return "data:application/json;base64,"
-        case "xml":
-            return "data:application/xml;base64,"
-        case "html", "htm":
-            return "data:text/html;base64,"
-        case "md":
-            return "data:text/markdown;base64,"
-        case "rtf":
-            return "data:application/rtf;base64,"
-        case "yaml", "yml":
-            return "data:text/yaml;base64,"
-        default:
-            return "data:application/octet-stream;base64,"
+    // MARK: - Generate quick summary
+    public func generateQuickSummary(from query: String, url: String, content: String) async throws -> String? {
+        let url = URL(string: "https://openrouter.ai/api/v1/completions")!
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("Bearer \(API_KEY)", forHTTPHeaderField: "Authorization")
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        
+        let MAX_GENERAL_POINTS = "2"
+        let MAX_USER_POINTS = "5"
+        let MAX_CHARS = "300"
+        
+        let prompt = """
+        You are a meticulous research assistant. \
+        For context today is \(Date()). \
+        \
+        GOAL \
+        Given a USER_QUERY and the full text of one web page, produce a concise Markdown digest with: \
+        (A) general key points from the page, and \
+        (B) points directly relevant to USER_QUERY. \
+        \
+        INPUTS \
+        - USER_QUERY: \(query) \
+        - PAGE_URL: \(url) \
+        - PAGE_TEXT (full body): \(content) \
+
+        OUTPUT \
+        Return ONLY Markdown (no code fences). Use this exact section order and keep the entire output under \(MAX_CHARS) characters total. \ 
+        \
+        # Title & Source \
+        - **Title:** {best title or "Unknown"} \
+        - **URL:** {PAGE_URL} \
+        - **Published:** {ISO date if found, else "n/a"} \
+        \
+        # TL;DR \
+        One or two short sentences summarizing the page (≤ 40 words total). \
+        \
+        # General Points \
+        - Up to \(MAX_GENERAL_POINTS) bullets. \
+        - Each bullet ≤ 22 words, de-duplicated, concrete (dates, numbers, prices/specs when available). \
+        \
+        # Findings for the User Query \
+        Numbered list, up to \(MAX_USER_POINTS) bullets, ordered by usefulness to USER_QUERY (most useful first). For each item: \
+        1. **Point:** ≤ 22 words, de-duplicated, concrete (dates, numbers, prices/specs when available). \  
+        \
+        RULES \
+        - Write in the same language as USER_QUERY. \
+        - Use ONLY facts present in PAGE_TEXT. Do not invent sources or details. \
+        - Prefer concrete numbers/dates; normalize units/currencies where helpful. \
+        - Strip boilerplate/marketing; merge overlapping bullets. \
+        - If PAGE_TEXT has no direct relevance, state so in TL;DR and provide best-effort General Points + Missing Info.
+        """
+        
+        let payload: [String: Any] = [
+            "model": "google/gemini-2.5-flash",
+            "prompt": prompt,
+        ]
+        request.httpBody = try JSONSerialization.data(withJSONObject: payload)
+        
+        let (data, response) = try await URLSession.shared.data(for: request)
+        guard let http = response as? HTTPURLResponse, http.statusCode == 200 else {
+            print("[DEBUG] Failed to generate chat title: Invalid response")
+            return nil
         }
+        
+        struct CompletionResponse: Decodable {
+            struct Choice: Decodable { let text: String }
+            let choices: [Choice]
+        }
+        
+        let decoded = try JSONDecoder().decode(CompletionResponse.self, from: data)
+        return decoded.choices.first?.text
     }
     
+    // MARK: - Credits
+    public func getCreditsRequest() async throws -> Double {
+        struct CreditsResponse: Codable {
+            struct Credits: Codable {
+                let totalCredits: Double
+                let totalUsage: Double
+                
+                private enum CodingKeys: String, CodingKey {
+                    case totalCredits = "total_credits"
+                    case totalUsage = "total_usage"
+                }
+            }
+            
+            let data: Credits
+        }
+        
+        let creditsURL = URL(string: "https://openrouter.ai/api/v1/credits")!
+        var request = URLRequest(url: creditsURL)
+        request.httpMethod = "GET"
+        request.setValue("Bearer \(API_KEY)", forHTTPHeaderField: "Authorization")
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        
+        let (data, response) = try await URLSession.shared.data(for: request)
+        
+        guard let http = response as? HTTPURLResponse else {
+            throw makeError("Invalid HTTP response.")
+        }
+        guard (200..<300).contains(http.statusCode) else {
+            throw makeError("HTTP \(http.statusCode)")
+        }
+        
+        let decoder = JSONDecoder()
+        let creditsResponse = try decoder.decode(CreditsResponse.self, from: data)
+        return creditsResponse.data.totalCredits - creditsResponse.data.totalUsage
+    }
 }

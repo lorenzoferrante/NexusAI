@@ -8,8 +8,10 @@
 import SwiftUI
 import PhotosUI
 import UniformTypeIdentifiers
+import Auth
 
-struct RaycastBottomView: View {
+struct BottomView: View {
+    @State var supabaseManager = SupabaseManager.shared
     @State var vm = OpenRouterAPI.shared
     @State var isWebSearch: Bool = false
     
@@ -35,7 +37,7 @@ struct RaycastBottomView: View {
         .onAppear {
             providers = Set(ModelsList.models.map(\.provider))
             models = ModelsList.models.filter { $0.provider == provider }
-            selectedModel = models.first(where: { $0.code == vm.selectedModel.code })!
+            selectedModel = models.first(where: { $0.code == vm.selectedModel.code }) ?? DefaultsManager.shared.getModel()
         }
         .onChange(of: provider) { _, newValue in
             models = ModelsList.models.filter { $0.provider == newValue }
@@ -85,15 +87,7 @@ struct RaycastBottomView: View {
                     }
                     
                     HStack(alignment: .center) {
-                        Menu {
-                            Button {
-                                feedbackGenerator.impactOccurred()
-                                isWebSearch.toggle()
-                            } label: {
-                                Label("Web Search", systemImage: "network")
-                                    .tint(isWebSearch ? Color.accent : .primary)
-                            }
-                            
+                        Menu {                            
                             Button {
                                 feedbackGenerator.impactOccurred()
                                 photosPickerIsPresented.toggle()
@@ -120,12 +114,16 @@ struct RaycastBottomView: View {
                             .padding()
                             .focused($isFocused)
                             .onSubmit {
-                                generate()
+                                Task {
+                                    await generate()
+                                }
                             }
                         
                         Button {
                             feedbackGenerator.impactOccurred()
-                            generate()
+                            Task {
+                                await generate()
+                            }
                         } label: {
                             Image(systemName: "paperplane.fill")
                         }
@@ -138,7 +136,6 @@ struct RaycastBottomView: View {
         }
         .glassEffect(.regular.interactive(), in: .rect(cornerRadius: 18))
         .padding()
-        
     }
     
     private var providerView: Label<Text, Image> {
@@ -220,33 +217,54 @@ struct RaycastBottomView: View {
         }
     }
 
-    private func generate() {
+    private func generate() async {
         isFocused = false
-        let imageData = vm.base64FromSwiftUIImage()
+        
+        if supabaseManager.currentMessages.count == 0 {
+            await updateChatTitle()
+        }
+
         let fileData = vm.fileContent()
         let fileName = vm.selectedFileURL?.lastPathComponent ?? nil
         let fileExtension = vm.selectedFileURL?.pathExtension.lowercased() ?? ""
         var pdfFileData: String?
-        if fileExtension.lowercased() == "pdf" {
+        
+        if fileExtension == "pdf" {
             pdfFileData = vm.base64FromFileURL()
         }
         
+        var imageURL: String? = nil
+        if let selectedImage = vm.selectedImage {
+            let userID = supabaseManager.getUser()?.id.uuidString ?? "uploads"
+            let fileName = "\(userID)/\(UUID().uuidString).jpeg"
+            if let data = selectedImage.jpegData(compressionQuality: 0.5) {
+                await supabaseManager.uploadImageToBucket(data, fileName: fileName)
+                imageURL = supabaseManager.retrieveImageURLFor(fileName)
+            }
+        }
+
         withAnimation {
-            print("[DEBUG] Appending prompt: \(prompt)")
-            vm.chat.append(.init(
+            print("[DEBUG] Appending prompt: \(prompt) to \(supabaseManager.currentChat!.id)")
+            
+            let newUserMessage: Message = .init(
+                chatId: supabaseManager.currentChat!.id,
                 role: .user,
                 content: prompt,
-                imageData: imageData,
+                imageURL: imageURL,
                 fileData: fileData,
                 pdfData: pdfFileData,
-                fileName: fileName
-            ))
+                fileName: fileName,
+                createdAt: Date()
+            )
+            
+            Task {
+                try await supabaseManager.addMessageToChat(newUserMessage)
+                try await vm.stream()
+                supabaseManager.updateLastMessage()
+            }
+            
             prompt = ""
             vm.selectedImage = nil
-        }
-        
-        Task {
-            try await vm.stream(isWebSearch: isWebSearch)
         }
     }
     
@@ -259,6 +277,15 @@ struct RaycastBottomView: View {
             vm.selectedFileURL = url
         }
     }
+    
+    private func updateChatTitle() async {
+        do {
+            let chatTitle = try await vm.generateChatTitle(from: prompt) ?? "New chat"
+            await supabaseManager.updateChatTitle(chatTitle)
+        } catch {
+            debugPrint("[DEBUG - generateChatTitle] Error: \(error)")
+        }
+    }
 }
 
 #Preview {
@@ -266,7 +293,7 @@ struct RaycastBottomView: View {
     @Previewable @State var prompt: String = ""
     ZStack {
         BackView()
-        RaycastBottomView(prompt: $prompt)
+        BottomView(prompt: $prompt)
             .preferredColorScheme(.dark)
     }
 }
