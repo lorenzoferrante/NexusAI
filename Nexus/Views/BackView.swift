@@ -16,6 +16,13 @@ struct BackView: View {
             ZStack {
                 Rectangle()
                     .fill(ThemeColors.from(color: defaultsManager.selectedThemeColor))
+                    .colorEffect(
+                        ShaderLibrary.default.parameterizedNoise(
+                            .float(0.3),
+                            .float(0.2),
+                            .float(0.99)
+                        )
+                    )
                 Rectangle()
                     .fill(
                         LinearGradient(
@@ -35,13 +42,7 @@ struct BackView: View {
                             startPoint: .top,
                             endPoint: .bottom)
                     )
-//                    .colorEffect(
-//                        ShaderLibrary.default.noiseShader(
-//                            .float2(proxy.size),
-//                            .float(0.4),
-//                            .float(0.4)
-//                        )
-//                    )
+                    
             }
             .ignoresSafeArea()
         }
