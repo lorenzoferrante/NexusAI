@@ -15,6 +15,8 @@ struct BottomView: View {
     @State var vm = OpenRouterAPI.shared
     @State var isWebSearch: Bool = false
     
+    @State var orVM = OpenRouterViewModel.shared
+    
     @State var providers: Set<Providers> = []
     @State var provider = DefaultsManager.shared.getModel().provider
     @State var models: [OpenRouterModel] = []
@@ -259,7 +261,8 @@ struct BottomView: View {
             
             Task {
                 try await supabaseManager.addMessageToChat(newUserMessage)
-                try await vm.stream()
+                try await orVM.stream()
+//                try await vm.stream()
                 supabaseManager.updateLastMessage()
             }
             
