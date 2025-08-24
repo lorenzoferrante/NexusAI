@@ -106,6 +106,7 @@ class ModelsList {
         OpenRouterModel(name: "Grok 3 Mini", provider: .xAI, description: "", code: "x-ai/grok-3-mini"),
         
         /// DeepSeek Models
+        OpenRouterModel(name: "DeepSeek V3.1", provider: .deepseek, description: "", code: "deepseek/deepseek-chat-v3.1"),
         OpenRouterModel(name: "DeepSeek V3 0324", provider: .deepseek, description: "", code: "deepseek/deepseek-chat-v3-0324"),
         OpenRouterModel(name: "R1", provider: .deepseek, description: "", code: "deepseek/deepseek-r1"),
         OpenRouterModel(name: "R1 Distill Qwen 7B", provider: .deepseek, description: "", code: "deepseek/deepseek-r1-distill-qwen-7b"),
