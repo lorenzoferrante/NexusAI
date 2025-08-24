@@ -414,6 +414,34 @@ class SupabaseManager {
             }
         }
     }
+
+    public func updateMessageToolCalls(messageId: UUID, toolCalls: [ToolCall]) async throws {
+        struct UpdatePayload: Encodable {
+            let toolCalls: [ToolCall]
+            enum CodingKeys: String, CodingKey { case toolCalls = "tool_calls" }
+        }
+        do {
+            // Persist tool_calls JSON for the given message
+            let updated: Message = try await client
+                .from("messages")
+                .update(UpdatePayload(toolCalls: toolCalls))
+                .eq("id", value: messageId)
+                .select()
+                .single()
+                .execute()
+                .value
+            
+            await MainActor.run {
+                if let idx = self.currentMessages.firstIndex(where: { $0.id == messageId }) {
+                    self.currentMessages[idx].toolCalls = updated.toolCalls
+                }
+            }
+            debugPrint("[DEBUG - updateMessageToolCalls()] Updated tool_calls for message \(messageId)")
+        } catch {
+            debugPrint("[DEBUG - updateMessageToolCalls()] Error: \(error.localizedDescription)")
+            throw error
+        }
+    }
     
     public func uploadImageToBucket(_ data: Data, fileName: String) async {
         do {

@@ -14,6 +14,10 @@ class OpenRouterViewModel {
     
     static let shared = OpenRouterViewModel()
     
+    // Indicates whether a stream is currently active.
+    // Used by the UI to toggle the send/stop icon.
+    var isStreaming: Bool = false
+    
     let streamer = OpenRouterStreamClient(config: {
         var c = OpenRouterStreamClient.Config(apiKeyProvider: { Keychain.load(Keychain.OPENROUTER_USER_KEY) })
         c.autoResumeOnForeground = true
@@ -111,19 +115,24 @@ class OpenRouterViewModel {
                     }
                 },
                 onStateChange: { state in
-                    // optional observability
+                    // optional observability + drive UI state
                     switch state {
                     case .idle:
                         debugPrint("[DEBUG] Change state: \(state)")
+                        self.isStreaming = false
                     case .streaming:
                         debugPrint("[DEBUG] Change state: \(state)")
+                        self.isStreaming = true
                     case .finished(reason: let reason):
                         debugPrint("[DEBUG] Change state: \(state). Reason: \(reason ?? "")")
+                        self.isStreaming = false
                     case .cancelled:
                         debugPrint("[DEBUG] Change state: \(state)")
+                        self.isStreaming = false
                         self.streamer.appDidBecomeActive()
                     case .failed(message: let message):
                         debugPrint("[DEBUG] Change state: \(state). Error: \(message.debugDescription)")
+                        self.isStreaming = false
                     }
                 }
             )
@@ -135,15 +144,19 @@ class OpenRouterViewModel {
         
         if let message = SupabaseManager.shared.currentMessages.first(where: { $0.id == placeholderId }),
            let _ = message.content {
+            // Persist the streamed assistant content first
             SupabaseManager.shared.updateLastMessage()
             
-            let newToolCallMessage = Message(
+            // Create a fresh assistant message that will hold the tool_calls
+            let newAssistantToolCallMessage = Message(
                 chatId: SupabaseManager.shared.currentChat!.id,
-                role: .tool,
+                role: .assistant,
+                content: nil,
                 createdAt: Date()
             )
-            SupabaseManager.shared.currentMessages.append(newToolCallMessage)
-            newPlaceholderId = newToolCallMessage.id
+            // Persist so it's available after app relaunch
+            try await SupabaseManager.shared.addMessageToChat(newAssistantToolCallMessage)
+            newPlaceholderId = newAssistantToolCallMessage.id
         }
         
         // Finalize tool calls, persist assistant-with-tool_calls, execute tools, and RECURSE.
@@ -170,9 +183,9 @@ class OpenRouterViewModel {
         
         // Update the placeholder message with the ID we already have
         if let idx = SupabaseManager.shared.currentMessages.firstIndex(where: { $0.id == placeholderId }) {
-            // Preserve any partial content that was streamed before tool calls
-            // and simply attach the toolCalls to the same assistant message.
+            // Attach toolCalls to the assistant message in memory and persist to DB
             SupabaseManager.shared.currentMessages[idx].toolCalls = toolCalls
+            try await SupabaseManager.shared.updateMessageToolCalls(messageId: placeholderId, toolCalls: toolCalls)
         }
         
         // 2) Execute tools (in parallel) and store each tool result message.
@@ -262,10 +275,33 @@ class OpenRouterViewModel {
 
     
     public func buildPayload(excludingMessageId: UUID) -> [String: Any] {
-        let messagesPayload = SupabaseManager.shared.currentMessages
+        // 1) Base filter: drop the current streaming placeholder and empty assistant placeholders
+        let base = SupabaseManager.shared.currentMessages
             .filter { $0.id != excludingMessageId }
             .filter { !($0.role == .assistant && ($0.content?.isEmpty ?? true) && $0.toolCalls == nil) }
-            .map { $0.asDictionary() }
+
+        // 2) Sanitize: remove orphan tool outputs that don't have a preceding assistant tool_calls
+        var pendingToolIds = Set<String>()
+        var sanitized: [Message] = []
+        for m in base {
+            if let tcs = m.toolCalls, !tcs.isEmpty {
+                pendingToolIds = Set(tcs.compactMap { $0.id })
+                sanitized.append(m)
+            } else if m.role == .tool {
+                if let id = m.toolCallId, pendingToolIds.contains(id) {
+                    sanitized.append(m)
+                } else {
+                    // Drop orphan tool result
+                    continue
+                }
+            } else {
+                // Any normal message clears pending context
+                pendingToolIds.removeAll()
+                sanitized.append(m)
+            }
+        }
+
+        let messagesPayload = sanitized.map { $0.asDictionary() }
         
         
         var payload: [String: Any] = [
@@ -308,4 +344,3 @@ class OpenRouterViewModel {
         }
     }
 }
-

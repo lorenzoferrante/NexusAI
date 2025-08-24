@@ -127,7 +127,7 @@ struct BottomView: View {
                                 await generate()
                             }
                         } label: {
-                            Image(systemName: "paperplane.fill")
+                            Image(systemName: orVM.isStreaming ? "stop.fill" : "paperplane.fill")
                         }
                         .padding()
                         .disabled(prompt.isEmpty)

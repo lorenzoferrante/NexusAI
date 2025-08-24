@@ -266,15 +266,18 @@ class OpenRouterAPI {
                         
                         if let message = SupabaseManager.shared.currentMessages.first(where: { $0.id == placeholderId }),
                            let _ = message.content {
+                            // Persist streamed assistant content first
                             SupabaseManager.shared.updateLastMessage()
                             
-                            let newToolCallMessage = Message(
+                            // Create a fresh assistant message that will hold the tool_calls
+                            let newAssistantToolCallMessage = Message(
                                 chatId: SupabaseManager.shared.currentChat!.id,
-                                role: .tool,
+                                role: .assistant,
+                                content: nil,
                                 createdAt: Date()
                             )
-                            SupabaseManager.shared.currentMessages.append(newToolCallMessage)
-                            newPlaceholderId = newToolCallMessage.id
+                            try await SupabaseManager.shared.addMessageToChat(newAssistantToolCallMessage)
+                            newPlaceholderId = newAssistantToolCallMessage.id
                         }
                         
                         // Finalize tool calls, persist assistant-with-tool_calls, execute tools, and RECURSE.
@@ -319,9 +322,9 @@ class OpenRouterAPI {
         
         // Update the placeholder message with the ID we already have
         if let idx = SupabaseManager.shared.currentMessages.firstIndex(where: { $0.id == placeholderId }) {
-            // Preserve any partial content that was streamed before tool calls
-            // and simply attach the toolCalls to the same assistant message.
+            // Attach toolCalls to the assistant message in memory and persist to DB
             SupabaseManager.shared.currentMessages[idx].toolCalls = toolCalls
+            try await SupabaseManager.shared.updateMessageToolCalls(messageId: placeholderId, toolCalls: toolCalls)
         }
         
         // 2) Execute tools (in parallel) and store each tool result message.
@@ -418,22 +421,31 @@ class OpenRouterAPI {
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         request.setValue("text/event-stream", forHTTPHeaderField: "Accept")
         
-        // Use your Message.asDictionary() to preserve formatting (text, images, files, tools).
-//        let messagesPayload = SupabaseManager.shared.currentMessages
-//            .filter { $0.id != excludingMessageId }
-//            .filter { $0.role != .tool }
-//            .map { $0.asDictionary() }
-        
-        /*
-         * There is a problem here:
-         * when the chat gets too long, I need to cut-out the old tool calls
-         * and keep only the last one, otherwhise I will encounter an empty response.
-         */
-        
-        let messagesPayload = SupabaseManager.shared.currentMessages
+        // Base list minus current placeholder and empty assistant placeholders
+        let base = SupabaseManager.shared.currentMessages
             .filter { $0.id != excludingMessageId }
             .filter { !($0.role == .assistant && ($0.content?.isEmpty ?? true) && $0.toolCalls == nil) }
-            .map { $0.asDictionary() }
+
+        // Sanitize: drop orphan tool outputs with no preceding assistant tool_calls
+        var pendingToolIds = Set<String>()
+        var sanitized: [Message] = []
+        for m in base {
+            if let tcs = m.toolCalls, !tcs.isEmpty {
+                pendingToolIds = Set(tcs.compactMap { $0.id })
+                sanitized.append(m)
+            } else if m.role == .tool {
+                if let id = m.toolCallId, pendingToolIds.contains(id) {
+                    sanitized.append(m)
+                } else {
+                    continue
+                }
+            } else {
+                pendingToolIds.removeAll()
+                sanitized.append(m)
+            }
+        }
+
+        let messagesPayload = sanitized.map { $0.asDictionary() }
         
         
         var payload: [String: Any] = [
