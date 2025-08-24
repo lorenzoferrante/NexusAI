@@ -21,6 +21,8 @@ struct MessageView: View {
                 userMessage
             case .tool:
                 toolMessage
+            case .error:
+                ErrorMessageView(message: message)
             default:
                 EmptyView()
                     .frame(width: .zero)

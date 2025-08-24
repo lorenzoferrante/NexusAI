@@ -240,6 +240,123 @@ class SupabaseManager {
         }
     }
     
+    public func removeLastErrorMessage() {
+        Task {
+            let lastErrorMessages = currentMessages.filter { $0.role == .error }
+            
+            for lastErrorMessage in lastErrorMessages {
+                do {
+                    try await client
+                        .from("messages")
+                        .delete()
+                        .eq("id", value: lastErrorMessage.id)
+                        .select()
+                        .single()
+                        .execute()
+                } catch {
+                    debugPrint("[DEBUG - removeLastErrorMessage()] Error: \(error.localizedDescription)")
+                }
+            }
+            
+            await MainActor.run {
+                self.currentMessages.removeAll(where: { lastErrorMessages.map(\.id).contains($0.id) })
+            }
+        }
+    }
+    
+    public func cleanChatOnOpen() async throws {
+        guard let currentChat = currentChat else {
+            return
+        }
+        
+        guard let lastMessage = currentMessages.last else {
+            return
+        }
+        
+        // Removes all error messages except if the last message of the chat was an error
+        var errorMessages = currentMessages.filter { $0.role == .error }
+        if errorMessages.last == lastMessage {
+            errorMessages.removeLast()
+        }
+        for errorMessage in errorMessages {
+            try await client
+                .from("messages")
+                .delete()
+                .eq("id", value: errorMessage.id)
+                .select()
+                .execute()
+        }
+        
+        // Removes all empty assistant messages
+        let emptyMessages = currentMessages.filter { $0.content.isNilOrEmpty() && $0.role == .assistant }
+        for emptyMessage in emptyMessages {
+            try await client
+                .from("messages")
+                .delete()
+                .eq("id", value: emptyMessage.id)
+                .select()
+                .execute()
+        }
+        
+        await MainActor.run {
+            self.currentMessages.removeAll(where: { emptyMessages.map(\.id).contains($0.id) })
+        }
+    }
+    
+    public func cleanChatForRetry() async throws {
+        guard let currentChat = currentChat else {
+            return
+        }
+        let chatId = currentChat.id
+        
+        if currentMessages.isEmpty {
+            try await self.retriveMessagesForChat(chatId)
+        }
+    
+        self.removeLastErrorMessage()
+        
+        let cleanedChat = self.currentMessages
+            .filter {
+                $0.role == .user ||
+                ($0.role == .assistant && !$0.content.isNilOrEmpty())
+            }
+        self.currentMessages = cleanedChat
+        
+        try await client
+            .from("messages")
+            .delete()
+            .eq("chat_id", value: chatId)
+            .eq("role", value: "tool")
+            .select()
+            .execute()
+        
+        try await client
+            .from("messages")
+            .delete()
+            .eq("chat_id", value: chatId)
+            .eq("role", value: "assistant")
+            .is("content", value: nil)
+            .select()
+            .execute()
+        
+        try await client
+            .from("messages")
+            .delete()
+            .eq("chat_id", value: chatId)
+            .eq("role", value: "assistant")
+            .eq("content", value: "")
+            .select()
+            .execute()
+        
+        try await client
+            .from("messages")
+            .delete()
+            .eq("chat_id", value: chatId)
+            .eq("role", value: "error")
+            .select()
+            .execute()
+    }
+    
     public func updateLastMessage() {
         Task {
             guard let lastMessage = currentMessages.last(where: {$0.role == .assistant}) else {
@@ -269,6 +386,31 @@ class SupabaseManager {
                 debugPrint("[DEBUG - updateLastMessage()] Updated last message")
             } catch {
                 debugPrint("[DEBUG - updateLastMessage()] Error: \(error.localizedDescription)")
+            }
+        }
+    }
+    
+    public func updateMessageContent(withId messageId: UUID, content: String) {
+        Task {
+            do {
+                let message: Message = try await client
+                    .from("messages")
+                    .update(["content": content])
+                    .eq("id", value: messageId)
+                    .select()
+                    .single()
+                    .execute()
+                    .value
+                
+                await MainActor.run {
+                    debugPrint("[RESPONSE] \(message.content ?? "")")
+                    let index = self.currentMessages.firstIndex(where: { $0.id == messageId })!
+                    self.currentMessages[index].content = message.content
+                }
+                
+                debugPrint("[DEBUG - updateMessageContent()] Updated message")
+            } catch {
+                debugPrint("[DEBUG - updateMessageContent()] Error: \(error.localizedDescription)")
             }
         }
     }

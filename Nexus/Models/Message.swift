@@ -12,6 +12,7 @@ enum Role: String, Codable {
     case user
     case assistant
     case tool
+    case error
 }
 
 struct ToolFunction: Codable, Hashable {
@@ -82,6 +83,10 @@ struct Message: Codable, Identifiable, Hashable {
     
 
     func asDictionary() -> [String: Any] {
+        if role == .error {
+            return [:]
+        }
+        
         if role == .system {
             return [
                 "role": role.rawValue,

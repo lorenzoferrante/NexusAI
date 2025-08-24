@@ -14,9 +14,18 @@ class OpenRouterViewModel {
     
     static let shared = OpenRouterViewModel()
     
-    private let streamer = OpenRouterStreamClient(config: .init(apiKeyProvider: {
-        Keychain.load(Keychain.OPENROUTER_USER_KEY)
-    }))
+    let streamer = OpenRouterStreamClient(config: {
+        var c = OpenRouterStreamClient.Config(apiKeyProvider: { Keychain.load(Keychain.OPENROUTER_USER_KEY) })
+        c.autoResumeOnForeground = true
+        c.continuationBuilder = { originalBody in
+            guard var bMsgs = originalBody["messages"] as? [[String: Any]] else {
+                return nil
+            }
+            bMsgs.append(["role": "user", "content": "Continue."])
+            return bMsgs
+        }
+        return c
+    }())
     
     private struct WebSearchArgs: Codable { let query: String }
     private struct DocLookupArgs: Codable { let docID: String }
@@ -28,8 +37,10 @@ class OpenRouterViewModel {
         guard let currentChat = SupabaseManager.shared.currentChat else { return }
         
         let userLocation = SupabaseManager.shared.profile?.country
-        let systemMessage = SystemPrompts.shared.getSystemMessage(currentChat.id, userLocation: userLocation ?? "")
-        SupabaseManager.shared.currentMessages.insert(systemMessage, at: 0)
+        if SupabaseManager.shared.currentMessages.filter({ $0.role == .system }).isEmpty {
+            let systemMessage = SystemPrompts.shared.getSystemMessage(currentChat.id, userLocation: userLocation ?? "")
+            SupabaseManager.shared.currentMessages.insert(systemMessage, at: 0)
+        }
         
         let placeholder = Message(
             chatId: currentChat.id,
@@ -87,6 +98,17 @@ class OpenRouterViewModel {
                 onError: { message in
                     // show error and allow retry
                     debugPrint("[DEBUG] Error: \(message.debugDescription)")
+                    
+                    let chatId = currentChat.id
+                    let errorMessage = Message(
+                        chatId: chatId,
+                        role: .error,
+                        content: message.debugDescription,
+                        createdAt: Date()
+                    )
+                    Task {
+                        try await SupabaseManager.shared.addMessageToChat(errorMessage)
+                    }
                 },
                 onStateChange: { state in
                     // optional observability
@@ -99,7 +121,7 @@ class OpenRouterViewModel {
                         debugPrint("[DEBUG] Change state: \(state). Reason: \(reason ?? "")")
                     case .cancelled:
                         debugPrint("[DEBUG] Change state: \(state)")
-                        self.streamer.resume(strategy: .retrySamePrompt, originalBody: body)
+                        self.streamer.appDidBecomeActive()
                     case .failed(message: let message):
                         debugPrint("[DEBUG] Change state: \(state). Error: \(message.debugDescription)")
                     }
@@ -239,7 +261,7 @@ class OpenRouterViewModel {
     }
 
     
-    private func buildPayload(excludingMessageId: UUID) -> [String: Any] {
+    public func buildPayload(excludingMessageId: UUID) -> [String: Any] {
         let messagesPayload = SupabaseManager.shared.currentMessages
             .filter { $0.id != excludingMessageId }
             .filter { !($0.role == .assistant && ($0.content?.isEmpty ?? true) && $0.toolCalls == nil) }

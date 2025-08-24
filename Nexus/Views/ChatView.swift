@@ -42,6 +42,10 @@ struct ChatView: View {
                 }
             }
             .onAppear {
+                Task {
+                    try await supabaseManager.cleanChatOnOpen()
+                }
+                
                 if !supabaseManager.currentMessages.isEmpty {
                     withAnimation {
                         proxy.scrollTo(bottomID, anchor: .bottom)

@@ -23,57 +23,57 @@ struct AssistantMessageView: View {
     }
     
     private var assistantMessage: some View {
-    Group {
-        VStack(alignment: .leading, spacing: 8) {
-            withAnimation {
-                Group {
-                    if (message.content != nil && !message.content!.isEmpty) || message.reasoning != nil {
-                        HStack {
-                            Image(systemName: "brain.fill")
-                                .foregroundColor(.secondary)
-                            Text(
-                                message.modelName ??
-                                OpenRouterAPI.shared.selectedModel.code
-                            )
+        Group {
+            VStack(alignment: .leading, spacing: 8) {
+                withAnimation {
+                    Group {
+                        if (message.content != nil && !message.content!.isEmpty) || message.reasoning != nil {
+                            HStack {
+                                Image(systemName: "brain.fill")
+                                    .foregroundColor(.secondary)
+                                Text(
+                                    message.modelName ??
+                                    OpenRouterAPI.shared.selectedModel.code
+                                )
                                 .font(.caption)
                                 .foregroundStyle(.secondary)
+                            }
+                            
+                            if message.reasoning != nil {
+                                reasoningView()
+                            }
+                            
+                            if let content = message.content, !content.isEmpty {
+                                Markdown(content)
+                                    .markdownTheme(.defaultDark)
+                                    .textSelection(.enabled)
+                                    .frame(
+                                        maxWidth: .infinity,
+                                        alignment: .leading
+                                    )
+                                    .opacity(1.0)
+                            }
+                        } else {
+                            thinkingAssistant()
                         }
-                        
-                        if message.reasoning != nil {
-                            reasoningView()
-                        }
-                        
-                        if let content = message.content, !content.isEmpty {
-                            Markdown(content)
-                                .markdownTheme(.defaultDark)
-                                .textSelection(.enabled)
-                                .frame(
-                                    maxWidth: .infinity,
-                                    alignment: .leading
-                                )
-                                .opacity(1.0)
-                        }
-                    } else {
-                        thinkingAssistant()
                     }
                 }
             }
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .padding([.top, .bottom])
-        .sheet(isPresented: $isReasoningExpanded) {
-            NavigationStack {
-                ZStack {
-                    reasoningBoxDetails()
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding([.top, .bottom])
+            .sheet(isPresented: $isReasoningExpanded) {
+                NavigationStack {
+                    ZStack {
+                        reasoningBoxDetails()
+                    }
+                    .background(Material.ultraThinMaterial)
+                    .toolbarTitleDisplayMode(.inlineLarge)
+                    .navigationTitle("Reasoning")
                 }
-                .background(Material.ultraThinMaterial)
-                .toolbarTitleDisplayMode(.inlineLarge)
-                .navigationTitle("Reasoning")
+                .presentationDetents([.medium, .large])
             }
-            .presentationDetents([.medium, .large])
         }
     }
-}
     
     private func reasoningView() -> some View {
         Group {
@@ -170,8 +170,8 @@ struct AssistantMessageView: View {
             }
         }
     }
-
-
+    
+    
 }
 
 #Preview {
