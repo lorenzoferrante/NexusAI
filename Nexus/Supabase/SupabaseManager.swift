@@ -178,6 +178,7 @@ class SupabaseManager {
     }
     
     public func updateToolMessage(_ message: Message) async throws {
+        // Probably a bug introduces in this method
         do {
             let message: Message = try await client
                 .from("messages")
