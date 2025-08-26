@@ -17,6 +17,9 @@ jobs:
 
       - name: Xcode Version
         run: xcodebuild -version
+
+      - name: Download Metal Toolchain
+        run: xcodebuild -downloadComponent MetalToolchain
         
       - name: Checkout
         uses: actions/checkout@v4
