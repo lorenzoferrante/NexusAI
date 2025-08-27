@@ -41,6 +41,20 @@ struct ToolCall: Codable, Identifiable, Hashable {
     }
 }
 
+public struct ImageStruct: Decodable, Equatable, Hashable {
+    struct ImageURL: Decodable, Hashable { let url: String }
+    let type: String
+    let imageURL: ImageURL
+    private enum CodingKeys: String, CodingKey {
+        case type
+        case imageURL = "image_url"
+    }
+    
+    public static func == (lhs: ImageStruct, rhs: ImageStruct) -> Bool {
+        return lhs.imageURL.url == rhs.imageURL.url
+    }
+}
+
 struct Message: Codable, Identifiable, Hashable {
     var id = UUID()
     let chatId: UUID
@@ -60,6 +74,7 @@ struct Message: Codable, Identifiable, Hashable {
     let createdAt: Date
     var deletedAt: Date?
     var modelName: String?
+    var images: [ImageStruct]?
     
     private enum CodingKeys: String, CodingKey {
         case id

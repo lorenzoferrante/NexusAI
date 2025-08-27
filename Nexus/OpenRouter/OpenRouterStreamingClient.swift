@@ -75,6 +75,8 @@ public final class OpenRouterStreamClient: NSObject, URLSessionDataDelegate {
         public var onToken: (String) -> Void
         /// Fires whenever new reasoning tokens arrive.
         public var onReasoningToken: (String) -> Void
+        /// Fires whenever new Image data arrive.
+        public var onImageDelta: ([ImageStruct]) -> Void
         /// Fires as tool_calls deltas arrive (indexed).
         public var onToolCallDelta: (ToolCallFragment) -> Void
         /// Fires when the stream completes normally (finish_reason).
@@ -87,6 +89,7 @@ public final class OpenRouterStreamClient: NSObject, URLSessionDataDelegate {
         public init(
             onToken: @escaping (String) -> Void,
             onReasoningToken: @escaping (String) -> Void,
+            onImageDelta: @escaping ([ImageStruct]) -> Void,
             onToolCallDelta: @escaping (ToolCallFragment) -> Void,
             onFinish: @escaping (String?) -> Void,
             onError: @escaping (String) -> Void,
@@ -94,6 +97,7 @@ public final class OpenRouterStreamClient: NSObject, URLSessionDataDelegate {
         ) {
             self.onToken = onToken
             self.onReasoningToken = onReasoningToken
+            self.onImageDelta = onImageDelta
             self.onToolCallDelta = onToolCallDelta
             self.onFinish = onFinish
             self.onError = onError
@@ -417,6 +421,8 @@ public final class OpenRouterStreamClient: NSObject, URLSessionDataDelegate {
     
     private func handleSSEChunk(_ data: Data) {
         guard let raw = String(data: data, encoding: .utf8) else { return }
+        debugPrint("[DEBUG] Chunk: \(raw)")
+        
         
         // Ignore comment heartbeats like ": OPENROUTER PROCESSING"
         if raw.hasPrefix(":") { return }
@@ -444,6 +450,7 @@ public final class OpenRouterStreamClient: NSObject, URLSessionDataDelegate {
                     let role: String?
                     let reasoning: String?
                     let content: String?
+                    let images: [ImageStruct]?
                     let tool_calls: [ToolCall]?
                 }
                 let delta: Delta?
@@ -460,6 +467,12 @@ public final class OpenRouterStreamClient: NSObject, URLSessionDataDelegate {
         // 1) Content deltas
         var anyContent = false
         for c in choices {
+            if let images = c.delta?.images, !images.isEmpty {
+                partialReceived = true
+                anyContent = true
+                handlers?.onImageDelta(images)
+            }
+            
             if let reasoning = c.delta?.reasoning, !reasoning.isEmpty {
                 partialReceived = true
                 anyContent = true
@@ -500,6 +513,7 @@ public final class OpenRouterStreamClient: NSObject, URLSessionDataDelegate {
                 stallTimer?.invalidate()
                 endBackgroundTask()
                 state = .finished(reason: finish)
+                partialReceived = false
                 handlers?.onFinish(finish)
                 notifyState()
             }

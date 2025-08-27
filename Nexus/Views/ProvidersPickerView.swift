@@ -9,6 +9,7 @@ import SwiftUI
 
 struct ProvidersPickerView: View {
     @State var vm = OpenRouterAPI.shared
+    @State var supabaseManager = SupabaseManager.shared
     @State var providers: Set<Providers> = []
     
     var body: some View {
@@ -30,7 +31,7 @@ struct ProvidersPickerView: View {
             }
         }
         .onAppear {
-            providers = Set(ModelsList.models.map(\.provider))
+            providers = Set(supabaseManager.models.map { $0.toProvider() })
         }
     }
 }

@@ -11,6 +11,7 @@ import MarkdownUI
 struct AssistantMessageView: View {
     let message: Message
     
+    @State var orVM = OpenRouterViewModel.shared
     @State var isReasoningExpanded: Bool = false
     
     private let bottomID = "bottomID"
@@ -33,7 +34,7 @@ struct AssistantMessageView: View {
                                     .foregroundColor(.secondary)
                                 Text(
                                     message.modelName ??
-                                    OpenRouterAPI.shared.selectedModel.code
+                                    orVM.selectedModel.code
                                 )
                                 .font(.caption)
                                 .foregroundStyle(.secondary)
@@ -52,6 +53,16 @@ struct AssistantMessageView: View {
                                         alignment: .leading
                                     )
                                     .opacity(1.0)
+                            }
+                            
+                            if let images = message.images {
+                                HStack {
+                                    ScrollView(.horizontal) {
+                                        ForEach(images, id: \.self) { image in
+                                            Image(base64DataString: image.imageURL.url)
+                                        }
+                                    }
+                                }
                             }
                         } else {
                             thinkingAssistant()
@@ -147,7 +158,7 @@ struct AssistantMessageView: View {
                     HStack {
                         Image(systemName: "brain.fill")
                             .foregroundColor(.secondary)
-                        Text(OpenRouterAPI.shared.selectedModel.code)
+                        Text(orVM.selectedModel.code)
                             .font(.caption)
                             .foregroundStyle(.secondary)
                     }

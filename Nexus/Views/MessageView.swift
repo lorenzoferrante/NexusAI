@@ -10,6 +10,8 @@ import UIKit
 import MarkdownUI
 
 struct MessageView: View {
+    @State var orVM = OpenRouterViewModel.shared
+    
     let message: Message
     
     var body: some View {
@@ -69,7 +71,7 @@ struct MessageView: View {
                                     .foregroundColor(.secondary)
                                 Text(
                                     message.modelName ??
-                                    OpenRouterAPI.shared.selectedModel.code
+                                    orVM.selectedModel.code
                                 )
                                     .font(.caption)
                                     .foregroundStyle(.secondary)
@@ -103,7 +105,7 @@ struct MessageView: View {
                     HStack {
                         Image(systemName: "brain.fill")
                             .foregroundColor(.secondary)
-                        Text(OpenRouterAPI.shared.selectedModel.code)
+                        Text(orVM.selectedModel.code)
                             .font(.caption)
                             .foregroundStyle(.secondary)
                     }

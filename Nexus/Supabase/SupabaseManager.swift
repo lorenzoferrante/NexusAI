@@ -25,6 +25,7 @@ class SupabaseManager {
     public var chats: [Chat] = []
     public var currentChat: Chat? = nil
     public var currentMessages: [Message] = []
+    public var models: [OpenRouterModelRow] = []
     
     private init() {
         guard let supabaseURL = URL(string: supabaseURLString) else {
@@ -37,6 +38,8 @@ class SupabaseManager {
         )
         
         Task {
+            try await fetchAllModels()
+            
             for await state in client.auth.authStateChanges {
                 if [.initialSession, .signedIn, .signedOut].contains(state.event) {
                     withAnimation {
@@ -266,10 +269,6 @@ class SupabaseManager {
     }
     
     public func cleanChatOnOpen() async throws {
-        guard let currentChat = currentChat else {
-            return
-        }
-        
         guard let lastMessage = currentMessages.last else {
             return
         }
@@ -626,5 +625,29 @@ class SupabaseManager {
                 )
             )
         return result.results
+    }
+    
+    public func fetchAllModels() async throws {
+        let rows: [OpenRouterModelRow] = try await client
+            .from("openrouter_models")
+            .select()
+            .execute()
+            .value
+        debugPrint("[DEBUG] fetchAllModels - fetched \(rows.count) models.")
+        await MainActor.run {
+            self.models = rows
+        }
+    }
+
+    /// Optional: fetch by provider
+    public func fetchModelBy(provider: Providers) async throws -> [OpenRouterModelRow] {
+        let rows: [OpenRouterModelRow] = try await client
+            .from("openrouter_models")
+            .select()
+            .eq("provider", value: provider.rawValue)
+            .order("name", ascending: true)
+            .execute()
+            .value
+        return rows
     }
 }

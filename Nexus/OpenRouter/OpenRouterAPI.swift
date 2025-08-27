@@ -91,7 +91,7 @@ class OpenRouterAPI {
     
     var output: String = ""
     var chat: [Message] = []
-    var selectedModel: OpenRouterModel = DefaultsManager.shared.getModel()
+//    var selectedModel: OpenRouterModelRow = DefaultsManager.shared.getModel()
 
     // MARK: - SSE keep-alive + long-lived session
     private var sseSession: URLSession = {
@@ -449,7 +449,7 @@ class OpenRouterAPI {
         
         
         var payload: [String: Any] = [
-            "model": selectedModel.code,
+            "model": "openai/gpt-5-mini",
             "messages": messagesPayload,
             "stream": true,
             "reasoning": [

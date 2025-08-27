@@ -35,7 +35,7 @@ class OpenRouterViewModel {
     private struct DocLookupArgs: Codable { let docID: String }
     private struct CrawlToolArgs: Codable { let urls: [String] }
     
-    private let selectedModel: OpenRouterModel = DefaultsManager.shared.getModel()
+    public var selectedModel: OpenRouterModelRow = DefaultsManager.shared.getModel()
     
     public func stream() async throws {
         guard let currentChat = SupabaseManager.shared.currentChat else { return }
@@ -71,6 +71,9 @@ class OpenRouterViewModel {
                     // append to your partial message
                     debugPrint("[DEBUG] Reasoning Token: \(reasoning)")
                     self.appendReasoningToMessage(placeholderId: placeholder.id, reasoning: reasoning)
+                },
+                onImageDelta: { images in
+                    
                 },
                 onToolCallDelta: { fragment in
                     // accumulate tool_calls by fragment.index
@@ -308,20 +311,28 @@ class OpenRouterViewModel {
             "model": selectedModel.code,
             "messages": messagesPayload,
             "stream": true,
-            "reasoning": [
-                "effort": DefaultsManager.shared.getReasoningEffort(),
-                "exclude": false,
-                "enabled": DefaultsManager.shared.getReasoningEnabled()
-            ],
             "usage": [
                 "include": true
             ]
         ]
         
         // Tools
-        let tools = ToolsManager().getAllToolDefinitions()
-        payload["tools"] = tools
-        payload["tool_choice"] = "auto"
+        if (selectedModel.toolUse ?? false) {
+            let tools = ToolsManager().getAllToolDefinitions()
+            payload["tools"] = tools
+            payload["tool_choice"] = "auto"
+        }
+        
+        if (selectedModel.reasoning ?? false) {
+            payload["reasoning"] = [
+                "effort": DefaultsManager.shared.getReasoningEffort(),
+                "exclude": false,
+                "enabled": DefaultsManager.shared.getReasoningEnabled()
+            ]
+        }
+        
+        // Output Modalities
+        payload["modalities"] = selectedModel.outputModalities!.split(separator: ",")
         
         return payload
     }
@@ -342,5 +353,10 @@ class OpenRouterViewModel {
         } else {
             SupabaseManager.shared.currentMessages[idx].reasoning! += reasoning
         }
+    }
+    
+    private func appendImageToMessage(placeholderId: UUID, images: [ImageStruct]) {
+        guard let idx = SupabaseManager.shared.currentMessages.lastIndex(where: { $0.id == placeholderId }) else { return }
+        SupabaseManager.shared.currentMessages[idx].images = images
     }
 }

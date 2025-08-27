@@ -32,7 +32,6 @@ class DefaultsManager {
     private let calendarEnabled = "calendarEnabled"
     private let reminderEnabled = "reminderEnabled"
     
-    
     var selectedReasoningEffort: String
     var isReasoningEnabled: Bool
     
@@ -60,18 +59,19 @@ class DefaultsManager {
     }
     
     /// MARK: - Model
-    func saveModel(_ model: OpenRouterModel) {
+    func saveModel(_ model: OpenRouterModelRow) {
         UserDefaults.standard.set(model.code, forKey: selectedModelKey)
     }
     
-    func getModel() -> OpenRouterModel {
+    @MainActor
+    func getModel() -> OpenRouterModelRow {
         if let openRouterModelCode = UserDefaults.standard.object(forKey: selectedModelKey) as? String,
-           let model = ModelsList.models.first(where: { $0.code == openRouterModelCode }) {
+           let model = SupabaseManager.shared.models.first(where: { $0.code == openRouterModelCode }) {
             print("[DEBUG] Returining \(model.code)")
             return model
         }
         print("[DEBUG] Returining openrouter/auto")
-        return ModelsList.models.first(where: { $0.code == "openrouter/auto" })!
+        return SupabaseManager.shared.models.first(where: { $0.code == "openai/gpt-5-mini" })!
     }
     
     func saveReasoningEffort(_ effort: ReasoningEffort) {

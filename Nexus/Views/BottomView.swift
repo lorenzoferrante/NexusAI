@@ -18,9 +18,9 @@ struct BottomView: View {
     @State var orVM = OpenRouterViewModel.shared
     
     @State var providers: Set<Providers> = []
-    @State var provider = DefaultsManager.shared.getModel().provider
-    @State var models: [OpenRouterModel] = []
-    @State var selectedModel: OpenRouterModel = DefaultsManager.shared.getModel()
+    @State var provider = DefaultsManager.shared.getModel().toProvider()
+    @State var models: [OpenRouterModelRow] = []
+    @State var selectedModel: OpenRouterModelRow = DefaultsManager.shared.getModel()
     
     @State var filePickerIsPresented: Bool = false
     @State var photosPickerIsPresented: Bool = false
@@ -37,19 +37,19 @@ struct BottomView: View {
             minimizedBar
         }
         .onAppear {
-            providers = Set(ModelsList.models.map(\.provider))
-            models = ModelsList.models.filter { $0.provider == provider }
-            selectedModel = models.first(where: { $0.code == vm.selectedModel.code }) ?? DefaultsManager.shared.getModel()
+            providers = Set(supabaseManager.models.map { $0.toProvider() })
+            models = supabaseManager.models.filter { $0.provider == provider.rawValue }
+            selectedModel = models.first(where: { $0.code == orVM.selectedModel.code }) ?? DefaultsManager.shared.getModel()
         }
         .onChange(of: provider) { _, newValue in
-            models = ModelsList.models.filter { $0.provider == newValue }
+            models = supabaseManager.models.filter { $0.provider == newValue.rawValue }
             selectedModel = models.first!
             DefaultsManager.shared.saveModel(selectedModel)
-            vm.selectedModel = selectedModel
+            orVM.selectedModel = selectedModel
         }
         .onChange(of: selectedModel) { _, newValue in
             DefaultsManager.shared.saveModel(newValue)
-            vm.selectedModel = selectedModel
+            orVM.selectedModel = selectedModel
         }
         .photosPicker(
             isPresented: $photosPickerIsPresented,

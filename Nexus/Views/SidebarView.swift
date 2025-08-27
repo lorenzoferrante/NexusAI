@@ -54,6 +54,7 @@ struct SidebarView: View {
         }
         .onAppear {
             Task {
+//                try await OpenRouterAPI.shared.listModels()
                 try await supabaseClient.retriveChats()
             }
         }

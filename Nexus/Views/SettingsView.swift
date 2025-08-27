@@ -9,8 +9,8 @@ import SwiftUI
 
 struct SettingsView: View {
     // MARK: - Models
-    @State var models: [OpenRouterModel] = ModelsList.models
-    @State var selectedModel: OpenRouterModel = DefaultsManager.shared.getModel()
+    @State var models: [OpenRouterModelRow] = SupabaseManager.shared.models
+    @State var selectedModel: OpenRouterModelRow = DefaultsManager.shared.getModel()
     @State var selectedReasoningEffort: String = DefaultsManager.shared.getReasoningEffort()
     @State var isReasoningEnabled: Bool = DefaultsManager.shared.getReasoningEnabled()
     @State var efforts = ReasoningEffort.allCases
