@@ -25,6 +25,11 @@ struct ContentView: View {
                     }
             }
             .toolbar {
+                ToolbarItem(placement: .topBarLeading) {
+                    NavigationLink(destination: RealtimeVoiceChatView()) {
+                        Image(systemName: "bolt.horizontal.fill")
+                    }
+                }
                 ToolbarItem(placement: .topBarTrailing) {
                     Button {
                         reset()

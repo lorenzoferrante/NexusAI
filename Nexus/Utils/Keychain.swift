@@ -12,6 +12,7 @@ import Security
 struct Keychain {
     
     static let OPENROUTER_USER_KEY = "OPENROUTER_USER_KEY"
+    static let OPENAI_API_KEY = "OPENAI_API_KEY"
     
     static func save(_ value: String, for key: String) {
             let data = Data(value.utf8)
