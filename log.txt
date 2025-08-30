@@ -1,0 +1,235 @@
+[Realtime][RX] Unhandled type=input_audio_buffer.speech_stopped payload=["item_id": item_CA3nmQnxFIch8JhgmiAIv, "type": input_audio_buffer.speech_stopped, "audio_end_ms": 2432, "event_id": event_CA3noFnNPpS6CMGSUyOZA]
+[Realtime][RX] Unhandled type=input_audio_buffer.committed payload=["previous_item_id": <null>, "item_id": item_CA3nmQnxFIch8JhgmiAIv, "type": input_audio_buffer.committed, "event_id": event_CA3noY1iUwGLKf5hBHbUj]
+[Realtime][RX] Unhandled type=conversation.item.created payload=["previous_item_id": <null>, "item": {
+    content =     (
+                {
+            transcript = "<null>";
+            type = "input_audio";
+        }
+    );
+    id = "item_CA3nmQnxFIch8JhgmiAIv";
+    object = "realtime.item";
+    role = user;
+    status = completed;
+    type = message;
+}, "type": conversation.item.created, "event_id": event_CA3noZ02SCRzqzuLJVYYw]
+[Realtime][RX] response started: resp_CA3noPEu8hDV7cfA8GZlI
+[Realtime][TX] {"audio":"AAAAAAAA\/\/\/\/\/\/\/\/\/\/\/\/\/\/7\/\/\/8AAAAA\/\/\/\/\/\/\/\/AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAABAAEAAAD\/\/\/\/\/AAAAAP\/\/AAAAAAAAAAD\/\/\/7\/\/\/\/\/\/wAAAAD\/\/\/\/\/\/\/\/\/\/wAAAAAAAAEAAAD+\/\/\/\/AAD\/\/\/\/\/\/\/\/\/\/\/\/\/\/v\/+\/\/7\/AAAAAAAA\/\/\/\/\/\/\/\/\/v\/\/\/wAAAAAAAAEAAAD\/\/wAA\/\/\/\/\/wAAAAAAAAIAAgABAAEAAQACAAIAAgAAAAAAAAAAAAAAAQAAAAEAAgACAAEAAgADAAIAAgABAAEAAgACAAIAAgACAAIAAQABAAIAAQAAAAAAAAAAAAEAAgACAAIAAQAAAAEAAQAAAAAAAQACAAIAAQACAAQAAwABAAAAAAAAAAEAAgACAAMAAgADAAIAAgABAAAAAAAAAAAAAAAAAAAAAAAAAAEAAQAAAAEAAgACAAIAAQAAAAAAAAAAAAAAAgACAAIAAgABAAAAAAAAAAEAAQABAAIAAgACAAIAAQABAAEAAQABAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAD\/\/\/7\/\/f\/\/\/\/\/\/\/\/\/+\/\/7\/\/v\/+\/\/3\/\/f\/9\/\/3\/\/f\/9\/\/7\/\/v\/+\/\/7\/\/v\/+\/\/\/\/\/v\/\/\/wAAAAAAAP\/\/AAAAAAAA\/\/\/\/\/\/\/\/AAAAAP\/\/\/\/\/+\/\/7\/\/\/8AAAAAAAD+\/\/3\/\/v\/\/\/\/7\/\/f\/+\/\/\/\/\/\/8AAAAA\/\/\/\/\/\/7\/\/v\/+\/\/7\/\/\/\/+\/\/7\/\/v\/+\/\/7\/\/v\/+\/\/\/\/\/\/\/\/\/wAAAAAAAAAA\/\/\/\/\/\/\/\/\/\/\/+\/\/3\/\/f\/+\/\/3\/\/f\/9\/\/3\/\/v\/\/\/\/7\/\/v\/+\/\/\/\/AAD\/\/\/7\/\/\/\/\/\/\/7\/\/v8AAAAAAQAAAAAAAAD\/\/wAAAAD\/\/\/\/\/AAAAAAAA\/\/\/\/\/wAAAAAAAAEAAAAAAAEAAAAAAAAAAAAAAAAAAAD\/\/\/\/\/\/\/\/\/\/\/\/\/\/v\/+\/\/\/\/\/\/\/\/\/\/\/\/\/v\/+\/\/7\/\/f\/9\/\/7\/\/\/\/+\/\/\/\/\/\/\/\/\/\/\/\/AAD\/\/\/7\/\/v\/+\/\/7\/\/\/8AAP\/\/\/f\/8\/\/z\/\/f\/+\/\/\/\/\/v\/+\/\/7\/\/v\/9\/\/\/\/AAAAAP\/\/AAAAAP\/\/\/\/\/\/\/\/\/\/AAAAAAAA\/v\/9\/\/\/\/\/\/8AAAAAAAAAAAAAAAABAAAA\/\/\/\/\/\/\/\/AAAAAAAAAAAAAP\/\/\/\/\/\/\/\/\/\/\/v\/\/\/wAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAP\/\/AAAAAAAAAAAAAAAAAAAAAAAAAQACAAIAAgACAAEAAgACAAIAAgABAAEAAgADAAQAAwAEAAQABAAEAAUABgAFAAQAAwADAAMAAgADAAMAAwADAAMABAAFAAUABAAFAAMAAwAEAAMAAwADAAMABAAEAAUABQAFAAQAAwAEAAQAAwAEAAQABAABAAEAAgADAAMAAgACAAIAAwADAAMABAAFAAUABAAEAAQAAwAEAAMAAwAEAAQABAAEAAMAAwAEAAQABAAFAAQAAwADAAQABQAEAAMABAAEAAMAAQACAAMAAgACAAIAAwADAAMAAwADAAMAAwADAAIAAQABAAEAAQACAAIAAQAAAAAAAQABAAEAAgACAAIAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAAAAAAAAP\/\/\/v\/\/\/\/\/\/\/v\/\/\/wAAAAD\/\/\/\/\/\/v\/+\/\/\/\/\/\/\/\/\/\/\/\/\/v\/\/\/\/\/\/\/\/\/\/\/\/7\/\/\/8AAP7\/\/\/8AAAAAAAAAAAAAAAD+\/\/\/\/AAD\/\/wAAAAD\/\/\/\/\/AAAAAAAAAAAAAAAAAAD\/\/\/7\/\/v\/+\/\/7\/\/\/\/\/\/\/\/\/AAD\/\/\/\/\/\/\/8AAAAAAAAAAAAAAAAAAAAAAQABAAIAAgACAAAAAAAAAAAAAAD\/\/wAA\/\/\/\/\/wAAAAAAAAAA\/\/\/\/\/\/3\/\/f\/9\/\/3\/\/P\/9\/\/z\/+\/\/7\/\/z\/\/v8AAAAA\/v\/+\/\/\/\/AAAAAAAAAAAAAAAAAAAAAAAAAAAAAP\/\/\/v8AAAAA\/\/\/+\/\/\/\/\/\/\/9\/\/z\/\/f\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/v\/9\/\/7\/\/v\/9\/\/7\/\/\/\/+\/\/3\/\/P\/9\/\/z\/\/P\/8\/\/z\/\/f\/\/\/\/7\/\/v\/+\/\/3\/\/\/\/\/\/\/3\/\/v\/+\/\/3\/\/\/8AAP7\/\/f\/+\/\/7\/\/v\/\/\/\/\/\/\/v\/+\/\/3\/\/f\/9\/\/3\/\/f\/\/\/wAAAAD\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/+\/wAA\/\/\/+\/\/\/\/AAAAAP\/\/AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEAAAABAAEAAAABAAEAAAAAAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAA\/\/\/\/\/wAAAAD\/\/\/\/\/\/v\/+\/\/7\/\/\/8AAAEAAQAAAAAAAAAAAAAAAAABAAEAAAAAAAAAAAABAAIAAgABAAEAAgAAAAAAAAAAAAEAAQABAAEAAQACAAEAAQABAAEAAwADAAMAAwADAAMAAgADAAMAAwADAAMAAwAEAAQABAADAAIABAAFAAQAAwAEAAUABQAEAAMAAwADAAMAAwAEAAQAAwADAAMAAwACAAMAAwADAAIAAgABAAEAAgADAAMAAwACAAMAAwAEAAQAAwADAAQAAwACAAIAAAABAAEAAQABAAAAAQABAAAAAAAAAAAAAAAAAAEAAQAAAAAAAQADAAEAAQAAAAAAAAD\/\/wAAAAABAAAAAAAAAAAAAAAAAP\/\/\/\/\/+\/\/\/\/AAD\/\/wAAAAAAAAAAAAAAAAAAAAABAAIAAAAAAAAAAgADAAIAAgACAAMAAwACAAIAAgACAAIAAQABAAEAAQACAAEAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\/v\/\/\/wAAAAAAAP7\/\/v\/\/\/\/\/\/\/v\/+\/\/3\/\/P\/8\/\/3\/\/f\/9\/\/3\/\/f\/8\/\/z\/\/v\/\/\/\/3\/+\/\/8\/\/7\/\/\/\/+\/\/3\/\/v\/9\/\/3\/\/P\/8\/\/7\/\/v\/+\/\/7\/\/v\/+\/\/7\/\/v\/+\/\/\/\/AAAAAP7\/\/v\/\/\/\/\/\/\/\/\/\/\/wAAAAAAAAAAAAAAAAAAAQABAAAA\/v\/\/\/wEAAAAAAP\/\/\/\/\/\/\/\/7\/\/\/8AAAAAAAAAAAAA\/\/8AAP\/\/AAAAAP\/\/\/\/8AAAAAAAD\/\/\/\/\/AAD\/\/wAAAAD\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/7\/\/v\/\/\/wAAAAAAAAAAAAAAAAAAAAABAAIAAgAAAAAAAAAAAAAAAAD\/\/wAAAAAAAAAAAQACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD+\/\/7\/\/v\/\/\/\/\/\/\/f\/9\/\/7\/\/\/\/+\/\/\/\/AAAAAAAAAAD\/\/\/\/\/\/\/8AAAAAAQABAAEAAQABAAAAAAAAAAAAAAD\/\/\/\/\/AAAAAAAA\/\/8AAAAAAQABAAAA\/\/\/+\/\/7\/\/v\/9\/\/3\/\/v\/9\/\/7\/\/v\/\/\/\/\/\/\/\/\/+\/\/\/\/\/\/\/\/\/\/7\/\/\/\/\/\/wAAAAAAAP\/\/\/\/8AAAEAAAAAAAAAAAAAAAAA\/v8AAP\/\/\/v\/+\/\/7\/\/\/\/+\/\/\/\/\/v\/+\/\/7\/\/v\/9\/\/7\/\/v\/+\/\/\/\/AAAAAP\/\/\/v\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/+\/\/7\/\/\/\/+\/\/7\/\/v\/+\/\/7\/AAABAAAAAAAAAAAAAQABAAEAAQAAAAAAAAABAAEAAQACAAAAAAABAAEAAAABAAIAAQAAAAAAAQACAAIAAwADAAIAAgABAAAAAgACAAIAAgACAAEAAAAAAAAAAQAAAAAAAAAAAAAA\/\/\/+\/\/\/\/AAAAAP\/\/\/v8AAAEAAQABAAAAAAAAAAAAAAD\/\/\/\/\/AAAAAAAAAAAAAAAAAQABAAEAAgADAAUABAAEAAUABQAEAAQAAgACAAEAAQABAAEAAgACAAMAAgACAAMAAgADAAIAAgACAAIAAgACAAIAAgACAAMAAgADAAMAAwADAAMABAADAAIAAwAEAAUABAAEAAQABAAEAAMAAgAEAAYABAAGAAUABAAFAAUABQAGAAYABgAGAAYABQAEAAQABQAFAAUABQAGAAUABAAEAAQABAAFAAUABQAFAAUABQAFAAUABQAEAAQABAAFAAUABgAHAAcABwAGAAUABQAFAAUABQAEAAQABgAFAAQABAADAAMABAAEAAQABAADAAQAAwADAAQABAAEAAMAAwAEAAQAAgACAAIAAQACAAIAAgABAAEAAgACAAEAAQABAAAAAAAAAAAAAAAAAAAAAAAAAAAA\/\/8AAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAAAAEAAQABAAAAAAAAAP\/\/AAABAAIAAgABAAEAAQABAAIAAgABAAEAAgACAAEAAQABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACAAEAAAD\/\/wAAAAAAAAEAAAAAAAAAAAAAAAEAAAAAAAAA\/\/8AAAAAAAABAAIAAQABAAAAAAAAAAEAAAAAAAAAAAAAAAAAAQACAAMAAgACAAEAAgACAAIAAQACAAIAAQABAAEAAQAAAAAAAAAAAAEAAAD+\/\/\/\/\/v\/+\/\/7\/AAAAAAAAAAAAAAAAAAAAAP\/\/\/\/\/\/\/wAA\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/9\/\/7\/\/\/\/+\/\/7\/AAD\/\/\/\/\/\/\/8AAAAA\/\/\/+\/wAAAAAAAA==","type":"input_audio_buffer.append"}
+[Realtime][TX] {"type":"input_audio_buffer.append","audio":"AAAAAAAA\/\/\/\/\/\/7\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/8AAAAAAAD\/\/wAAAAD\/\/\/\/\/\/\/8AAAAAAAD\/\/\/7\/\/\/\/\/\/\/3\/\/f\/+\/\/\/\/\/\/\/+\/\/\/\/\/\/\/+\/\/\/\/AAD\/\/\/7\/\/v\/+\/\/3\/\/P\/9\/\/7\/\/v\/+\/\/\/\/\/v\/9\/\/3\/\/v\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/+\/\/7\/AAD\/\/\/7\/\/f\/9\/\/3\/\/f\/9\/\/3\/\/\/\/\/\/\/\/\/\/\/\/+\/\/\/\/\/v\/\/\/\/\/\/\/\/8AAAAAAAABAAAAAAAAAAAAAAABAAEAAAAAAAAA\/\/8AAAAAAQABAAEAAAAAAP\/\/AAAAAAAAAAD\/\/\/\/\/AAD\/\/\/7\/\/v\/\/\/\/7\/\/v8AAP\/\/\/\/\/\/\/\/\/\/AAD\/\/\/7\/\/f\/9\/\/z\/\/P\/9\/\/3\/+\/\/9\/\/\/\/\/v\/+\/\/\/\/AAD\/\/\/7\/\/v\/+\/\/\/\/AAAAAP\/\/\/\/8AAAAAAAAAAAAAAAAAAP\/\/\/\/\/\/\/wAAAAAAAP\/\/\/v\/+\/\/7\/\/v\/9\/\/3\/\/v\/\/\/wAAAAD\/\/\/7\/\/\/\/\/\/\/\/\/\/\/8AAAAA\/\/\/+\/\/7\/\/v\/\/\/\/7\/\/\/8AAAAA\/\/\/\/\/\/\/\/\/f\/+\/wAAAAAAAP\/\/\/v\/9\/\/3\/\/\/\/\/\/\/7\/\/\/\/\/\/\/7\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/AAAAAAAAAAAAAAAAAAAAAP\/\/AAAAAAAAAAAAAP\/\/\/\/\/\/\/wAA\/\/8AAAAAAAD\/\/\/\/\/\/v\/+\/\/7\/\/\/\/\/\/\/7\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/v\/\/\/\/\/\/AAD\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/8AAAAAAAAAAAAAAAAAAAAAAQACAAEAAAAAAAAAAAAAAAEAAAAAAAEAAQAAAAAAAAAAAAAAAAAAAAEAAQABAAAAAAAAAAEAAQAAAAAAAQABAAEAAAABAAMAAQAAAAAAAQADAAMAAgABAAEAAgABAAIAAgABAAEAAAAAAAAAAAAAAAEAAAAAAAAA\/\/\/\/\/wAAAAAAAAAAAAD\/\/\/\/\/\/\/\/\/\/\/7\/AAAAAAAAAAAAAAAAAAAAAP\/\/\/\/8AAAAAAAD\/\/\/\/\/AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD\/\/wAAAAAAAAAAAQABAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\/v\/+\/\/7\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/v\/+\/\/7\/\/f\/9\/\/7\/\/\/\/\/\/\/7\/\/v\/+\/\/7\/\/f\/+\/\/\/\/AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD\/\/wAA\/\/\/+\/\/7\/AAAAAP\/\/\/\/\/\/\/wAAAAD\/\/\/\/\/AAD\/\/\/\/\/\/v\/9\/\/3\/\/f\/+\/\/7\/\/v\/+\/\/\/\/AAAAAAAA\/v\/+\/wAAAAAAAAAA\/\/\/\/\/\/\/\/\/\/8AAAAAAAAAAAAA\/\/\/\/\/wAAAAAAAP7\/\/v\/\/\/\/\/\/\/v\/+\/\/\/\/\/\/\/\/\/\/\/\/\/v\/\/\/wAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\/\/\/\/\/wAAAAAAAP\/\/AAAAAP\/\/\/\/8AAAAAAAAAAP\/\/\/v\/\/\/\/\/\/AAAAAAEAAQACAAIAAQABAAAAAQAAAAAAAAAAAAEAAQABAAAAAAAAAAAAAAAAAAAAAAAAAP\/\/AAACAAEAAQACAAEAAgACAAEAAAAAAAEAAQABAAEAAAAAAAAAAAABAAEAAQABAAAAAAABAAIAAQABAAIAAgACAAIAAgACAAEAAAACAAIAAgACAAEAAQABAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAD\/\/\/\/\/AAAAAAAAAAD\/\/wAAAAAAAAAAAAAAAP\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/wAAAAAAAP\/\/AAAAAP\/\/\/v\/+\/\/3\/\/P\/7\/\/v\/\/P\/7\/\/z\/\/\/\/\/\/\/\/\/\/\/\/9\/\/3\/\/f\/9\/\/3\/\/v\/+\/\/7\/\/v\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/v\/\/\/\/7\/\/v\/\/\/\/\/\/\/\/8AAP\/\/\/\/\/+\/\/\/\/AAAAAP\/\/\/\/8AAAAAAAAAAAAA\/\/\/\/\/wAAAQAAAAAAAQABAAIAAwACAAEAAQAAAAAAAAABAAAAAAD\/\/\/7\/AAAAAP\/\/\/\/\/\/\/\/\/\/\/v\/+\/\/7\/\/v\/+\/\/3\/\/f\/\/\/\/\/\/\/v\/\/\/\/\/\/\/\/8AAP\/\/\/\/\/+\/\/\/\/\/\/\/9\/\/7\/AAAAAAAA\/\/\/\/\/\/\/\/AAAAAAAAAAAAAP\/\/\/\/8AAAAA\/\/8AAAAAAAD\/\/\/7\/\/f\/9\/\/7\/\/v\/\/\/\/\/\/\/v\/\/\/wAA\/\/8AAAAA\/\/\/\/\/wAAAAAAAAAAAAAAAAAAAAAAAP\/\/AAAAAAAA\/v\/\/\/wAAAAAAAAAA\/v\/\/\/\/\/\/\/v\/\/\/wAAAAD\/\/\/\/\/AAAAAP7\/\/P\/9\/\/7\/\/\/\/\/\/\/7\/\/f\/8\/\/3\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/7\/\/\/\/\/\/\/7\/\/f\/8\/\/7\/\/v\/9\/\/3\/\/f\/+\/\/\/\/\/\/\/\/\/\/\/\/\/v\/9\/\/3\/\/v\/+\/\/7\/\/v\/\/\/\/7\/\/v8AAP\/\/\/\/8AAP\/\/\/\/\/\/\/\/7\/\/v\/+\/\/3\/\/\/8AAP\/\/AAAAAP\/\/\/v\/+\/\/7\/\/v\/\/\/wAAAAD\/\/\/\/\/AAAAAAAAAAAAAAAAAAAAAAAAAAD\/\/\/\/\/\/\/\/\/\/\/\/\/AAAAAAAAAAAAAAAAAAAAAAAAAAD\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/8AAAAAAAAAAAAAAgABAAAAAAAAAAAAAAAAAAAAAAABAAEAAQABAAAAAQABAAEAAQABAAAAAQABAAEAAQABAAEAAgACAAEAAQAAAAEAAgACAAIAAgACAAIAAgADAAMAAgACAAMAAgACAAIAAgACAAIAAgACAAEAAQAAAAEAAgACAAIAAgACAAIAAwADAAMAAwADAAMAAgACAAMAAgACAAIAAQACAAIABAAEAAIAAgADAAMAAgACAAMAAwABAAIAAgACAAIAAQACAAIAAQACAAEAAQAAAAAAAgACAAIAAwACAAEAAQABAAMAAwABAAEAAQABAAEAAQABAAEAAQABAAEAAQACAAMAAgABAAIAAgABAAIAAQABAAAAAQACAAIAAgADAAIAAQADAAMAAwADAAMAAgABAAIAAgACAAIAAgACAAMAAwADAAMAAwACAAIAAgACAAMABAADAAIAAwAEAAUABQAEAAMAAwADAAMAAgABAAEAAgADAAIAAwADAAEAAQABAAAAAAAAAAEAAQAAAAAAAAAAAAEAAgABAAEAAQABAAMAAQACAAIAAQABAAIAAgAAAAEAAgABAAEAAAAAAP\/\/AAAAAAAAAAAAAAAAAAABAAAAAAABAAAA\/\/8AAAAAAAAAAP\/\/\/v\/\/\/wAAAAAAAAAAAAAAAP\/\/\/\/8AAP\/\/\/\/\/\/\/\/\/\/AAAAAP\/\/\/\/\/\/\/wAAAAD+\/\/7\/\/\/\/\/\/\/\/\/\/v\/+\/\/\/\/\/\/\/\/\/wAA\/\/\/\/\/\/3\/\/P\/8\/\/3\/\/f\/8\/\/3\/\/v\/+\/\/7\/\/v\/9\/\/z\/\/P\/8\/\/z\/\/P\/8\/\/z\/\/P\/8\/\/3\/\/f\/8\/\/v\/\/f\/9\/\/3\/\/P\/8\/\/z\/\/f\/9\/\/7\/\/v\/9\/\/3\/+\/\/7\/\/v\/+\/\/+\/\/7\/\/P\/8\/\/z\/\/P\/9\/\/3\/\/f\/9\/\/3\/\/f\/+\/\/\/\/\/\/\/9\/\/v\/\/P\/8\/\/v\/+\/\/7\/\/r\/+v\/6\/\/n\/+f\/6\/\/r\/+v\/6\/\/r\/+v\/6\/\/n\/9\/\/4\/\/j\/9\/\/3\/\/j\/+f\/5\/\/j\/+P\/5\/\/r\/+v\/6\/\/r\/+v\/5\/\/j\/+v\/7\/\/v\/+v\/6\/\/v\/+v\/7\/\/z\/+\/\/7\/\/z\/\/f\/8\/\/r\/+\/\/8\/\/z\/\/P\/8\/\/z\/\/P\/9\/\/7\/\/f\/9\/\/3\/\/f\/+\/\/7\/\/\/\/\/\/\/\/\/\/v\/+\/wAAAAD\/\/\/7\/\/f\/9\/\/7\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/7\/\/\/8AAP\/\/\/\/8AAAAAAAAAAAAAAAD\/\/\/7\/\/\/\/\/\/\/7\/\/v8AAAAAAAABAAAAAAABAAAAAAAAAAAAAAAAAAAAAAABAAEAAQACAAIAAwADAAMAAgADAAQABAADAAMABAAEAAMAAwACAAIAAgACAAIAAwADAAMAAwACAAEAAgADAAMAAgABAAIAAgACAAMAAgADAAQAAwADAAQABAAEAAQAAwAEAAQAAwADAAMAAgACAAMAAwAEAAMAAgADAAQABAAEAAMABAAEAAQABgAGAAUABQAFAAUABAAEAAQABQAFAAQABAAFAAQABAADAAAAAQACAAIAAgACAAIAAQABAAEAAQADAAMAAwADAAIAAQABAAEAAQADAAMABAADAAIAAgADAAMAAgACAAEAAQACAAIAAQABAAEAAQACAAIAAgADAAMAAwACAAEAAAABAAIAAgADAAQAAwABAAMAAwACAAMABAAEAAMAAwADAAQABAAEAAMAAgACAAIAAgACAAIAAgADAAIAAgADAAMAAwACAAIAAgABAAEAAQABAAEAAQAAAAAAAAABAAIAAgACAAIAAwAEAAMAAgABAAEAAQAAAAAAAQACAAMAAgACAAMAAgACAAIAAwACAAMAAwADAAQAAwACAAIABAAEAAIAAQACAAMAAwADAAIAAgABAAIAAQABAAIAAgABAAIAAQABAAEAAgADAAMAAwAEAAQABQAFAAUABQAFAAQAAwADAAIAAgADAAMABAAEAAMAAgADAAQABAAEAAQABAADAAIAAwAEAAQABQAFAAUABgAGAAYABQAEAAQABAAEAAQABAAFAAQABAAEAAQABgAHAAYAAwAEAAYABgAFAAQABQAFAAUABAAEAAUABQAFAAcABQAEAAQABAAEAAYABgAEAAMABQAFAAQABAADAAQABQAEAAUABgAGAAUABAAEAAQABAADAAMAAgABAAIAAgACAA=="}
+[Realtime][RX] Unhandled type=response.output_item.added payload=["output_index": 0, "event_id": event_CA3npVpBAnQzbygeMmgL9, "item": {
+    content =     (
+    );
+    id = "item_CA3noIg0duX6I61WHYsYQ";
+    object = "realtime.item";
+    role = assistant;
+    status = "in_progress";
+    type = message;
+}, "type": response.output_item.added, "response_id": resp_CA3noPEu8hDV7cfA8GZlI]
+[Realtime][RX] Unhandled type=conversation.item.created payload=["previous_item_id": item_CA3nmQnxFIch8JhgmiAIv, "item": {
+    content =     (
+    );
+    id = "item_CA3noIg0duX6I61WHYsYQ";
+    object = "realtime.item";
+    role = assistant;
+    status = "in_progress";
+    type = message;
+}, "type": conversation.item.created, "event_id": event_CA3nplxrsLcKr4fP64F45]
+[Realtime][TX] {"type":"input_audio_buffer.append","audio":"AwACAAIAAgACAAIAAgACAAEAAAAAAAAAAQACAAEAAQABAAEAAQABAAIAAgACAAEAAAD\/\/wAAAAAAAAAAAAD\/\/\/\/\/AAD\/\/\/7\/\/\/8AAAAA\/\/\/\/\/\/\/\/AAAAAAAAAAAAAAIAAQAAAAAAAQAAAAAAAAAAAAAAAAD\/\/\/\/\/\/\/\/\/\/wAAAAD\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/wAAAAD\/\/wAAAAD+\/\/\/\/\/\/\/\/\/\/7\/\/\/\/\/\/wAAAAAAAAAAAAAAAAEAAQACAAAAAAABAAEAAgAAAAAAAQABAAEAAQAAAP\/\/AAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEAAQAAAAAAAQACAAIAAQABAAAAAQACAAIAAgACAAEAAAAAAAAAAAAAAAAAAgADAAIAAQACAAIAAQACAAMAAQAAAAAAAAABAAIAAAD\/\/\/\/\/AAD\/\/\/\/\/AAAAAAAAAAD\/\/\/\/\/\/\/\/\/\/\/\/\/AAAAAP\/\/\/v\/9\/\/3\/\/\/\/\/\/wAAAAD\/\/\/\/\/\/v\/\/\/wAAAAAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAEAAQAAAAAAAAD\/\/\/7\/\/v\/\/\/\/\/\/\/v\/+\/\/7\/\/v\/+\/\/\/\/\/v\/9\/\/\/\/AAD\/\/\/7\/\/v\/9\/\/3\/\/P\/7\/\/v\/+\/\/7\/\/z\/\/P\/8\/\/r\/+f\/6\/\/v\/\/P\/8\/\/z\/\/P\/8\/\/v\/+\/\/7\/\/v\/+\/\/7\/\/r\/+v\/8\/\/3\/\/f\/8\/\/z\/\/P\/7\/\/v\/+v\/6\/\/v\/\/P\/9\/\/3\/\/f\/8\/\/7\/\/\/\/9\/\/7\/\/\/\/\/\/\/7\/\/v\/\/\/\/\/\/\/v\/9\/\/7\/\/v\/+\/\/\/\/\/v\/\/\/\/\/\/\/v\/\/\/\/\/\/\/v\/\/\/\/\/\/AAAAAAAAAAAAAP\/\/\/v\/9\/\/3\/\/f\/+\/\/\/\/\/v\/9\/\/3\/\/v\/+\/\/3\/\/f\/+\/\/\/\/\/\/\/\/\/\/7\/\/v\/+\/\/7\/\/v\/9\/\/7\/\/\/\/\/\/\/7\/\/f\/8\/\/z\/\/P\/8\/\/3\/\/v\/+\/\/7\/\/\/\/\/\/\/3\/\/v8AAAAAAAAAAAAAAQABAAAAAAAAAAAAAAAAAAAAAAD\/\/\/\/\/AAABAAAAAAAAAAAA\/\/8AAAAAAAAAAAAAAAAAAAAAAAABAAEAAQACAAEAAAAAAAAAAQACAAIAAAABAAEAAQABAAEAAAAAAP7\/AAAAAAAA\/\/8AAAAAAAAAAAAAAAD\/\/\/\/\/\/\/\/\/\/\/\/\/\/v\/9\/\/7\/\/\/\/+\/\/7\/\/v\/+\/\/\/\/\/\/\/\/\/wAA\/\/8AAAAAAAD\/\/wAAAAD+\/\/7\/\/\/8AAP\/\/AAAAAP\/\/\/v\/\/\/wAAAAAAAAAAAAAAAAAAAAAAAP\/\/AAAAAAAAAAAAAP\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/7\/\/v\/\/\/\/\/\/\/\/8AAAAAAQAAAAAAAAD+\/\/7\/\/v\/\/\/\/\/\/\/\/8AAP\/\/\/v\/+\/\/7\/\/v\/9\/\/z\/\/f\/+\/\/3\/\/f\/\/\/\/7\/AAAAAAAAAAAAAP\/\/AAAAAP\/\/\/v\/+\/\/7\/\/\/\/\/\/\/\/\/\/v\/9\/\/3\/\/f\/+\/\/7\/\/v\/+\/\/\/\/\/\/8AAP\/\/\/\/\/\/\/\/7\/\/v\/+\/\/7\/\/f\/+\/\/7\/\/P\/8\/\/z\/\/P\/8\/\/v\/\/f\/9\/\/7\/\/v\/+\/\/7\/\/v\/9\/\/3\/\/P\/8\/\/z\/\/f\/9\/\/7\/\/\/8AAP\/\/\/\/\/+\/\/z\/\/f\/9\/\/7\/\/v\/9\/\/7\/\/v\/\/\/\/\/\/\/f\/9\/\/3\/\/v\/9\/\/3\/\/v\/+\/\/7\/\/v\/9\/\/7\/\/v\/9\/\/\/\/\/\/\/9\/\/z\/\/P\/9\/\/7\/\/v\/\/\/wAA\/\/\/\/\/\/7\/\/v\/\/\/wAAAAAAAP7\/\/v\/+\/\/7\/\/f\/9\/\/7\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/wAAAAABAAIAAQABAAEAAAAAAAAAAAABAAEAAQAAAAAAAQABAAAAAQABAAEAAgACAAEAAAABAAEAAgADAAIAAgABAAEAAAAAAAEAAQABAAAAAAABAAEAAQACAAEAAAAAAAAAAgABAAEAAQACAAIAAQABAAIAAwACAAIAAQACAAMAAwADAAMAAwADAAQAAgABAAEAAgACAAEAAgADAAQAAwADAAMAAgACAAMABAAEAAQABAADAAMAAwAEAAQAAwADAAMAAwACAAIAAgABAAIAAwACAAEAAgADAAQABAADAAQABAADAAMAAwACAAEAAQAAAAEAAgACAAIAAgAAAAAAAgABAAAAAAABAAIAAgABAAAAAQABAAAAAAABAAEAAwADAAIAAgACAAIAAgACAAIAAgAAAAAAAAABAAEAAQABAAEAAAAAAAAAAAAAAAEAAgADAAIAAgAEAAIAAQAAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAQABAAEAAgABAAAA\/\/8AAAAAAAAAAAAAAAABAAAAAAAAAAAAAQABAAEAAAABAAAAAAAAAAEAAQABAAIAAQABAAEAAgABAAAAAAABAAEAAgADAAIAAQACAAIAAQAAAAAAAAAAAAAAAAD\/\/\/\/\/\/\/\/\/\/\/\/\/AAD\/\/\/\/\/AAAAAP\/\/\/\/8AAAAAAAAAAAAAAAAAAAEAAAABAAEAAQAAAAAAAAAAAAEAAgABAAAAAAAAAAAAAAABAAEAAAABAAEAAQAAAAAAAAAAAAAAAAABAAAAAAAAAAAA\/\/\/\/\/\/\/\/AAAAAAAAAAAAAAAAAAACAAIAAgACAAEAAAAAAAAAAAAAAAAAAAAAAAEAAQABAAAAAQABAAAAAQABAAIAAgACAAIAAQABAAEAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAP\/\/AAAAAAAAAAAAAAAAAQABAAEAAAAAAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\/\/\/\/\/\/7\/\/\/8AAAAAAAAAAP\/\/AAAAAAAAAAAAAAAAAAD+\/\/3\/AAAAAP\/\/AAAAAAAAAAD\/\/wAAAAAAAAAAAAAAAAAA\/\/8AAAAAAAAAAP\/\/AAAAAAAA\/\/8AAAAAAAAAAAAA\/\/8AAP\/\/\/f\/+\/\/3\/\/f\/9\/\/z\/\/P\/8\/\/7\/\/f\/8\/\/z\/\/P\/9\/\/3\/\/P\/8\/\/v\/+\/\/7\/\/z\/\/P\/7\/\/v\/+\/\/7\/\/z\/\/P\/7\/\/r\/+v\/8\/\/z\/\/P\/7\/\/v\/\/v\/\/\/\/7\/\/f\/9\/\/3\/\/f\/9\/\/7\/\/v\/9\/\/3\/\/P\/7\/\/v\/\/P\/9\/\/3\/\/v\/\/\/\/7\/\/v\/9\/\/z\/+\/\/8\/\/z\/+\/\/6\/\/r\/+\/\/8\/\/z\/\/P\/7\/\/3\/\/P\/7\/\/v\/+\/\/7\/\/z\/\/P\/7\/\/v\/+\/\/8\/\/z\/\/P\/9\/\/7\/\/v\/9\/\/z\/+v\/8\/\/z\/\/P\/8\/\/v\/+\/\/7\/\/r\/+\/\/8\/\/z\/\/P\/7\/\/z\/\/f\/9\/\/3\/\/f\/8\/\/z\/\/P\/8\/\/3\/\/f\/+\/\/7\/\/f\/9\/\/3\/\/v\/\/\/\/\/\/\/v\/9\/\/7\/\/f\/+\/\/7\/\/v\/+\/\/7\/\/v\/+\/\/7\/\/v\/\/\/\/\/\/\/\/8AAAAA\/\/\/\/\/\/\/\/AAAAAP7\/\/v\/\/\/\/\/\/\/v\/9\/\/7\/\/\/\/\/\/\/7\/\/v\/+\/\/7\/\/\/\/\/\/\/\/\/\/v\/+\/\/3\/\/P\/7\/\/z\/\/v\/+\/\/7\/\/v\/+\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAAAAAAAQACAAEAAAAAAAEAAQAAAAAAAAAAAAAAAAAAAP\/\/\/\/\/\/\/\/3\/\/f\/\/\/wAAAAAAAP\/\/\/\/8AAP\/\/\/\/\/+\/\/7\/\/\/8AAAAA\/\/\/\/\/wAAAAAAAP7\/\/\/8AAAAAAAAAAAEAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAQAAAAAA\/\/8AAAAAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAD\/\/wAAAQABAAAAAAABAAEAAAAAAAAAAQABAAEAAQACAAEAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAP\/\/\/\/8AAP\/\/\/\/8AAP\/\/\/v\/+\/\/\/\/AAAAAAAAAAAAAP\/\/\/v\/\/\/\/7\/\/v\/+\/\/7\/\/\/\/+\/\/\/\/AAAAAP\/\/\/v\/\/\/\/7\/\/f\/+\/\/7\/\/\/8AAAAAAAD\/\/\/3\/\/f\/9\/\/3\/\/v\/\/\/\/\/\/\/\/\/\/\/\/\/\/AAD\/\/\/\/\/\/v\/+\/\/7\/\/v\/+\/\/\/\/AAAAAP\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/wAA\/\/8AAAAAAAD\/\/\/\/\/\/\/8AAAAA\/\/\/\/\/\/\/\/\/\/\/\/\/\/7\/\/v\/\/\/wAA\/\/8AAP\/\/\/v\/+\/\/\/\/AAD\/\/\/7\/\/v\/+\/wAAAAAAAAAAAAAAAAEAAQAAAP\/\/AAAAAAEAAgACAAIAAQABAAEAAAAAAAAAAQACAAIAAQAAAAEAAQAAAAAAAQABAAEAAQABAAIAAwABAAEAAAAAAAIAAgACAAIAAAAAAAAA\/\/\/\/\/wAAAAD\/\/wAAAQAAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAAAP\/\/AAAAAP\/\/AAAAAAAAAAAAAAAAAAABAAEAAQAAAP\/\/AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEAAAABAAEAAQABAAAAAAABAAIAAQABAAIAAwABAAAAAQABAAAAAAAAAAAAAgAEAAMAAgACAAIAAQAAAAEAAwADAAIAAwAEAAQAAwABAAEAAwAEAAQAAwABAAAAAAABAAIAAgACAAIAAgACAAIAAgACAAIAAAAAAAEAAQACAAEAAQACAAIAAwAEAAQAAwADAAQABAADAAIAAgADAAMABAAEAAQABAAEAAQABQADAAQABQAFAAQAAwACAAEAAQAAAAEAAgADAAIAAgACAAIAAgABAAEAAgABAAEAAgACAAIAAAABAAIAAQAAAAEAAwAEAAQAAwAEAAMAAgADAAQAAwAEAA=="}
+[Realtime][TX] {"type":"response.cancel"}
+[Realtime][RX] Unhandled type=response.content_part.added payload=["part": {
+    transcript = "";
+    type = audio;
+}, "type": response.content_part.added, "event_id": event_CA3npL8YlZdoUko1HP7UR, "output_index": 0, "item_id": item_CA3noIg0duX6I61WHYsYQ, "response_id": resp_CA3noPEu8hDV7cfA8GZlI, "content_index": 0]
+[Realtime][RX] Unhandled type=response.audio_transcript.delta payload=["type": response.audio_transcript.delta, "event_id": event_CA3npa1E9VjDDECjgQfvw, "obfuscation": rx8nbmORZ1N, "delta": Hello, "output_index": 0, "item_id": item_CA3noIg0duX6I61WHYsYQ, "response_id": resp_CA3noPEu8hDV7cfA8GZlI, "content_index": 0]
+[Realtime][RX] Unhandled type=response.audio_transcript.delta payload=["type": response.audio_transcript.delta, "event_id": event_CA3npcO4jYTcyUjmT1NGF, "obfuscation": wNAtjT7mn25fsSM, "delta": !, "output_index": 0, "item_id": item_CA3noIg0duX6I61WHYsYQ, "response_id": resp_CA3noPEu8hDV7cfA8GZlI, "content_index": 0]
+[Realtime][TX] {"type":"input_audio_buffer.commit"}
+[Realtime][TX] {"type":"response.create","response":{"conversation":"auto","modalities":["audio","text"],"instructions":"Please answer concisely and speak the reply."}}
+[Realtime][RX] Unhandled type=response.audio_transcript.delta payload=["type": response.audio_transcript.delta, "event_id": event_CA3np0Ak3Lv0XKgPTjqYO, "obfuscation": VFIIdlLbjyIa, "delta":  I'm, "output_index": 0, "item_id": item_CA3noIg0duX6I61WHYsYQ, "response_id": resp_CA3noPEu8hDV7cfA8GZlI, "content_index": 0]
+[Realtime][RX] Unhandled type=response.audio.done payload=["content_index": 0, "response_id": resp_CA3noPEu8hDV7cfA8GZlI, "output_index": 0, "item_id": item_CA3noIg0duX6I61WHYsYQ, "event_id": event_CA3npvOXCDNeMTewmAfGI, "type": response.audio.done]
+[Realtime][RX] Unhandled type=response.audio_transcript.done payload=["type": response.audio_transcript.done, "event_id": event_CA3npYQV27GEsxQa9exYn, "transcript": Hello! I'm, "output_index": 0, "item_id": item_CA3noIg0duX6I61WHYsYQ, "response_id": resp_CA3noPEu8hDV7cfA8GZlI, "content_index": 0]
+[Realtime][RX] Unhandled type=response.content_part.done payload=["part": {
+    transcript = "Hello! I'm";
+    type = audio;
+}, "type": response.content_part.done, "event_id": event_CA3npVdEMK9coy8FIEJKk, "output_index": 0, "item_id": item_CA3noIg0duX6I61WHYsYQ, "response_id": resp_CA3noPEu8hDV7cfA8GZlI, "content_index": 0]
+[Realtime][RX] Unhandled type=response.output_item.done payload=["item": {
+    content =     (
+                {
+            transcript = "Hello! I'm";
+            type = audio;
+        }
+    );
+    id = "item_CA3noIg0duX6I61WHYsYQ";
+    object = "realtime.item";
+    role = assistant;
+    status = incomplete;
+    type = message;
+}, "output_index": 0, "response_id": resp_CA3noPEu8hDV7cfA8GZlI, "type": response.output_item.done, "event_id": event_CA3npMRzXLS6PYmjnXklP]
+[Realtime][RX] Unhandled type=response.done payload=["event_id": event_CA3npo6VTV89niex0Rxa5, "type": response.done, "response": {
+    "conversation_id" = "conv_CA3nkHzb3Vlo5Nr011Uz5";
+    id = "resp_CA3noPEu8hDV7cfA8GZlI";
+    "max_output_tokens" = inf;
+    metadata = "<null>";
+    modalities =     (
+        audio,
+        text
+    );
+    object = "realtime.response";
+    output =     (
+                {
+            content =             (
+                                {
+                    transcript = "Hello! I'm";
+                    type = audio;
+                }
+            );
+            id = "item_CA3noIg0duX6I61WHYsYQ";
+            object = "realtime.item";
+            role = assistant;
+            status = incomplete;
+            type = message;
+        }
+    );
+    "output_audio_format" = pcm16;
+    status = cancelled;
+    "status_details" =     {
+        reason = "client_cancelled";
+        type = cancelled;
+    };
+    temperature = "0.8";
+    usage =     {
+        "input_token_details" =         {
+            "audio_tokens" = 16;
+            "cached_tokens" = 0;
+            "cached_tokens_details" =             {
+                "audio_tokens" = 0;
+                "image_tokens" = 0;
+                "text_tokens" = 0;
+            };
+            "image_tokens" = 0;
+            "text_tokens" = 21;
+        };
+        "input_tokens" = 37;
+        "output_token_details" =         {
+            "audio_tokens" = 15;
+            "text_tokens" = 8;
+        };
+        "output_tokens" = 23;
+        "total_tokens" = 60;
+    };
+    voice = alloy;
+}]
+[Realtime][RX] response started: resp_CA3nr5HBlZJqdPa8h3mJS
+[Realtime][RX] Unhandled type=response.output_item.added payload=["output_index": 0, "event_id": event_CA3nr1YTkY6wq4L3Ux9tB, "item": {
+    content =     (
+    );
+    id = "item_CA3nrkmq1n9ff2zsyEKFh";
+    object = "realtime.item";
+    role = assistant;
+    status = "in_progress";
+    type = message;
+}, "type": response.output_item.added, "response_id": resp_CA3nr5HBlZJqdPa8h3mJS]
+[Realtime][RX] Unhandled type=conversation.item.created payload=["previous_item_id": item_CA3noIg0duX6I61WHYsYQ, "item": {
+    content =     (
+    );
+    id = "item_CA3nrkmq1n9ff2zsyEKFh";
+    object = "realtime.item";
+    role = assistant;
+    status = "in_progress";
+    type = message;
+}, "type": conversation.item.created, "event_id": event_CA3nrm6zqSa3EHT1UzXex]
+[Realtime][RX] Unhandled type=response.content_part.added payload=["item_id": item_CA3nrkmq1n9ff2zsyEKFh, "content_index": 0, "output_index": 0, "response_id": resp_CA3nr5HBlZJqdPa8h3mJS, "type": response.content_part.added, "event_id": event_CA3nrxuwkzuA2qDSr5rnW, "part": {
+    transcript = "";
+    type = audio;
+}]
+[Realtime][RX] Unhandled type=response.audio_transcript.delta payload=["item_id": item_CA3nrkmq1n9ff2zsyEKFh, "obfuscation": Pn0i0cd5oiM62, "content_index": 0, "output_index": 0, "response_id": resp_CA3nr5HBlZJqdPa8h3mJS, "type": response.audio_transcript.delta, "event_id": event_CA3nrT0NIPmkBAPU2WGkd, "delta": I'm]
+[Realtime][RX] Unhandled type=response.audio_transcript.delta payload=["item_id": item_CA3nrkmq1n9ff2zsyEKFh, "obfuscation": 4hKXMPTImt, "content_index": 0, "output_index": 0, "response_id": resp_CA3nr5HBlZJqdPa8h3mJS, "type": response.audio_transcript.delta, "event_id": event_CA3nrbo5IkUqwTpQdNL5I, "delta":  doing]
+[Realtime][RX] Unhandled type=response.audio_transcript.delta payload=["item_id": item_CA3nrkmq1n9ff2zsyEKFh, "obfuscation": 6xT4Ii70qD, "content_index": 0, "output_index": 0, "response_id": resp_CA3nr5HBlZJqdPa8h3mJS, "type": response.audio_transcript.delta, "event_id": event_CA3nrHnGk5CXmPtxZVRlT, "delta":  great]
+[Realtime][RX] Unhandled type=response.audio_transcript.delta payload=["item_id": item_CA3nrkmq1n9ff2zsyEKFh, "obfuscation": kYEcS9ME6hdFxDz, "content_index": 0, "output_index": 0, "response_id": resp_CA3nr5HBlZJqdPa8h3mJS, "type": response.audio_transcript.delta, "event_id": event_CA3nr0IlU0BjzCTXDGT3n, "delta": ,]
+[Realtime][RX] Unhandled type=response.audio_transcript.delta payload=["item_id": item_CA3nrkmq1n9ff2zsyEKFh, "obfuscation": onf2UUGm5J, "content_index": 0, "output_index": 0, "response_id": resp_CA3nr5HBlZJqdPa8h3mJS, "type": response.audio_transcript.delta, "event_id": event_CA3nrCvVttgVVt29WzWXc, "delta":  thank]
+[Realtime][RX] Unhandled type=response.audio_transcript.delta payload=["item_id": item_CA3nrkmq1n9ff2zsyEKFh, "obfuscation": DnJGRMSedAsl, "content_index": 0, "output_index": 0, "response_id": resp_CA3nr5HBlZJqdPa8h3mJS, "type": response.audio_transcript.delta, "event_id": event_CA3nr12s8Wx4FViUWsilk, "delta":  you]
+[Realtime][RX] Unhandled type=response.audio_transcript.delta payload=["item_id": item_CA3nrkmq1n9ff2zsyEKFh, "obfuscation": qIjSMA9UiVwc, "content_index": 0, "output_index": 0, "response_id": resp_CA3nr5HBlZJqdPa8h3mJS, "type": response.audio_transcript.delta, "event_id": event_CA3nrMzBoTmNklpApuaDV, "delta":  for]
+[Realtime][RX] Unhandled type=response.audio_transcript.delta payload=["item_id": item_CA3nrkmq1n9ff2zsyEKFh, "obfuscation": 77Td7Cb5k, "content_index": 0, "output_index": 0, "response_id": resp_CA3nr5HBlZJqdPa8h3mJS, "type": response.audio_transcript.delta, "event_id": event_CA3nr4JXwNE5lD52td27k, "delta":  asking]
+[Realtime][RX] Unhandled type=response.audio_transcript.delta payload=["item_id": item_CA3nrkmq1n9ff2zsyEKFh, "obfuscation": 6ypFsWvv206xydE, "content_index": 0, "output_index": 0, "response_id": resp_CA3nr5HBlZJqdPa8h3mJS, "type": response.audio_transcript.delta, "event_id": event_CA3nrSkX6se3vfSlppS2i, "delta": .]
+[Realtime][RX] Unhandled type=response.audio_transcript.delta payload=["item_id": item_CA3nrkmq1n9ff2zsyEKFh, "obfuscation": 0tCA0ot8ZdZA, "content_index": 0, "output_index": 0, "response_id": resp_CA3nr5HBlZJqdPa8h3mJS, "type": response.audio_transcript.delta, "event_id": event_CA3nrJabskVqMgNCGa83m, "delta":  How]
+[Realtime][RX] Unhandled type=response.audio_transcript.delta payload=["item_id": item_CA3nrkmq1n9ff2zsyEKFh, "obfuscation": rdmrbl74Dx, "content_index": 0, "output_index": 0, "response_id": resp_CA3nr5HBlZJqdPa8h3mJS, "type": response.audio_transcript.delta, "event_id": event_CA3nrAQmp9yEESzetDY91, "delta":  about]
+[Realtime][RX] Unhandled type=response.audio_transcript.delta payload=["item_id": item_CA3nrkmq1n9ff2zsyEKFh, "obfuscation": diqGJKuSrdW4, "content_index": 0, "output_index": 0, "response_id": resp_CA3nr5HBlZJqdPa8h3mJS, "type": response.audio_transcript.delta, "event_id": event_CA3nrfexfZExoflnGUtr9, "delta":  you]
+[Realtime][RX] Unhandled type=response.audio_transcript.delta payload=["item_id": item_CA3nrkmq1n9ff2zsyEKFh, "obfuscation": 9MlSXfnwyUWGPOd, "content_index": 0, "output_index": 0, "response_id": resp_CA3nr5HBlZJqdPa8h3mJS, "type": response.audio_transcript.delta, "event_id": event_CA3nrrNNm7dlPSB957Niq, "delta": ?]
+[Realtime][RX] Unhandled type=response.audio.done payload=["output_index": 0, "item_id": item_CA3nrkmq1n9ff2zsyEKFh, "event_id": event_CA3nsy6RCRlnJlrY19TE4, "content_index": 0, "type": response.audio.done, "response_id": resp_CA3nr5HBlZJqdPa8h3mJS]
+[Realtime][RX] Unhandled type=response.audio_transcript.done payload=["item_id": item_CA3nrkmq1n9ff2zsyEKFh, "transcript": I'm doing great, thank you for asking. How about you?, "content_index": 0, "output_index": 0, "response_id": resp_CA3nr5HBlZJqdPa8h3mJS, "type": response.audio_transcript.done, "event_id": event_CA3nsU0WsU1u0P9Umv4Dk]
+[Realtime][RX] Unhandled type=response.content_part.done payload=["item_id": item_CA3nrkmq1n9ff2zsyEKFh, "content_index": 0, "output_index": 0, "response_id": resp_CA3nr5HBlZJqdPa8h3mJS, "type": response.content_part.done, "event_id": event_CA3ns3km1MamW5DqkqiWF, "part": {
+    transcript = "I'm doing great, thank you for asking. How about you?";
+    type = audio;
+}]
+[Realtime][RX] Unhandled type=response.output_item.done payload=["output_index": 0, "event_id": event_CA3nsxMtbj7VI8NbVfBy2, "item": {
+    content =     (
+                {
+            transcript = "I'm doing great, thank you for asking. How about you?";
+            type = audio;
+        }
+    );
+    id = "item_CA3nrkmq1n9ff2zsyEKFh";
+    object = "realtime.item";
+    role = assistant;
+    status = completed;
+    type = message;
+}, "type": response.output_item.done, "response_id": resp_CA3nr5HBlZJqdPa8h3mJS]
+[Realtime][RX] Unhandled type=response.done payload=["type": response.done, "event_id": event_CA3nsjF1r3pFKIl0pEzIs, "response": {
+    "conversation_id" = "conv_CA3nkHzb3Vlo5Nr011Uz5";
+    id = "resp_CA3nr5HBlZJqdPa8h3mJS";
+    "max_output_tokens" = inf;
+    metadata = "<null>";
+    modalities =     (
+        audio,
+        text
+    );
+    object = "realtime.response";
+    output =     (
+                {
+            content =             (
+                                {
+                    transcript = "I'm doing great, thank you for asking. How about you?";
+                    type = audio;
+                }
+            );
+            id = "item_CA3nrkmq1n9ff2zsyEKFh";
+            object = "realtime.item";
+            role = assistant;
+            status = completed;
+            type = message;
+        }
+    );
+    "output_audio_format" = pcm16;
+    status = completed;
+    "status_details" = "<null>";
+    temperature = "0.8";
+    usage =     {
+        "input_token_details" =         {
+            "audio_tokens" = 31;
+            "cached_tokens" = 0;
+            "cached_tokens_details" =             {
+                "audio_tokens" = 0;
+                "image_tokens" = 0;
+                "text_tokens" = 0;
+            };
+            "image_tokens" = 0;
+            "text_tokens" = 31;
+        };
+        "input_tokens" = 62;
+        "output_token_details" =         {
+            "audio_tokens" = 68;
+            "text_tokens" = 23;
+        };
+        "output_tokens" = 91;
+        "total_tokens" = 153;
+    };
+    voice = alloy;
+}]
+[Realtime][RX] Unhandled type=rate_limits.updated payload=["type": rate_limits.updated, "rate_limits": <__NSSingleObjectArrayI 0x10cc582e0>(
+{
+    limit = 40000;
+    name = tokens;
+    remaining = 39339;
+    "reset_seconds" = "0.991";
+}
+)
+, "event_id": event_CA3nsvGuLQ8qV5L7DZgei]

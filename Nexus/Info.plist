@@ -4,5 +4,7 @@
 <dict>
 	<key>NSCalendarsWriteOnlyAccessUsageDescription</key>
 	<string>MercuryAI needs access to your calendar to create and manage events based on your requests</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>Voice mode needs the microphone to capture your speech.</string>
 </dict>
 </plist>
