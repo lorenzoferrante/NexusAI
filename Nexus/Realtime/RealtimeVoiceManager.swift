@@ -268,7 +268,7 @@ class RealtimeVoiceManager: NSObject {
 
     // MARK: - WebSocket
     private func openWebSocket() async throws {
-        let token = "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"
+        let token = ""
 
         // 2) Open WebSocket to OpenAI Realtime
         var req = URLRequest(url: URL(string: "wss://api.openai.com/v1/realtime?model=\(RealtimeConfig.model)")!)
