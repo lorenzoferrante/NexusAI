@@ -43,7 +43,7 @@ struct NexusApp: App {
                     isCheckingProfile = false
                 }
             }
-            .preferredColorScheme(.dark)
+//            .preferredColorScheme(.dark)
         }
     }
 }

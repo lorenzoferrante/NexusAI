@@ -52,14 +52,21 @@ struct RealtimeVoiceView: View {
                 .foregroundStyle(.primary)
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding()
-                .glassEffect(.regular.interactive(), in: .rect(cornerRadius: 12))
+                .glassEffect(.clear.interactive(), in: .rect(cornerRadius: 12))
         }
     }
 
     private var micButton: some View {
         let baseSize: CGFloat = 90
         let scale = 1.0 + CGFloat(client.level) * 0.2
-        return Button(action: {}) {
+        return Button(action: {
+            UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+            if client.isRecording {
+                client.stopRecordingAndSend()
+            } else {
+                client.startRecording()
+            }
+        }) {
             Image(systemName: client.isRecording ? "mic.fill" : "mic")
                 .font(.system(size: 36, weight: .bold))
                 .foregroundStyle(.white)
@@ -68,14 +75,7 @@ struct RealtimeVoiceView: View {
                 .scaleEffect(scale)
                 .shadow(radius: 12)
         }
-        .onLongPressGesture(minimumDuration: 0, perform: {}, onPressingChanged: { isPressing in
-            if isPressing {
-                if !client.isRecording { client.startRecording() }
-            } else {
-                client.stopRecordingAndSend()
-            }
-        })
-        .accessibilityLabel(client.isRecording ? "Recording. Release to send." : "Hold to talk")
+        .accessibilityLabel(client.isRecording ? "Recording. Tap to send." : "Tap to talk")
     }
 
     private var statusText: String {

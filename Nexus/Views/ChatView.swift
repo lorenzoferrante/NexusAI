@@ -21,8 +21,8 @@ struct ChatView: View {
         ScrollViewReader { proxy in
             ScrollView {
                 ForEach(supabaseManager.currentMessages, id: \.id) { message in
-                    
-                    if message.content != nil {
+                    // Show tool messages regardless of content so we can display "Running..."
+                    if message.role == .tool || message.content != nil {
                         MessageView(message: message)
                             .padding([.trailing, .leading])
                     }

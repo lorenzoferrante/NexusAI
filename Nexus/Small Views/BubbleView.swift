@@ -16,8 +16,8 @@ struct BubbleView: View {
             .fontDesign(.serif)
             .foregroundStyle(.secondary)
             .padding()
-            .glassEffect(.regular.interactive(), in: .rect(cornerRadius: 16))
-            .preferredColorScheme(.dark)
+            .glassEffect(.clear.interactive(), in: .rect(cornerRadius: 16))
+//            .preferredColorScheme(.dark)
             .opacity(0.7)
     }
 }
@@ -75,7 +75,7 @@ struct CarouselView: View {
                 }
             }
         }
-        .preferredColorScheme(.dark)
+//        .preferredColorScheme(.dark)
     }
     
     

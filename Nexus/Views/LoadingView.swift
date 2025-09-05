@@ -31,7 +31,7 @@ struct LoadingView: View {
                     }
                 }
             }
-            .preferredColorScheme(.dark)
+//            .preferredColorScheme(.dark)
         }
     }
 }

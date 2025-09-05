@@ -44,6 +44,13 @@ struct SidebarView: View {
                         .glassEffect(in: .circle)
                 }
             }
+            ToolbarItem(placement: .topBarTrailing) {
+                NavigationLink {
+                    RealtimeVoiceView()
+                } label: {
+                    Image(systemName: "mic.circle")
+                }
+            }
         }
         .toolbarTitleDisplayMode(.inlineLarge)
         .navigationDestination(isPresented: $createNewChat) {
@@ -58,7 +65,7 @@ struct SidebarView: View {
                 try await supabaseClient.retriveChats()
             }
         }
-        .preferredColorScheme(.dark)
+//        .preferredColorScheme(.dark)
         .alert(
             "Are you sure you want to delete this chat?",
             isPresented: $presentAlert,
@@ -140,10 +147,10 @@ struct SidebarView: View {
                 isSettingsPresented.toggle()
             } label: {
                 Image(systemName: "person.crop.circle.fill")
-                    .foregroundColor(.gray)
+                    .foregroundColor(.secondary)
                 Text(supabaseClient.profile?.username ?? "")
             }
-            .foregroundStyle(.white)
+            .foregroundStyle(.primary)
 //            .tint(.white)
             .padding()
             .glassEffect(.regular.interactive(), in: .capsule)

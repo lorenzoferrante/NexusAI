@@ -191,79 +191,127 @@ class OpenRouterViewModel {
             try await SupabaseManager.shared.updateMessageToolCalls(messageId: placeholderId, toolCalls: toolCalls)
         }
         
-        // 2) Execute tools (in parallel) and store each tool result message.
+        // 2) Execute tools (in parallel). Insert a placeholder tool message first, then update it with results.
         try await withThrowingTaskGroup(of: Message.self) { group in
             for call in toolCalls {
                 group.addTask {
-                    let resultContent: String
+                    var resultContent: String = ""
                     var toolMsg: Message = Message(
                         chatId: currentChat.id,
                         role: .tool,
                         createdAt: Date()
                     )
-                    
+
+                    // Common fields
+                    toolMsg.toolCallId = call.id
+                    toolMsg.toolName = call.function?.name
+
+                    // Provide a friendly args label where possible so the UI can render immediately.
                     if call.function?.name == "search_web" {
                         // Execute your web search tool
                         do {
                             let args = try JSONDecoder().decode(WebSearchArgs.self, from: Data((call.function?.arguments ?? "").utf8))
                             let lastUserMessage = await SupabaseManager.shared.currentMessages.last(where: { $0.role == .user })!.content
-                                
-                            toolMsg.toolCallId = call.id
-                            toolMsg.toolName = call.function?.name
                             toolMsg.toolArgs = "Searching for \"\(args.query)\""
-                            
+                            // Insert the tool message BEFORE execution
+                            try await SupabaseManager.shared.addMessageToChat(toolMsg)
+
                             resultContent = try await ToolsManager().executeTool(named: "search_web", arguments: args.query, other: lastUserMessage)
                                 .trimmingCharacters(in: .whitespacesAndNewlines)
-                            toolMsg.content = resultContent
+                            toolMsg.content = await self.displayContentForTool(name: call.function?.name, fullContent: resultContent)
+                            try await SupabaseManager.shared.updateToolMessage(toolMsg)
                         } catch {
                             resultContent = "Error executing web search: \(error.localizedDescription)"
+                            toolMsg.content = resultContent
+                            // Ensure message is present even on error
+                            if await SupabaseManager.shared.currentMessages.firstIndex(where: { $0.id == toolMsg.id }) == nil {
+                                try? await SupabaseManager.shared.addMessageToChat(toolMsg)
+                            }
+                            try? await SupabaseManager.shared.updateToolMessage(toolMsg)
                         }
                     } else if call.function?.name == "doc_lookup"  {
                         // Execute doc lookup tool
-                        toolMsg.toolCallId = call.id
-                        toolMsg.toolName = call.function?.name
-                        
                         do {
                             let args = try JSONDecoder().decode(DocLookupArgs.self, from: Data((call.function?.arguments ?? "").utf8))
                             let lastUserMessage = await SupabaseManager.shared.currentMessages.last(where: { $0.role == .user })!.content
+                            try await SupabaseManager.shared.addMessageToChat(toolMsg)
                             resultContent = try await ToolsManager().executeTool(named: "doc_lookup", arguments: args.docID, other: lastUserMessage)
                                 .trimmingCharacters(in: .whitespacesAndNewlines)
-                            toolMsg.content = resultContent
+                            toolMsg.content = await self.displayContentForTool(name: call.function?.name, fullContent: resultContent)
+                            try await SupabaseManager.shared.updateToolMessage(toolMsg)
                         } catch {
                             resultContent = "Error executing doc lookup: \(error.localizedDescription)"
+                            toolMsg.content = resultContent
+                            if await SupabaseManager.shared.currentMessages.firstIndex(where: { $0.id == toolMsg.id }) == nil {
+                                try? await SupabaseManager.shared.addMessageToChat(toolMsg)
+                            }
+                            try? await SupabaseManager.shared.updateToolMessage(toolMsg)
                         }
                     } else if call.function?.name == "manage_calendar" {
                         // Execute calendar tool
-                        toolMsg.toolCallId = call.id
-                        toolMsg.toolName = call.function?.name
-                        
                         do {
+                            try await SupabaseManager.shared.addMessageToChat(toolMsg)
                             // Pass the arguments directly as they contain all needed info
                             resultContent = try await ToolsManager().executeTool(
                                 named: "manage_calendar",
                                 arguments: call.function?.arguments ?? "{}"
                             ).trimmingCharacters(in: .whitespacesAndNewlines)
-                            toolMsg.content = resultContent
+                            toolMsg.content = await self.displayContentForTool(name: call.function?.name, fullContent: resultContent)
+                            try await SupabaseManager.shared.updateToolMessage(toolMsg)
                         } catch {
                             resultContent = "Error executing calendar operation: \(error.localizedDescription)"
+                            toolMsg.content = resultContent
+                            if await SupabaseManager.shared.currentMessages.firstIndex(where: { $0.id == toolMsg.id }) == nil {
+                                try? await SupabaseManager.shared.addMessageToChat(toolMsg)
+                            }
+                            try? await SupabaseManager.shared.updateToolMessage(toolMsg)
                         }
                     } else if call.function?.name == "get_webpage_info" {
-                        toolMsg.toolCallId = call.id
-                        toolMsg.toolName = call.function?.name
-                        
                         do {
+                            try await SupabaseManager.shared.addMessageToChat(toolMsg)
                             let args = try JSONDecoder().decode(CrawlToolArgs.self, from: Data((call.function?.arguments ?? "").utf8))
                             resultContent = try await ToolsManager().executeTool(named: "get_webpage_info", arguments: args.urls.joined(separator: ";"))
                                 .trimmingCharacters(in: .whitespacesAndNewlines)
-                            toolMsg.content = resultContent
+                            toolMsg.content = await self.displayContentForTool(name: call.function?.name, fullContent: resultContent)
+                            try await SupabaseManager.shared.updateToolMessage(toolMsg)
                         } catch {
                             resultContent = "Error executing crawl webpage: \(error.localizedDescription)"
+                            toolMsg.content = resultContent
+                            if await SupabaseManager.shared.currentMessages.firstIndex(where: { $0.id == toolMsg.id }) == nil {
+                                try? await SupabaseManager.shared.addMessageToChat(toolMsg)
+                            }
+                            try? await SupabaseManager.shared.updateToolMessage(toolMsg)
+                        }
+                    } else if call.function?.name == "create_text_file" {
+                        // Decode to show a friendly args label with the file name
+                        struct CreateTextFileArgs: Codable { let fileName: String; let content: String }
+                        if let data = (call.function?.arguments ?? "{}").data(using: .utf8),
+                           let decoded = try? JSONDecoder().decode(CreateTextFileArgs.self, from: data) {
+                            toolMsg.toolArgs = "Creating file \"\(decoded.fileName)\""
+                        }
+                        do {
+                            try await SupabaseManager.shared.addMessageToChat(toolMsg)
+                            resultContent = try await ToolsManager().executeTool(
+                                named: "create_text_file",
+                                arguments: call.function?.arguments ?? "{}"
+                            ).trimmingCharacters(in: .whitespacesAndNewlines)
+                            toolMsg.content = await self.displayContentForTool(name: call.function?.name, fullContent: resultContent)
+                            try await SupabaseManager.shared.updateToolMessage(toolMsg)
+                        } catch {
+                            resultContent = "Error creating text file: \(error.localizedDescription)"
+                            toolMsg.content = resultContent
+                            if await SupabaseManager.shared.currentMessages.firstIndex(where: { $0.id == toolMsg.id }) == nil {
+                                try? await SupabaseManager.shared.addMessageToChat(toolMsg)
+                            }
+                            try? await SupabaseManager.shared.updateToolMessage(toolMsg)
                         }
                     } else {
                         resultContent = #"{"error":"No handler for tool: \#(call.function?.name ?? "unknown")"}"#
+                        toolMsg.content = resultContent
+                        // Insert then update so the UI shows the tool tile immediately
+                        try? await SupabaseManager.shared.addMessageToChat(toolMsg)
+                        try? await SupabaseManager.shared.updateToolMessage(toolMsg)
                     }
-                    
-                    try await SupabaseManager.shared.addMessageToChat(toolMsg)
                     return toolMsg
                 }
             }
@@ -274,6 +322,19 @@ class OpenRouterViewModel {
         
         // 3) Continue the conversation: start a fresh streamed request.
         try await stream()
+    }
+
+    // MARK: - Display helpers
+    /// For UI display of tool results. In particular, avoid dumping full file content for text file tool.
+    private func displayContentForTool(name: String?, fullContent: String) -> String {
+        guard let name = name else { return fullContent }
+        if name == "create_text_file" {
+            // Keep only the header and link; drop any code block preview to avoid large content in chat.
+            if let fenceRange = fullContent.range(of: "```") {
+                return String(fullContent[..<fenceRange.lowerBound]).trimmingCharacters(in: .whitespacesAndNewlines)
+            }
+        }
+        return fullContent
     }
 
     

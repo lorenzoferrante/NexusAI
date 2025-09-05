@@ -8,8 +8,11 @@ app.use(cors()); // tighten for prod
 
 const PORT = process.env.PORT || 8787;
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
-const MODEL = process.env.REALTIME_MODEL || 'gpt-realtime-preview-2024-12-17';
+const MODEL = process.env.REALTIME_MODEL || 'gpt-realtime';
 const VOICE = process.env.REALTIME_VOICE || 'alloy';
+const INSTRUCTIONS =
+  process.env.REALTIME_INSTRUCTIONS ||
+  'You are a concise voice assistant. Always respond in the user\'s spoken language; if unclear, default to English. Keep replies short.';
 
 if (!OPENAI_API_KEY) {
   console.error('Missing OPENAI_API_KEY in .env');
@@ -28,9 +31,9 @@ app.get('/session', async (req, res) => {
       body: JSON.stringify({
         model: MODEL,
         voice: VOICE,
-        // Choose PCM16 to stream raw audio frames both directions
-        input_audio_format: 'pcm16',
-        output_audio_format: 'pcm16',
+        instructions: INSTRUCTIONS,
+        modalities: ["text", "audio"],
+        turn_detection: { type: 'server_vad' },
       }),
     });
     const data = await r.json();
@@ -48,4 +51,3 @@ app.get('/session', async (req, res) => {
 app.listen(PORT, () => {
   console.log(`Realtime ephemeral server listening on :${PORT}`);
 });
-

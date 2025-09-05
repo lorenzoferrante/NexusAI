@@ -59,15 +59,15 @@ struct CreateProfileView: View {
                                 .disabled(true)
                                 .foregroundStyle(.secondary)
                                 .padding()
-                                .glassEffect(.regular.interactive(), in: .rect(cornerRadius: 16))
+                                .glassEffect(.clear.interactive(), in: .rect(cornerRadius: 16))
                             
                             TextField("Username", text: $username)
                                 .padding()
-                                .glassEffect(.regular.interactive(), in: .rect(cornerRadius: 16))
+                                .glassEffect(.clear.interactive(), in: .rect(cornerRadius: 16))
                             
                             TextField("Full Name", text: $fullname)
                                 .padding()
-                                .glassEffect(.regular.interactive(), in: .rect(cornerRadius: 16))
+                                .glassEffect(.clear.interactive(), in: .rect(cornerRadius: 16))
                             
                             HStack(alignment: .lastTextBaseline) {
                                 Text("Where are you from?")
@@ -103,7 +103,7 @@ struct CreateProfileView: View {
                                 RoundedRectangle(cornerRadius: 16.0)
                                     .fill(.white)
                             )
-                            .glassEffect(.regular.interactive())
+                            .glassEffect(.clear.interactive())
                         }
                     }
                     .padding()
@@ -115,7 +115,7 @@ struct CreateProfileView: View {
                 }
             }
             .navigationTitle("Your Profile")
-            .preferredColorScheme(.dark)
+//            .preferredColorScheme(.dark)
         }
     }
     

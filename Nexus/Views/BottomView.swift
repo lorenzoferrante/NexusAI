@@ -11,6 +11,7 @@ import UniformTypeIdentifiers
 import Auth
 
 struct BottomView: View {
+    @State var defaultsManager = DefaultsManager.shared
     @State var supabaseManager = SupabaseManager.shared
     @State var vm = OpenRouterAPI.shared
     @State var isWebSearch: Bool = false
@@ -134,6 +135,22 @@ struct BottomView: View {
                     }
                 }
             }
+            .background(
+                LinearGradient(
+                    colors: [
+                        ThemeColors
+                            .from(color: defaultsManager.selectedThemeColor)
+                            .opacity(0.2),
+                        ThemeColors
+                            .from(color: defaultsManager.selectedThemeColor)
+                            .opacity(0.1),
+                        Color.clear
+                    ],
+                    startPoint: .top,
+                    endPoint: .bottom
+                ),
+                in: .rect(cornerRadius: 18)
+            )
             
         }
         .glassEffect(.regular.interactive(), in: .rect(cornerRadius: 18))
@@ -166,7 +183,7 @@ struct BottomView: View {
             }
         }
         .buttonStyle(.bordered)
-        .glassEffect(in: .capsule)
+        .glassEffect(.regular.interactive(), in: .capsule)
         .tint(.primary.opacity(0.7))
         .padding()
     }
@@ -297,6 +314,6 @@ struct BottomView: View {
     ZStack {
         BackView()
         BottomView(prompt: $prompt)
-            .preferredColorScheme(.dark)
+//            .preferredColorScheme(.dark)
     }
 }

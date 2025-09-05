@@ -11,13 +11,13 @@ import AVFoundation
 enum RealtimeConfig {
     // Set this to your ephemeral session endpoint (see Server/realtime-ephemeral-server)
     // Example: https://your-domain.example.com/session
-    static var ephemeralSessionURL: URL? = nil
+    static var ephemeralSessionURL: URL? = URL(string: "https://4587b611027d.ngrok-free.app/session")
 
     // Default model and voice. Keep in sync with your server endpoint.
     static let model: String = "gpt-realtime"
     static let voice: String = "alloy"
 
     // Audio format parameters for realtime streaming
-    static let targetSampleRate: Double = 16_000 // PCM16 mono 16kHz
+    static let targetSampleRate: Double = 24_000 // PCM16 mono 24kHz (matches Realtime defaults)
     static let channels: AVAudioChannelCount = 1
 }

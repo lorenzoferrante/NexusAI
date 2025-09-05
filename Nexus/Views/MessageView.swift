@@ -56,7 +56,7 @@ struct MessageView: View {
             }
             //        .frame(maxWidth: .infinity, alignment: .trailing)
             .padding()
-            .glassEffect(.regular.interactive(), in: .rect(cornerRadius: 16))
+            .glassEffect(.clear.interactive(), in: .rect(cornerRadius: 16))
         }
     }
     
@@ -129,7 +129,6 @@ struct MessageView: View {
         }
     }
     
-    // Changed from func to computed property and consolidated into one builder.
     private var toolMessage: some View {
         Group {
             if let toolName = message.toolName {
@@ -145,7 +144,7 @@ struct MessageView: View {
                         Image(systemName: toolInfo.icon)
                             .foregroundColor(toolInfo.accentColor)
                         Text(toolInfo.name)
-                            .foregroundStyle(.white)
+                            .foregroundStyle(.primary)
                     }
                     
                     if let toolArgs = message.toolArgs {
@@ -153,10 +152,29 @@ struct MessageView: View {
                             .font(.caption)
                             .foregroundStyle(.secondary)
                     }
+
+                    // Status: show that the tool call is in progress; do not render tool output content here.
+                    if (message.content ?? "").isEmpty {
+                        HStack(spacing: 8) {
+                            ThinkingIndicatorView()
+                                .frame(width: 14, height: 14)
+                            Text("Running...")
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                        }
+                    } else {
+                        HStack(spacing: 6) {
+                            Image(systemName: "checkmark.circle.fill")
+                                .foregroundColor(.green)
+                            Text("Completed")
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                        }
+                    }
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding()
-                .glassEffect(.regular.interactive(), in: .rect(cornerRadius: 16))
+                .glassEffect(.clear.interactive(), in: .rect(cornerRadius: 16))
             } else {
                 EmptyView()
             }

@@ -163,27 +163,25 @@ class SupabaseManager {
     }
     
     public func addMessageToChat(_ message: Message) async throws {
+        await MainActor.run {
+            debugPrint("[DEBUG] Appended message to currentMessages")
+            self.currentMessages.append(message)
+        }
         do {
             try await client
                 .from("messages")
                 .insert(message)
                 .execute()
             debugPrint("[DEBUG] Added message to chat")
-            
-            await MainActor.run {
-                debugPrint("[DEBUG] Appended message to currentMessages")
-                self.currentMessages.append(message)
-            }
-            
         } catch {
             debugPrint("[DEBUG - addMessageToChat()] Error: \(error.localizedDescription)")
         }
     }
     
     public func updateToolMessage(_ message: Message) async throws {
-        // Probably a bug introduces in this method
+        // Update only the content of an existing tool message and reflect it locally by id.
         do {
-            let message: Message = try await client
+            let updated: Message = try await client
                 .from("messages")
                 .update(["content": message.content ?? ""])
                 .eq("id", value: message.id)
@@ -191,14 +189,14 @@ class SupabaseManager {
                 .single()
                 .execute()
                 .value
-            
+
             await MainActor.run {
-                if let index = self.currentMessages.firstIndex(of: message) {
-                    self.currentMessages[index].content = message.content
+                if let index = self.currentMessages.firstIndex(where: { $0.id == message.id }) {
+                    self.currentMessages[index].content = updated.content
                 }
             }
-            
-            debugPrint("[DEBUG - updateToolMessage()] Updated tool message")
+
+            debugPrint("[DEBUG - updateToolMessage()] Updated tool message: \(message.id)")
         } catch {
             debugPrint("[DEBUG - updateToolMessage()] Error: \(error.localizedDescription)")
         }

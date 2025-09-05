@@ -60,7 +60,7 @@ struct ErrorMessageView: View {
             }
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding([.top, .bottom])
-            .glassEffect(.regular.interactive().tint(.red.opacity(0.2)), in: .rect(cornerRadius: 16))
+            .glassEffect(.clear.interactive().tint(.red.opacity(0.2)), in: .rect(cornerRadius: 16))
         }
     }
 }

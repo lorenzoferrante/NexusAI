@@ -327,52 +327,58 @@ class OpenRouterAPI {
             try await SupabaseManager.shared.updateMessageToolCalls(messageId: placeholderId, toolCalls: toolCalls)
         }
         
-        // 2) Execute tools (in parallel) and store each tool result message.
+        // 2) Execute tools (in parallel) and update the tool message once done.
         try await withThrowingTaskGroup(of: Message.self) { group in
             for call in toolCalls {
                 group.addTask {
-                    let resultContent: String
+                    var resultContent: String = ""
                     var toolMsg: Message = Message(
                         chatId: currentChat.id,
                         role: .tool,
                         createdAt: Date()
                     )
                     
+                    // Common fields
+                    toolMsg.toolCallId = call.id
+                    toolMsg.toolName = call.function?.name
+                    // Show "Running..." immediately
+                    toolMsg.content = ""
+                    
+                    // Insert the placeholder tool message before running
+                    try await SupabaseManager.shared.addMessageToChat(toolMsg)
+                    
                     if call.function?.name == "search_web" {
                         // Execute your web search tool
                         do {
                             let args = try JSONDecoder().decode(WebSearchArgs.self, from: Data((call.function?.arguments ?? "").utf8))
                             let lastUserMessage = await SupabaseManager.shared.currentMessages.last(where: { $0.role == .user })!.content
-                                
-                            toolMsg.toolCallId = call.id
-                            toolMsg.toolName = call.function?.name
                             toolMsg.toolArgs = "Searching for \"\(args.query)\""
                             
                             resultContent = try await ToolsManager().executeTool(named: "search_web", arguments: args.query, other: lastUserMessage)
                                 .trimmingCharacters(in: .whitespacesAndNewlines)
                             toolMsg.content = resultContent
+                            try await SupabaseManager.shared.updateToolMessage(toolMsg)
                         } catch {
                             resultContent = "Error executing web search: \(error.localizedDescription)"
+                            toolMsg.content = resultContent
+                            try? await SupabaseManager.shared.updateToolMessage(toolMsg)
                         }
                     } else if call.function?.name == "doc_lookup"  {
                         // Execute doc lookup tool
-                        toolMsg.toolCallId = call.id
-                        toolMsg.toolName = call.function?.name
-                        
                         do {
                             let args = try JSONDecoder().decode(DocLookupArgs.self, from: Data((call.function?.arguments ?? "").utf8))
                             let lastUserMessage = await SupabaseManager.shared.currentMessages.last(where: { $0.role == .user })!.content
                             resultContent = try await ToolsManager().executeTool(named: "doc_lookup", arguments: args.docID, other: lastUserMessage)
                                 .trimmingCharacters(in: .whitespacesAndNewlines)
                             toolMsg.content = resultContent
+                            try await SupabaseManager.shared.updateToolMessage(toolMsg)
                         } catch {
                             resultContent = "Error executing doc lookup: \(error.localizedDescription)"
+                            toolMsg.content = resultContent
+                            try? await SupabaseManager.shared.updateToolMessage(toolMsg)
                         }
                     } else if call.function?.name == "manage_calendar" {
                         // Execute calendar tool
-                        toolMsg.toolCallId = call.id
-                        toolMsg.toolName = call.function?.name
-                        
                         do {
                             // Pass the arguments directly as they contain all needed info
                             resultContent = try await ToolsManager().executeTool(
@@ -380,26 +386,30 @@ class OpenRouterAPI {
                                 arguments: call.function?.arguments ?? "{}"
                             ).trimmingCharacters(in: .whitespacesAndNewlines)
                             toolMsg.content = resultContent
+                            try await SupabaseManager.shared.updateToolMessage(toolMsg)
                         } catch {
                             resultContent = "Error executing calendar operation: \(error.localizedDescription)"
+                            toolMsg.content = resultContent
+                            try? await SupabaseManager.shared.updateToolMessage(toolMsg)
                         }
                     } else if call.function?.name == "get_webpage_info" {
-                        toolMsg.toolCallId = call.id
-                        toolMsg.toolName = call.function?.name
-                        
                         do {
                             let args = try JSONDecoder().decode(CrawlToolArgs.self, from: Data((call.function?.arguments ?? "").utf8))
                             resultContent = try await ToolsManager().executeTool(named: "get_webpage_info", arguments: args.urls.joined(separator: ";"))
                                 .trimmingCharacters(in: .whitespacesAndNewlines)
                             toolMsg.content = resultContent
+                            try await SupabaseManager.shared.updateToolMessage(toolMsg)
                         } catch {
                             resultContent = "Error executing crawl webpage: \(error.localizedDescription)"
+                            toolMsg.content = resultContent
+                            try? await SupabaseManager.shared.updateToolMessage(toolMsg)
                         }
                     } else {
                         resultContent = #"{"error":"No handler for tool: \#(call.function?.name ?? "unknown")"}"#
+                        toolMsg.content = resultContent
+                        try? await SupabaseManager.shared.updateToolMessage(toolMsg)
                     }
                     
-                    try await SupabaseManager.shared.addMessageToChat(toolMsg)
                     return toolMsg
                 }
             }
@@ -696,3 +706,4 @@ class OpenRouterAPI {
         return creditsResponse.data.totalCredits - creditsResponse.data.totalUsage
     }
 }
+

@@ -149,7 +149,7 @@ class RealtimeVoiceManager: NSObject {
             state = .connected
             startReceiveLoop()
             startPing()
-            // Configure session (sample rate is implied for pcm16; no explicit field)
+            // Configure session (audio formats)
             sendJSON([
                 "type": "session.update",
                 "session": [
@@ -157,9 +157,11 @@ class RealtimeVoiceManager: NSObject {
                     "modalities": ["text", "audio"],
                     "input_audio_format": "pcm16",
                     "output_audio_format": "pcm16",
+//                    "output_audio_sample_rate": Int(RealtimeConfig.targetSampleRate),
                     "instructions": "You are a concise, friendly assistant. Respond briefly and clearly."
                 ]
             ])
+            // Do not start recording automatically; tap to start/stop
         } catch {
             state = .error(error.localizedDescription)
         }
@@ -167,7 +169,7 @@ class RealtimeVoiceManager: NSObject {
 
     private func configureAudioSession() throws {
         let sess = AVAudioSession.sharedInstance()
-        try sess.setCategory(.playAndRecord, mode: .voiceChat, options: [.defaultToSpeaker, .allowBluetooth])
+        try sess.setCategory(.playAndRecord, mode: .voiceChat, options: [.defaultToSpeaker, .allowBluetoothHFP])
         // Set preferences before activation
         try? sess.setPreferredInputNumberOfChannels(Int(RealtimeConfig.channels))
         try? sess.setPreferredSampleRate(RealtimeConfig.targetSampleRate)
@@ -208,8 +210,8 @@ class RealtimeVoiceManager: NSObject {
 
         if engine.attachedNodes.contains(playerNode) == false {
             engine.attach(playerNode)
-            // Let the engine choose a compatible format; it will SRC from scheduled buffers.
-            engine.connect(playerNode, to: engine.mainMixerNode, format: nil)
+            // Use playbackFormat for the player; engine handles SRC to the mixer.
+            engine.connect(playerNode, to: engine.mainMixerNode, format: playbackFormat)
         }
         // Do not start the player until there is audio to play
     }
@@ -268,10 +270,34 @@ class RealtimeVoiceManager: NSObject {
 
     // MARK: - WebSocket
     private func openWebSocket() async throws {
-        let token = ""
+        // 1) Fetch ephemeral token from your server
+        guard let sessionURL = RealtimeConfig.ephemeralSessionURL else {
+            throw NSError(domain: "Realtime", code: 1, userInfo: [NSLocalizedDescriptionKey: "ephemeralSessionURL is not configured in RealtimeConfig"])
+        }
+
+        var token: String = ""
+        var sessionModel: String? = nil
+        do {
+            var req = URLRequest(url: sessionURL)
+            req.httpMethod = "GET"
+            req.setValue("application/json", forHTTPHeaderField: "Accept")
+            let (data, resp) = try await URLSession.shared.data(for: req)
+            if let http = resp as? HTTPURLResponse, http.statusCode >= 300 {
+                let body = String(data: data, encoding: .utf8) ?? "<no body>"
+                throw NSError(domain: "Realtime", code: 2, userInfo: [NSLocalizedDescriptionKey: "Session endpoint failed (\(http.statusCode)): \(body)"])
+            }
+            token = try Self.parseEphemeralToken(from: data)
+            // Try to read model from session response to avoid mismatches
+            if let obj = try? JSONSerialization.jsonObject(with: data) as? [String: Any] {
+                if let m = obj["model"] as? String { sessionModel = m }
+            }
+        } catch {
+            throw NSError(domain: "Realtime", code: 2, userInfo: [NSLocalizedDescriptionKey: "Failed to fetch ephemeral token: \(error.localizedDescription)"])
+        }
 
         // 2) Open WebSocket to OpenAI Realtime
-        var req = URLRequest(url: URL(string: "wss://api.openai.com/v1/realtime?model=\(RealtimeConfig.model)")!)
+        let modelForWS = sessionModel ?? RealtimeConfig.model
+        var req = URLRequest(url: URL(string: "wss://api.openai.com/v1/realtime?model=\(modelForWS)")!)
         req.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
         req.setValue("realtime=v1", forHTTPHeaderField: "OpenAI-Beta")
 
@@ -340,11 +366,21 @@ class RealtimeVoiceManager: NSObject {
             if let rid = obj["response"] as? [String: Any], let id = rid["id"] as? String { print("[Realtime][RX] response started: \(id)") }
             DispatchQueue.main.async { self.responseInProgress = true }
         case "response.output_audio.delta", "response.audio.delta":
-            if let b64 = obj["audio"] as? String {
+            // Some schemas put base64 in `delta`, others in `audio`.
+            if let b64 = (obj["delta"] as? String) ?? (obj["audio"] as? String) {
                 print("[Realtime][RX] audio delta bytes=\(Data(base64Encoded: b64)?.count ?? -1)")
                 handleAudioDelta(base64: b64)
             }
             DispatchQueue.main.async { self.responseInProgress = true }
+        case "response.content_part.delta":
+            // Newer event that may stream audio as a content part
+            if let part = obj["part"] as? [String: Any], let t = part["type"] as? String, t == "audio" {
+                if let b64 = obj["delta"] as? String {
+                    print("[Realtime][RX] audio part delta bytes=\(Data(base64Encoded: b64)?.count ?? -1)")
+                    handleAudioDelta(base64: b64)
+                }
+                DispatchQueue.main.async { self.responseInProgress = true }
+            }
         case "response.output_text.delta", "response.text.delta", "response.delta":
             if let delta = obj["delta"] as? String {
                 print("[Realtime][RX] text delta len=\(delta.count)")

@@ -168,6 +168,7 @@ struct Message: Codable, Identifiable, Hashable {
             ]
         }
         
+        // Tool result message to send back to the model.
         if let toolCallId = toolCallId,
            let toolName = toolName {
             return [
@@ -178,14 +179,25 @@ struct Message: Codable, Identifiable, Hashable {
             ]
         }
         
+        // Assistant message that initiated tool calls.
+        // Include BOTH content (if any) and tool_calls, as allowed by OpenAI/OpenRouter.
         if let toolCalls = toolCalls {
-            return [
+            var dict: [String: Any] = [
                 "role": "assistant",
                 "tool_calls": toolCalls.map({ $0.asDictionary() })
             ]
+            // Keep any assistant text that preceded the tool call.
+            if let content, !content.isEmpty {
+                dict["content"] = content
+            } else {
+                // Some providers require a string; empty is acceptable.
+                dict["content"] = ""
+            }
+            return dict
         }
         
         return ["role": role.rawValue, "content": content ?? ""]
         
     }
 }
+

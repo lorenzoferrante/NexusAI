@@ -12,6 +12,7 @@ enum ToolType: CaseIterable {
     case webSearch
     case crawlTool
     case calendarTool
+    case fileTool
     case genericTool
     case docLookUp
 }
@@ -41,6 +42,7 @@ class ToolsManager {
             WebSearchTool(),
             CalendarTool(),
             CrawlTool(),
+            TextFileTool(),
 //            DocLookupTool(),
         ]
     }
@@ -102,6 +104,8 @@ class ToolsManager {
             return .init(name: "Analyzing document", icon: "text.document", accentColor: .yellow)
         case .calendarTool:
             return .init(name: "Adding calendar event", icon: "calendar.badge", accentColor: .red)
+        case .fileTool:
+            return .init(name: "Creating text file", icon: "doc.badge.plus", accentColor: .green)
         case .genericTool:
             return .init(name: "Performing tool call", icon: "cpu.fill", accentColor: .secondary)
         }
@@ -123,4 +127,3 @@ enum ToolError: LocalizedError {
         }
     }
 }
-

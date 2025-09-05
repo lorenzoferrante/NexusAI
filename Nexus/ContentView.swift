@@ -32,15 +32,8 @@ struct ContentView: View {
                         Image(systemName: "square.and.pencil")
                     }
                 }
-                ToolbarItem(placement: .topBarTrailing) {
-                    NavigationLink {
-                        RealtimeVoiceView()
-                    } label: {
-                        Image(systemName: "mic.circle")
-                    }
-                }
             }
-            .preferredColorScheme(.dark)
+//            .preferredColorScheme(.dark)
         }
     }
     
