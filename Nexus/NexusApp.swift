@@ -10,7 +10,7 @@ import SwiftUI
 @main
 struct NexusApp: App {
     @State var supabaseClient = SupabaseManager.shared
-    @State private var isCheckingProfile = true
+    @State private var isCheckingProfile = false
     
     var body: some Scene {
         WindowGroup {
@@ -19,12 +19,7 @@ struct NexusApp: App {
                     // Minimal splash while resolving auth/profile state
                     LoadingView()
                 } else if supabaseClient.isAuthenticated && supabaseClient.userHasProfile {
-                    NavigationSplitView {
-                        SidebarView()
-                    } detail: {
-                        ContentView()
-                    }
-                    .navigationSplitViewStyle(.prominentDetail)
+                    ContentView()
                 } else if supabaseClient.isAuthenticated && !supabaseClient.userHasProfile {
                     CreateProfileView()
                 } else {

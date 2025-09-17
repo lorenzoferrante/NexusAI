@@ -31,7 +31,18 @@ class DefaultsManager {
     private let webSearchEnabled = "webSearchEnabled"
     private let calendarEnabled = "calendarEnabled"
     private let reminderEnabled = "reminderEnabled"
-    
+
+    private let defaultModel = OpenRouterModelRow(
+        name: "GPT-5 Mini",
+        provider: Providers.openAI.rawValue,
+        description: "Lightweight default model",
+        code: "openai/gpt-5-mini",
+        toolUse: true,
+        inputModalities: "text",
+        outputModalities: "text",
+        reasoning: false
+    )
+
     var selectedReasoningEffort: String
     var isReasoningEnabled: Bool
     
@@ -65,13 +76,47 @@ class DefaultsManager {
     
     @MainActor
     func getModel() -> OpenRouterModelRow {
-        if let openRouterModelCode = UserDefaults.standard.object(forKey: selectedModelKey) as? String,
-           let model = SupabaseManager.shared.models.first(where: { $0.code == openRouterModelCode }) {
-            print("[DEBUG] Returining \(model.code)")
+        let savedCode = UserDefaults.standard.string(forKey: selectedModelKey)
+
+        if let savedCode,
+           let model = SupabaseManager.shared.models.first(where: { $0.code == savedCode }) {
             return model
         }
-        print("[DEBUG] Returining openrouter/auto")
-        return SupabaseManager.shared.models.first(where: { $0.code == "openai/gpt-5-mini" })!
+
+        if let firstAvailable = SupabaseManager.shared.models.first {
+            if savedCode == nil {
+                saveModel(firstAvailable)
+            }
+            return firstAvailable
+        }
+
+        if savedCode == nil {
+            saveModel(defaultModel)
+        }
+
+        return defaultModel
+    }
+
+    @MainActor
+    func reconcileModelSelection(with models: [OpenRouterModelRow]) {
+        let savedCode = UserDefaults.standard.string(forKey: selectedModelKey)
+
+        if let savedCode,
+           models.contains(where: { $0.code == savedCode }) {
+            return
+        }
+
+        if let preferred = models.first(where: { $0.code == defaultModel.code }) {
+            saveModel(preferred)
+            return
+        }
+
+        if let first = models.first {
+            saveModel(first)
+            return
+        }
+
+        saveModel(defaultModel)
     }
     
     func saveReasoningEffort(_ effort: ReasoningEffort) {

@@ -11,9 +11,9 @@ import Supabase
 struct SidebarView: View {
     @State private var supabaseClient = SupabaseManager.shared
     @State private var isSettingsPresented = false
-    @State private var createNewChat: Bool = false
     @State private var presentAlert: Bool = false
     @State private var indexToDelete: Int? = nil
+    @Environment(\.dismiss) private var dismiss
     
     let feedbackGenerator = UIImpactFeedbackGenerator(style: .light)
     
@@ -34,11 +34,9 @@ struct SidebarView: View {
         .toolbar {
             ToolbarItem(placement: .primaryAction) {
                 Button {
-                    Task {
-                        feedbackGenerator.impactOccurred()
-                        _ = try await supabaseClient.createNewChat()
-                        createNewChat.toggle()
-                    }
+                    feedbackGenerator.impactOccurred()
+                    supabaseClient.beginDraftChat()
+                    dismiss()
                 } label: {
                     Label("", systemImage: "plus")
                         .glassEffect(in: .circle)
@@ -53,9 +51,6 @@ struct SidebarView: View {
             }
         }
         .toolbarTitleDisplayMode(.inlineLarge)
-        .navigationDestination(isPresented: $createNewChat) {
-            ContentView()
-        }
         .sheet(isPresented: $isSettingsPresented) {
             SettingsView()
         }
@@ -90,8 +85,14 @@ struct SidebarView: View {
                         Button {
                             Task {
                                 feedbackGenerator.impactOccurred()
-                                try await supabaseClient.loadChatWith(chat.id)
-                                createNewChat.toggle()
+                                do {
+                                    try await supabaseClient.loadChatWith(chat.id)
+                                    await MainActor.run {
+                                        dismiss()
+                                    }
+                                } catch {
+                                    print("[DEBUG - SidebarView] Failed to load chat: \(error.localizedDescription)")
+                                }
                             }
                         } label: {
                             chatTitle(chat)

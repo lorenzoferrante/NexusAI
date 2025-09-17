@@ -44,13 +44,26 @@ struct BottomView: View {
         }
         .onChange(of: provider) { _, newValue in
             models = supabaseManager.models.filter { $0.provider == newValue.rawValue }
-            selectedModel = models.first!
+            if let firstMatch = models.first {
+                selectedModel = firstMatch
+            } else {
+                let fallback = DefaultsManager.shared.getModel()
+                selectedModel = fallback
+                models = [fallback]
+            }
             DefaultsManager.shared.saveModel(selectedModel)
             orVM.selectedModel = selectedModel
         }
         .onChange(of: selectedModel) { _, newValue in
             DefaultsManager.shared.saveModel(newValue)
             orVM.selectedModel = selectedModel
+        }
+        .onChange(of: supabaseManager.models) { _, newValue in
+            providers = Set(newValue.map { $0.toProvider() })
+            models = newValue.filter { $0.provider == provider.rawValue }
+            if let saved = newValue.first(where: { $0.code == DefaultsManager.shared.getModel().code }) {
+                selectedModel = saved
+            }
         }
         .photosPicker(
             isPresented: $photosPickerIsPresented,
@@ -239,34 +252,39 @@ struct BottomView: View {
     private func generate() async {
         isFocused = false
         
-        if supabaseManager.currentMessages.count == 0 {
-            await updateChatTitle()
-        }
-
-        let fileData = vm.fileContent()
-        let fileName = vm.selectedFileURL?.lastPathComponent ?? nil
-        let fileExtension = vm.selectedFileURL?.pathExtension.lowercased() ?? ""
-        var pdfFileData: String?
-        
-        if fileExtension == "pdf" {
-            pdfFileData = vm.base64FromFileURL()
-        }
-        
-        var imageURL: String? = nil
-        if let selectedImage = vm.selectedImage {
-            let userID = supabaseManager.getUser()?.id.uuidString ?? "uploads"
-            let fileName = "\(userID)/\(UUID().uuidString).jpeg"
-            if let data = selectedImage.jpegData(compressionQuality: 0.5) {
-                await supabaseManager.uploadImageToBucket(data, fileName: fileName)
-                imageURL = supabaseManager.retrieveImageURLFor(fileName)
+        do {
+            let chat: Chat
+            if let existingChat = supabaseManager.currentChat {
+                chat = existingChat
+            } else {
+                chat = try await supabaseManager.createNewChat()
             }
-        }
 
-        withAnimation {
-            print("[DEBUG] Appending prompt: \(prompt) to \(supabaseManager.currentChat!.id)")
+            if supabaseManager.currentMessages.isEmpty {
+                await updateChatTitle()
+            }
+
+            let fileData = vm.fileContent()
+            let fileName = vm.selectedFileURL?.lastPathComponent ?? nil
+            let fileExtension = vm.selectedFileURL?.pathExtension.lowercased() ?? ""
+            var pdfFileData: String?
             
-            let newUserMessage: Message = .init(
-                chatId: supabaseManager.currentChat!.id,
+            if fileExtension == "pdf" {
+                pdfFileData = vm.base64FromFileURL()
+            }
+            
+            var imageURL: String? = nil
+            if let selectedImage = vm.selectedImage {
+                let userID = supabaseManager.getUser()?.id.uuidString ?? "uploads"
+                let remoteFileName = "\(userID)/\(UUID().uuidString).jpeg"
+                if let data = selectedImage.jpegData(compressionQuality: 0.5) {
+                    await supabaseManager.uploadImageToBucket(data, fileName: remoteFileName)
+                    imageURL = supabaseManager.retrieveImageURLFor(remoteFileName)
+                }
+            }
+
+            let newUserMessage = Message(
+                chatId: chat.id,
                 role: .user,
                 content: prompt,
                 imageURL: imageURL,
@@ -275,16 +293,18 @@ struct BottomView: View {
                 fileName: fileName,
                 createdAt: Date()
             )
-            
-            Task {
-                try await supabaseManager.addMessageToChat(newUserMessage)
-                try await orVM.stream()
-//                try await vm.stream()
-                supabaseManager.updateLastMessage()
+
+            try await supabaseManager.addMessageToChat(newUserMessage)
+
+            await MainActor.run {
+                prompt = ""
+                vm.selectedImage = nil
             }
-            
-            prompt = ""
-            vm.selectedImage = nil
+
+            try await orVM.stream()
+            supabaseManager.updateLastMessage()
+        } catch {
+            debugPrint("[DEBUG - BottomView.generate] Error: \(error.localizedDescription)")
         }
     }
     

@@ -19,8 +19,27 @@ class SupabaseManager {
     private let supabaseKey = "sb_publishable_q4F3wwoAbW9hQUa2p7T26A_zvEx-pVO"
     let client: SupabaseClient
     
-    public var isAuthenticated: Bool = false
-    public var userHasProfile: Bool = false
+    public var isAuthenticated: Bool = false {
+        didSet {
+            guard isAuthenticated != oldValue else { return }
+            if isAuthenticated {
+                Keychain.saveFlag(true, for: Keychain.AUTH_STATE_KEY)
+            } else {
+                Keychain.delete(Keychain.AUTH_STATE_KEY)
+                Keychain.delete(Keychain.PROFILE_STATE_KEY)
+            }
+        }
+    }
+    public var userHasProfile: Bool = false {
+        didSet {
+            guard userHasProfile != oldValue else { return }
+            if userHasProfile {
+                Keychain.saveFlag(true, for: Keychain.PROFILE_STATE_KEY)
+            } else {
+                Keychain.delete(Keychain.PROFILE_STATE_KEY)
+            }
+        }
+    }
     public var profile: Profile? = nil
     public var chats: [Chat] = []
     public var currentChat: Chat? = nil
@@ -37,16 +56,64 @@ class SupabaseManager {
             supabaseKey: supabaseKey
         )
         
-        Task {
-            try await fetchAllModels()
-            
-            for await state in client.auth.authStateChanges {
-                if [.initialSession, .signedIn, .signedOut].contains(state.event) {
-                    withAnimation {
-                        isAuthenticated = state.session != nil
-                    }
+        let cachedAuth = Keychain.loadFlag(Keychain.AUTH_STATE_KEY) ?? false
+        let cachedProfile = Keychain.loadFlag(Keychain.PROFILE_STATE_KEY) ?? false
+        let hasSession = client.auth.currentUser != nil
+        isAuthenticated = hasSession || cachedAuth
+        userHasProfile = (hasSession || cachedAuth) ? cachedProfile : false
+
+        Task(priority: .background) { [weak self] in
+            await self?.observeAuthChanges()
+        }
+
+        Task(priority: .background) { [weak self] in
+            try? await self?.fetchAllModels()
+        }
+
+        if hasSession {
+            Task(priority: .userInitiated) { [weak self] in
+                await self?.refreshProfileState()
+            }
+        }
+    }
+
+    public func beginDraftChat() {
+        currentChat = nil
+        currentMessages = []
+    }
+    
+    private func observeAuthChanges() async {
+        for await state in client.auth.authStateChanges {
+            guard [.initialSession, .signedIn, .signedOut].contains(state.event) else { continue }
+            let signedIn = state.session != nil
+            await MainActor.run {
+                withAnimation {
+                    self.isAuthenticated = signedIn
                 }
             }
+            if signedIn {
+                await refreshProfileState()
+            } else {
+                await MainActor.run {
+                    self.profile = nil
+                    self.userHasProfile = false
+                    self.chats = []
+                    self.currentChat = nil
+                    self.currentMessages = []
+                }
+            }
+        }
+    }
+
+    private func refreshProfileState() async {
+        await checkIfUserHasProfile()
+        do {
+            try await retriveChats()
+            if currentChat == nil {
+                beginDraftChat()
+            }
+        } catch {
+            print("[DEBUG - refreshProfileState()] Error: \(error.localizedDescription)")
         }
     }
     
@@ -72,7 +139,7 @@ class SupabaseManager {
                 isAuthenticated = true
             }
             
-            await checkIfUserHasProfile()
+            await refreshProfileState()
         } catch {
             print("[DEBUG] SignUp Error: \(error.localizedDescription)")
         }
@@ -634,6 +701,7 @@ class SupabaseManager {
         debugPrint("[DEBUG] fetchAllModels - fetched \(rows.count) models.")
         await MainActor.run {
             self.models = rows
+            DefaultsManager.shared.reconcileModelSelection(with: rows)
         }
     }
 
