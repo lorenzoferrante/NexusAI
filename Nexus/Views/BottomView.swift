@@ -251,7 +251,10 @@ struct BottomView: View {
 
     private func generate() async {
         isFocused = false
-        
+        let originalPrompt = prompt
+        let trimmedPrompt = originalPrompt.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmedPrompt.isEmpty else { return }
+
         do {
             let chat: Chat
             if let existingChat = supabaseManager.currentChat {
@@ -261,7 +264,7 @@ struct BottomView: View {
             }
 
             if supabaseManager.currentMessages.isEmpty {
-                await updateChatTitle()
+                await updateChatTitle(using: trimmedPrompt)
             }
 
             let fileData = vm.fileContent()
@@ -286,7 +289,7 @@ struct BottomView: View {
             let newUserMessage = Message(
                 chatId: chat.id,
                 role: .user,
-                content: prompt,
+                content: originalPrompt,
                 imageURL: imageURL,
                 fileData: fileData,
                 pdfData: pdfFileData,
@@ -318,7 +321,7 @@ struct BottomView: View {
         }
     }
     
-    private func updateChatTitle() async {
+    private func updateChatTitle(using prompt: String) async {
         do {
             let chatTitle = try await vm.generateChatTitle(from: prompt) ?? "New chat"
             await supabaseManager.updateChatTitle(chatTitle)

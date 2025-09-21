@@ -205,10 +205,11 @@ class SupabaseManager {
         
         await MainActor.run {
             self.currentChat = newChat
-            self.chats.append(newChat)
+            self.currentMessages = [] // ensure fresh draft without racing a fetch
+            if !self.chats.contains(where: { $0.id == newChat.id }) {
+                self.chats.insert(newChat, at: 0)
+            }
         }
-        
-        try await retriveMessagesForChat(chatId)
         
         return newChat
     }
@@ -231,17 +232,32 @@ class SupabaseManager {
     
     public func addMessageToChat(_ message: Message) async throws {
         await MainActor.run {
-            debugPrint("[DEBUG] Appended message to currentMessages")
+            debugPrint("[DEBUG] Optimistically appended message to currentMessages")
             self.currentMessages.append(message)
         }
+
         do {
-            try await client
+            let inserted: Message = try await client
                 .from("messages")
                 .insert(message)
+                .select()
+                .single()
                 .execute()
+                .value
+
+            await MainActor.run {
+                if let index = self.currentMessages.firstIndex(where: { $0.id == message.id }) {
+                    self.currentMessages[index] = inserted
+                }
+            }
+
             debugPrint("[DEBUG] Added message to chat")
         } catch {
+            await MainActor.run {
+                self.currentMessages.removeAll(where: { $0.id == message.id })
+            }
             debugPrint("[DEBUG - addMessageToChat()] Error: \(error.localizedDescription)")
+            throw error
         }
     }
     
