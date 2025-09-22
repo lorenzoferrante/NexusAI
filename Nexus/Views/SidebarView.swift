@@ -30,7 +30,7 @@ struct SidebarView: View {
             }
                         
         }
-        .navigationTitle("Mercury AI")
+        .navigationTitle("Chats")
         .toolbar {
             ToolbarItem(placement: .primaryAction) {
                 Button {

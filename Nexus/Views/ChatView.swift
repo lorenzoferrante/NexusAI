@@ -20,22 +20,35 @@ struct ChatView: View {
     var body: some View {
         ScrollViewReader { proxy in
             ScrollView {
-                ForEach(supabaseManager.currentMessages, id: \.id) { message in
-                    // Show tool messages regardless of content so we can display "Running..."
-                    if message.role == .tool || message.content != nil {
-                        MessageView(message: message)
-                            .padding([.trailing, .leading])
-                    }
+                
+                if supabaseManager.currentMessages.isEmpty {
+                    emptyChatView()
+                        .transition(.opacity)
+                        .animation(.easeInOut, value: supabaseManager.currentMessages.isEmpty)
+
                 }
                 
                 if !supabaseManager.currentMessages.isEmpty {
-                    chatStats()
-                        .padding([.leading, .trailing])
-                        .padding(.bottom, 0)
-                        .id(bottomID)
+                    ForEach(supabaseManager.currentMessages, id: \.id) { message in
+                        // Show tool messages regardless of content so we can display "Running..."
+                        if message.role == .tool || message.content != nil {
+                            MessageView(message: message)
+                                .padding([.trailing, .leading])
+                        }
+                    }
+                    .id(bottomID)
+                    
+//                    chatStats()
+//                        .padding([.leading, .trailing])
+//                        .padding(.bottom, 0)
+//                        .id(bottomID)
                 }
                     
             }
+            .defaultScrollAnchor(
+                supabaseManager.currentMessages.isEmpty ? .center : .top,
+                for: .alignment
+            )
             .onChange(of: lastMessageContent) { _, _ in
                 withAnimation {
                     proxy.scrollTo(bottomID, anchor: .bottom)
@@ -52,12 +65,6 @@ struct ChatView: View {
                     }
                 }
             }
-//            .onDisappear {
-//                if let chat = supabaseManager.currentChat, supabaseManager.currentMessages.isEmpty {
-//                    debugPrint("[DEBUG] Chat empty \(supabaseManager.currentChat!.id)")
-//                    supabaseManager.deleteChatWith(chat.id)
-//                }
-//            }
         }
     }
     
@@ -75,20 +82,33 @@ struct ChatView: View {
             }
         }
     }
+    
+    private func emptyChatView() -> some View {
+        VStack(alignment: .center, spacing: 10) {
+            Text("Hello, \(supabaseManager.profile?.username ?? "")")
+                .font(.system(size: 20, weight: .regular, design: .rounded))
+                .foregroundStyle(.secondary)
+            Text("How can I help you today?")
+                .font(.system(size: 24, weight: .bold, design: .rounded))
+        }
+    }
 }
 
 #Preview {
-    @Previewable @State var openRouterAPI = OpenRouterAPI.shared
+    @Previewable @State var supabaseManager = SupabaseManager.shared
+    @Previewable var messages = [
+        Message(chatId: UUID(), role: .user, content: "Hello!", createdAt: Date()),
+        Message(chatId: UUID(), role: .assistant, content: "I am an LLM developed by DMP! How can I help you?", createdAt: Date())
+    ]
+    @Previewable var user = Profile(username: "fernix96", fullname: "Lorenzo Ferrante", country: "Italy")
+    
     ZStack {
-        BackView()
+//        BackView()
             
         ChatView()
             .onAppear {
-                openRouterAPI.chat.append(contentsOf: [
-                    .init(chatId: UUID(), role: .user, content: "Hello!", createdAt: Date()),
-                    .init(chatId: UUID(), role: .assistant, content: "I am an LLM developed by DMP! How can I help you?", createdAt: Date())
-                ])
+//                supabaseManager.currentMessages.append(contentsOf: messages)
+                supabaseManager.profile = user
             }
-            .preferredColorScheme(.dark)
     }
 }

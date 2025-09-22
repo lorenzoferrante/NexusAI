@@ -20,9 +20,15 @@ struct ContentView: View {
         NavigationStack {
             ZStack {
                 BackView()
+                    .onTapGesture {
+                        isFocused = false
+                    }
                 ChatView()
                     .safeAreaInset(edge: .bottom) {
                         bottomBar()
+                    }
+                    .onTapGesture {
+                        isFocused = false
                     }
             }
             .toolbar {
@@ -89,7 +95,7 @@ struct ContentView: View {
     
     private func bottomBar() -> some View {
         ZStack {
-            BottomView(prompt: $prompt)
+            BottomView(prompt: $prompt, isFocused: _isFocused)
                 .fixedSize(horizontal: false, vertical: true)
                 .progressiveBlur()
         }

@@ -30,9 +30,9 @@
             filePath = "Nexus/Supabase/SupabaseManager.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "636"
-            endingLineNumber = "636"
-            landmarkName = "ensureOpenRouterKey()"
+            startingLineNumber = "642"
+            endingLineNumber = "642"
+            landmarkName = "deleteChatWith(_:)"
             landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>
@@ -46,10 +46,10 @@
             filePath = "Nexus/Supabase/SupabaseManager.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "634"
-            endingLineNumber = "634"
-            landmarkName = "KeyResponse"
-            landmarkType = "14">
+            startingLineNumber = "640"
+            endingLineNumber = "640"
+            landmarkName = "deleteChatWith(_:)"
+            landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>
       <BreakpointProxy

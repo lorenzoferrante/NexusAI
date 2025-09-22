@@ -79,7 +79,9 @@ class SupabaseManager {
 
     public func beginDraftChat() {
         currentChat = nil
-        currentMessages = []
+        withAnimation {
+            currentMessages = []
+        }
     }
     
     private func observeAuthChanges() async {
@@ -205,7 +207,9 @@ class SupabaseManager {
         
         await MainActor.run {
             self.currentChat = newChat
-            self.currentMessages = [] // ensure fresh draft without racing a fetch
+            withAnimation {
+                self.currentMessages = [] // ensure fresh draft without racing a fetch
+            }
             if !self.chats.contains(where: { $0.id == newChat.id }) {
                 self.chats.insert(newChat, at: 0)
             }
@@ -233,7 +237,9 @@ class SupabaseManager {
     public func addMessageToChat(_ message: Message) async throws {
         await MainActor.run {
             debugPrint("[DEBUG] Optimistically appended message to currentMessages")
-            self.currentMessages.append(message)
+            withAnimation {
+                self.currentMessages.append(message)
+            }
         }
 
         do {

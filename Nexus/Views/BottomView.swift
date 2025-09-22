@@ -28,7 +28,7 @@ struct BottomView: View {
     
     @Binding var prompt: String
     
-    @FocusState private var isFocused: Bool
+    @FocusState var isFocused: Bool
     
     let feedbackGenerator = UIImpactFeedbackGenerator(style: .light)
     
@@ -38,6 +38,7 @@ struct BottomView: View {
             minimizedBar
         }
         .onAppear {
+            isFocused = true
             providers = Set(supabaseManager.models.map { $0.toProvider() })
             models = supabaseManager.models.filter { $0.provider == provider.rawValue }
             selectedModel = models.first(where: { $0.code == orVM.selectedModel.code }) ?? DefaultsManager.shared.getModel()

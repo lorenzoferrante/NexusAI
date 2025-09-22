@@ -16,7 +16,7 @@ struct BackView: View {
     var body: some View {
         GeometryReader { proxy in
             ZStack {
-                backGradient
+//                backGradient
             }
             .ignoresSafeArea()
         }
