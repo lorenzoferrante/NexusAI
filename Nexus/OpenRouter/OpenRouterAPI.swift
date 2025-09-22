@@ -598,8 +598,8 @@ class OpenRouterAPI {
     
     // MARK: - Generate quick summary
     public func generateQuickSummary(from query: String, url: String, content: String) async throws -> String? {
-        let url = URL(string: "https://openrouter.ai/api/v1/completions")!
-        var request = URLRequest(url: url)
+        let openRouterURL = URL(string: "https://openrouter.ai/api/v1/completions")!
+        var request = URLRequest(url: openRouterURL)
         request.httpMethod = "POST"
         request.setValue("Bearer \(API_KEY)", forHTTPHeaderField: "Authorization")
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
