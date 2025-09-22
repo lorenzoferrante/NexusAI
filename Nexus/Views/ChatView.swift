@@ -85,12 +85,24 @@ struct ChatView: View {
     
     private func emptyChatView() -> some View {
         VStack(alignment: .center, spacing: 10) {
-            Text("Hello, \(supabaseManager.profile?.username ?? "")")
+            Text("Hello, \(getUserName())")
                 .font(.system(size: 20, weight: .regular, design: .rounded))
                 .foregroundStyle(.secondary)
             Text("How can I help you today?")
                 .font(.system(size: 24, weight: .bold, design: .rounded))
         }
+    }
+    
+    private func getUserName() -> String {
+        guard let profile = supabaseManager.profile else {
+            return ""
+        }
+        
+        if let fullname = profile.fullname {
+            return String(fullname.split(separator: " ").first ?? "")
+        }
+        
+        return profile.username ?? ""
     }
 }
 
