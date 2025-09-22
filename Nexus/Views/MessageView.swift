@@ -38,15 +38,28 @@ struct MessageView: View {
             Spacer()
             
             VStack(alignment: .trailing) {
-                if let imageURL = message.imageURL {
-                    HStack {
-                        Spacer()
-                        AsyncImage(url: URL(string: imageURL)!) { result in
-                            result.image?
+                if !message.imageURLList.isEmpty,
+                   let firstImageURL = message.imageURLList.first,
+                   let url = URL(string: firstImageURL) {
+                    AsyncImage(url: url) { phase in
+                        switch phase {
+                        case .empty:
+                            ProgressView()
+                                .frame(width: 120, height: 120)
+                        case .success(let image):
+                            image
+                                .resizable()
+                                .scaledToFill()
+                                .frame(width: 120, height: 120)
+                                .clipShape(RoundedRectangle(cornerRadius: 12))
+                        case .failure:
+                            Image(systemName: "photo")
                                 .resizable()
                                 .scaledToFit()
-                                .clipShape(RoundedRectangle(cornerRadius: 10))
-                                .frame(maxHeight: 100)
+                                .frame(width: 120, height: 120)
+                                .foregroundStyle(.secondary)
+                        @unknown default:
+                            EmptyView()
                         }
                     }
                 }
@@ -73,8 +86,8 @@ struct MessageView: View {
                                     message.modelName ??
                                     orVM.selectedModel.code
                                 )
-                                    .font(.caption)
-                                    .foregroundStyle(.secondary)
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
                             }
                             
                             Markdown(message.content!)
@@ -93,7 +106,7 @@ struct MessageView: View {
             }
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding([.top, .bottom])
-//            .glassEffect(.regular.interactive(), in: .rect(cornerRadius: 16))
+            //            .glassEffect(.regular.interactive(), in: .rect(cornerRadius: 16))
         }
     }
     
@@ -152,7 +165,7 @@ struct MessageView: View {
                             .font(.caption)
                             .foregroundStyle(.secondary)
                     }
-
+                    
                     // Status: show that the tool call is in progress; do not render tool output content here.
                     if (message.content ?? "").isEmpty {
                         HStack(spacing: 8) {

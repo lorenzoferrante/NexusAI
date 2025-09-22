@@ -68,7 +68,7 @@ struct BottomView: View {
         }
         .photosPicker(
             isPresented: $photosPickerIsPresented,
-            selection: $vm.photoPickerItems,
+            selection: $vm.photoPickerItem,
             matching: .images
         )
         .fileImporter(
@@ -92,7 +92,7 @@ struct BottomView: View {
                     if let image = vm.selectedImage {
                         photoSection(Image(uiImage: image))
                     }
-                    
+
                     if vm.selectedFileURL != nil {
                         fileSection()
                     }
@@ -216,37 +216,47 @@ struct BottomView: View {
     
     private func photoSection(_ image: Image) -> some View {
         HStack {
-            withAnimation {
-                image
-                    .resizable()
-                    .clipShape(RoundedRectangle(cornerRadius: 10.0))
-                    .scaledToFit()
-                    .frame(maxHeight: 80)
-                    .padding([.top, .leading, .trailing])
-                    .onLongPressGesture {
-                        withAnimation {
-                            vm.selectedImage = nil
-                        }
+            image
+                .resizable()
+                .clipShape(RoundedRectangle(cornerRadius: 10.0))
+                .scaledToFit()
+                .frame(maxHeight: 80)
+                .padding([.top, .leading, .trailing])
+                .onLongPressGesture {
+                    withAnimation {
+                        vm.selectedImage = nil
+                        vm.photoPickerItem = nil
                     }
-            }
+                }
             Spacer()
         }
     }
     
     private func fileSection() -> some View {
-        HStack {
-            withAnimation {
-                Image(systemName: "text.document")
-                    .scaledToFit()
-                    .frame(maxHeight: 80)
-                    .padding([.top, .leading, .trailing])
-                    .onLongPressGesture {
-                        withAnimation {
-                            vm.selectedImage = nil
-                        }
-                    }
+        HStack(alignment: .center, spacing: 12) {
+            Image(systemName: "doc.richtext")
+                .resizable()
+                .scaledToFit()
+                .frame(width: 36, height: 44)
+                .foregroundStyle(Color.accentColor)
+
+            VStack(alignment: .leading, spacing: 2) {
+                Text(vm.selectedFileURL?.lastPathComponent ?? "PDF")
+                    .font(.callout)
+                    .fontWeight(.medium)
+                    .lineLimit(1)
+                Text("Long-press to remove")
+                    .font(.caption2)
+                    .foregroundStyle(.secondary)
             }
+
             Spacer()
+        }
+        .padding([.top, .horizontal])
+        .onLongPressGesture {
+            withAnimation {
+                vm.selectedFileURL = nil
+            }
         }
     }
 
@@ -281,9 +291,12 @@ struct BottomView: View {
             if let selectedImage = vm.selectedImage {
                 let userID = supabaseManager.getUser()?.id.uuidString ?? "uploads"
                 let remoteFileName = "\(userID)/\(UUID().uuidString).jpeg"
-                if let data = selectedImage.jpegData(compressionQuality: 0.5) {
+                if let data = selectedImage.jpegData(compressionQuality: 0.6) {
                     await supabaseManager.uploadImageToBucket(data, fileName: remoteFileName)
-                    imageURL = supabaseManager.retrieveImageURLFor(remoteFileName)
+                    let remoteURL = supabaseManager.retrieveImageURLFor(remoteFileName)
+                    if !remoteURL.isEmpty {
+                        imageURL = remoteURL
+                    }
                 }
             }
 
@@ -303,6 +316,8 @@ struct BottomView: View {
             await MainActor.run {
                 prompt = ""
                 vm.selectedImage = nil
+                vm.photoPickerItem = nil
+                vm.selectedFileURL = nil
             }
 
             try await orVM.stream()
@@ -318,7 +333,11 @@ struct BottomView: View {
     
     private func parseFile(_ urls: [URL]) {
         if let url = urls.first {
-            vm.selectedFileURL = url
+            withAnimation {
+                vm.selectedImage = nil
+                vm.selectedFileURL = url
+            }
+            vm.photoPickerItem = nil
         }
     }
     

@@ -117,19 +117,26 @@ struct Message: Codable, Identifiable, Hashable {
             ]
         }
         
-        if let imageURL = imageURL {
+        let outboundImages = imageURLList
+        if !outboundImages.isEmpty {
+            var contentParts: [[String: Any]] = []
+            if let content, !content.isEmpty {
+                contentParts.append([
+                    "type": "text",
+                    "text": content
+                ])
+            }
+
+            for url in outboundImages {
+                contentParts.append([
+                    "type": "image_url",
+                    "image_url": ["url": url]
+                ])
+            }
+
             return [
                 "role": role.rawValue,
-                "content": [
-                    [
-                        "type": "text",
-                        "text": content
-                    ],
-                    [
-                        "type": "image_url",
-                        "image_url": imageURL
-                    ]
-                ]
+                "content": contentParts
             ]
         }
         
@@ -201,3 +208,33 @@ struct Message: Codable, Identifiable, Hashable {
     }
 }
 
+extension Message {
+    /// Returns true when the message carries a PDF attachment that should be parsed by the model.
+    var containsPDF: Bool {
+        if let data = pdfData, !data.isEmpty {
+            return true
+        }
+        if let fileData, fileData.lowercased().hasPrefix("data:application/pdf") {
+            return true
+        }
+        if let name = fileName?.lowercased(), name.hasSuffix(".pdf") {
+            return true
+        }
+        return false
+    }
+
+    var imageURLList: [String] {
+        guard let imageURL, !imageURL.isEmpty else { return [] }
+        if let data = imageURL.data(using: .utf8),
+           let decoded = try? JSONDecoder().decode([String].self, from: data) {
+            return decoded
+        }
+        if imageURL.contains("||") {
+            return imageURL
+                .split(separator: "|", omittingEmptySubsequences: true)
+                .map { String($0) }
+        }
+        return [imageURL]
+    }
+
+}

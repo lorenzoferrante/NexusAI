@@ -366,6 +366,7 @@ class OpenRouterViewModel {
         }
 
         let messagesPayload = sanitized.map { $0.asDictionary() }
+        let hasPDF = sanitized.contains { $0.containsPDF }
         
         
         var payload: [String: Any] = [
@@ -394,6 +395,34 @@ class OpenRouterViewModel {
         
         // Output Modalities
         payload["modalities"] = selectedModel.outputModalities!.split(separator: ",")
+
+        if hasPDF {
+            let defaultPDFPlugin: [String: Any] = [
+                "id": "file-parser",
+                "pdf": ["engine": "pdf-text"]
+            ]
+            var plugins = (payload["plugins"] as? [[String: Any]]) ?? []
+            let alreadyContainsFileParser = plugins.contains { plugin in
+                (plugin["id"] as? String)?.lowercased() == "file-parser"
+            }
+            if alreadyContainsFileParser {
+                payload["plugins"] = plugins.map { plugin in
+                    guard let id = (plugin["id"] as? String)?.lowercased(), id == "file-parser" else {
+                        return plugin
+                    }
+                    var updated = plugin
+                    var pdfConfig = (plugin["pdf"] as? [String: Any]) ?? [:]
+                    if pdfConfig["engine"] == nil {
+                        pdfConfig["engine"] = "pdf-text"
+                    }
+                    updated["pdf"] = pdfConfig
+                    return updated
+                }
+            } else {
+                plugins.append(defaultPDFPlugin)
+                payload["plugins"] = plugins
+            }
+        }
         
         return payload
     }

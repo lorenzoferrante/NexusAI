@@ -33,7 +33,7 @@ class OpenRouterAPI {
         var name: String?
         var arguments: String = ""  // concatenated JSON string fragments
     }
-    
+
     private struct WebSearchArgs: Codable { let query: String }
     private struct DocLookupArgs: Codable { let docID: String }
     private struct CrawlToolArgs: Codable { let urls: [String] }
@@ -85,7 +85,7 @@ class OpenRouterAPI {
     
     var selectedFileURL: URL?
     var selectedImage: UIImage? = nil
-    var photoPickerItems: PhotosPickerItem? = nil {
+    var photoPickerItem: PhotosPickerItem? = nil {
         didSet { Task { await loadImage() } }
     }
     
@@ -456,6 +456,7 @@ class OpenRouterAPI {
         }
 
         let messagesPayload = sanitized.map { $0.asDictionary() }
+        let hasPDF = sanitized.contains { $0.containsPDF }
         
         
         var payload: [String: Any] = [
@@ -476,7 +477,35 @@ class OpenRouterAPI {
         let tools = ToolsManager().getAllToolDefinitions()
         payload["tools"] = tools
         payload["tool_choice"] = "auto"
-        
+
+        if hasPDF {
+            let defaultPDFPlugin: [String: Any] = [
+                "id": "file-parser",
+                "pdf": ["engine": "pdf-text"]
+            ]
+            var plugins = (payload["plugins"] as? [[String: Any]]) ?? []
+            let alreadyContainsFileParser = plugins.contains { plugin in
+                (plugin["id"] as? String)?.lowercased() == "file-parser"
+            }
+            if alreadyContainsFileParser {
+                payload["plugins"] = plugins.map { plugin in
+                    guard let id = (plugin["id"] as? String)?.lowercased(), id == "file-parser" else {
+                        return plugin
+                    }
+                    var updated = plugin
+                    var pdfConfig = (plugin["pdf"] as? [String: Any]) ?? [:]
+                    if pdfConfig["engine"] == nil {
+                        pdfConfig["engine"] = "pdf-text"
+                    }
+                    updated["pdf"] = pdfConfig
+                    return updated
+                }
+            } else {
+                plugins.append(defaultPDFPlugin)
+                payload["plugins"] = plugins
+            }
+        }
+
         request.httpBody = try JSONSerialization.data(withJSONObject: payload)
         
         // Debug pretty payload
@@ -515,16 +544,21 @@ class OpenRouterAPI {
     // MARK: - Image/File helpers (unchanged)
     
     private func loadImage() async {
-        guard let item = photoPickerItems else { return }
+        guard let item = photoPickerItem else { return }
         if let data = try? await item.loadTransferable(type: Data.self),
            let uiImage = UIImage(data: data) {
-            self.selectedImage = uiImage
+            await MainActor.run {
+                self.selectedImage = uiImage
+                self.selectedFileURL = nil
+                self.photoPickerItem = nil
+            }
         }
     }
-    
+
     public func base64FromSwiftUIImage() -> String? {
-        guard let image = selectedImage, let png = image.pngData() else { return nil }
-        return "data:image/jpeg;base64,\(png.base64EncodedString())"
+        guard let image = selectedImage,
+              let png = image.pngData() else { return nil }
+        return "data:image/png;base64,\(png.base64EncodedString())"
     }
     
     public func fileContent() -> String? {
@@ -706,4 +740,3 @@ class OpenRouterAPI {
         return creditsResponse.data.totalCredits - creditsResponse.data.totalUsage
     }
 }
-
