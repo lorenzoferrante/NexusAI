@@ -7,6 +7,8 @@
 
 import Foundation
 import SwiftUI
+import UIKit
+import Auth
 
 @MainActor
 @Observable
@@ -305,6 +307,83 @@ class OpenRouterViewModel {
                             }
                             try? await SupabaseManager.shared.updateToolMessage(toolMsg)
                         }
+                    } else if call.function?.name == "generate_image" {
+                        // Execute image generation tool
+                        struct ImageArgs: Codable { let prompt: String? }
+                        var promptPreview: String = ""
+                        if let data = (call.function?.arguments ?? "{}").data(using: .utf8),
+                           let decoded = try? JSONDecoder().decode(ImageArgs.self, from: data) {
+                            if let p = decoded.prompt { promptPreview = p }
+                        }
+                        if !promptPreview.isEmpty {
+                            let clipped = promptPreview.count > 40 ? String(promptPreview.prefix(40)) + "…" : promptPreview
+                            toolMsg.toolArgs = "Generating image for \"\(clipped)\""
+                        } else {
+                            toolMsg.toolArgs = "Generating image"
+                        }
+
+                        do {
+                            try await SupabaseManager.shared.addMessageToChat(toolMsg)
+
+                            // Gather last user image attachments, if any
+                            let lastUser = await SupabaseManager.shared.currentMessages.last(where: { $0.role == .user })
+                            let images = lastUser?.imageURLList ?? []
+                            let otherPayload: [String: Any] = ["image_urls": images]
+                            let otherData = (try? JSONSerialization.data(withJSONObject: otherPayload)).flatMap { String(data: $0, encoding: .utf8) } ?? "{}"
+
+                            // Call the tool
+                            let raw = try await ToolsManager().executeTool(
+                                named: "generate_image",
+                                arguments: call.function?.arguments ?? "{}",
+                                other: otherData
+                            ).trimmingCharacters(in: .whitespacesAndNewlines)
+
+                            // Parse { content: String, images: [String] }
+                            struct ResultEnvelope: Decodable { let content: String?; let images: [String]? }
+                            var contentOut = ""
+                            var outImages: [ImageStruct] = []
+                            if let rdata = raw.data(using: .utf8), let env = try? JSONDecoder().decode(ResultEnvelope.self, from: rdata) {
+                                // Do NOT display text output for image generation; ignore any caption.
+                                contentOut = ""
+                                if let imgs = env.images {
+                                    outImages = imgs.map { b64 in
+                                        ImageStruct(type: "image_url", imageURL: .init(url: b64))
+                                    }
+                                    // Persist the first generated image to Supabase for durability across sessions
+                                    if let first = imgs.first,
+                                       let ui = Base64ImageUtils.uiImage(fromDataURL: first),
+                                       let data = ui.jpegData(compressionQuality: 0.92) {
+                                        let userID = await SupabaseManager.shared.getUser()?.id.uuidString ?? "uploads"
+                                        let remoteName = "\(userID)/\(UUID().uuidString).jpeg"
+                                        await SupabaseManager.shared.uploadImageToBucket(data, fileName: remoteName)
+                                        let remoteURL = await SupabaseManager.shared.retrieveImageURLFor(remoteName)
+                                        // Save the remote URL on the tool message so it’s persisted in DB
+                                        try? await SupabaseManager.shared.updateMessageImageURL(toolMsg.id, imageURL: remoteURL)
+                                    }
+                                }
+                            } else {
+                                // On parse fallback, keep content empty as well.
+                                contentOut = ""
+                            }
+
+                            // Update UI/DB
+                            toolMsg.content = await self.displayContentForTool(name: call.function?.name, fullContent: contentOut)
+                            try await SupabaseManager.shared.updateToolMessage(toolMsg)
+                            if !outImages.isEmpty {
+                                await MainActor.run {
+                                    if let idx = SupabaseManager.shared.currentMessages.firstIndex(where: { $0.id == toolMsg.id }) {
+                                        SupabaseManager.shared.currentMessages[idx].images = outImages
+                                    }
+                                }
+                            }
+                        } catch {
+                            resultContent = "Error generating image: \(error.localizedDescription)"
+                            toolMsg.content = resultContent
+                            if await SupabaseManager.shared.currentMessages.firstIndex(where: { $0.id == toolMsg.id }) == nil {
+                                try? await SupabaseManager.shared.addMessageToChat(toolMsg)
+                            }
+                            try? await SupabaseManager.shared.updateToolMessage(toolMsg)
+                        }
                     } else {
                         resultContent = #"{"error":"No handler for tool: \#(call.function?.name ?? "unknown")"}"#
                         toolMsg.content = resultContent
@@ -365,7 +444,20 @@ class OpenRouterViewModel {
             }
         }
 
-        let messagesPayload = sanitized.map { $0.asDictionary() }
+        // Extra safety: drop malformed tool results lacking name/id to avoid provider errors
+        let finalizedMessages: [Message] = sanitized.filter { m in
+            if m.role == .tool {
+                if let name = m.toolName, !name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty,
+                   let _ = m.toolCallId {
+                    return true
+                }
+                // Skip invalid tool messages
+                return false
+            }
+            return true
+        }
+
+        let messagesPayload = finalizedMessages.map { $0.asDictionary() }
         let hasPDF = sanitized.contains { $0.containsPDF }
         
         

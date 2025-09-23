@@ -15,6 +15,7 @@ enum ToolType: CaseIterable {
     case fileTool
     case genericTool
     case docLookUp
+    case imageTool
 }
 
 struct ToolInfo {
@@ -43,6 +44,7 @@ class ToolsManager {
             CalendarTool(),
             CrawlTool(),
             TextFileTool(),
+            ImageGenTool(),
 //            DocLookupTool(),
         ]
     }
@@ -106,6 +108,8 @@ class ToolsManager {
             return .init(name: "Adding calendar event", icon: "calendar.badge", accentColor: .red)
         case .fileTool:
             return .init(name: "Creating text file", icon: "doc.badge.plus", accentColor: .green)
+        case .imageTool:
+            return .init(name: "Generating image", icon: "photo.on.rectangle", accentColor: .orange)
         case .genericTool:
             return .init(name: "Performing tool call", icon: "cpu.fill", accentColor: .secondary)
         }

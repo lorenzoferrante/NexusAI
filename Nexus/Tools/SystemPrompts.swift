@@ -40,6 +40,11 @@ class SystemPrompts {
             - Handle all-day events \
             - Integrate seamlessly with the user's system calendar \
             - Request appropriate permissions when needed \
+            \
+            **Image Generation** (`generate_image`): \
+            - Generate or edit images from a text prompt \
+            - If the user attached an image, include it as an input for edits/variations \
+            - Returns a base64 data URL for the generated image (e.g., data:image/png;base64,...) \
              \
             ### 3. Multimodal Capabilities \
             - Process and analyze images shared by users \

@@ -268,11 +268,15 @@ class SupabaseManager {
     }
     
     public func updateToolMessage(_ message: Message) async throws {
-        // Update only the content of an existing tool message and reflect it locally by id.
+        // Update content and ensure tool_name and tool_call_id are present for model compatibility.
         do {
+            var payload: [String: String] = ["content": message.content ?? ""]
+            if let name = message.toolName, !name.isEmpty { payload["tool_name"] = name }
+            if let tcid = message.toolCallId, !tcid.isEmpty { payload["tool_call_id"] = tcid }
+
             let updated: Message = try await client
                 .from("messages")
-                .update(["content": message.content ?? ""])
+                .update(payload)
                 .eq("id", value: message.id)
                 .select()
                 .single()
@@ -282,12 +286,38 @@ class SupabaseManager {
             await MainActor.run {
                 if let index = self.currentMessages.firstIndex(where: { $0.id == message.id }) {
                     self.currentMessages[index].content = updated.content
+                    self.currentMessages[index].toolName = updated.toolName
+                    self.currentMessages[index].toolCallId = updated.toolCallId
                 }
             }
 
             debugPrint("[DEBUG - updateToolMessage()] Updated tool message: \(message.id)")
         } catch {
             debugPrint("[DEBUG - updateToolMessage()] Error: \(error.localizedDescription)")
+        }
+    }
+
+    public func updateMessageImageURL(_ messageId: UUID, imageURL: String) async throws {
+        do {
+            let updated: Message = try await client
+                .from("messages")
+                .update(["image_url": imageURL])
+                .eq("id", value: messageId)
+                .select()
+                .single()
+                .execute()
+                .value
+
+            await MainActor.run {
+                if let index = self.currentMessages.firstIndex(where: { $0.id == messageId }) {
+                    self.currentMessages[index].imageURL = updated.imageURL
+                }
+            }
+
+            debugPrint("[DEBUG - updateMessageImageURL()] Updated image_url for message: \(messageId)")
+        } catch {
+            debugPrint("[DEBUG - updateMessageImageURL()] Error: \(error.localizedDescription)")
+            throw error
         }
     }
     

@@ -6,5 +6,7 @@
 	<string>MercuryAI needs access to your calendar to create and manage events based on your requests</string>
 	<key>NSMicrophoneUsageDescription</key>
 	<string>Voice mode needs the microphone to capture your speech.</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>Nexus needs permission to save generated images to your Photos library.</string>
 </dict>
 </plist>

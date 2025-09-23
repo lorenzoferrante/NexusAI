@@ -13,6 +13,8 @@ struct MessageView: View {
     @State var orVM = OpenRouterViewModel.shared
     
     let message: Message
+    @State private var fullImage: UIImage? = nil
+    @State private var showFullScreenImage: Bool = false
     
     var body: some View {
         VStack {
@@ -166,8 +168,8 @@ struct MessageView: View {
                             .foregroundStyle(.secondary)
                     }
                     
-                    // Status: show that the tool call is in progress; do not render tool output content here.
-                    if (message.content ?? "").isEmpty {
+                    // Status: show that the tool call is in progress; completion if we have content OR images
+                    if (message.content ?? "").isEmpty && (message.images?.isEmpty ?? true) && message.imageURLList.isEmpty {
                         HStack(spacing: 8) {
                             ThinkingIndicatorView()
                                 .frame(width: 14, height: 14)
@@ -182,6 +184,86 @@ struct MessageView: View {
                             Text("Completed")
                                 .font(.caption)
                                 .foregroundStyle(.secondary)
+                        }
+
+                        // For image generation, show returned images inline
+                        if let images = message.images, !images.isEmpty {
+                            ScrollView(.horizontal, showsIndicators: false) {
+                                HStack(spacing: 8) {
+                                    ForEach(images, id: \.hashValue) { image in
+                                        let dataURL = image.imageURL.url
+                                        Image(base64DataString: dataURL)
+                                            .resizable()
+                                            .scaledToFit()
+                                            .frame(height: 140)
+                                            .clipShape(RoundedRectangle(cornerRadius: 12))
+                                            .onTapGesture {
+                                                if let img = Base64ImageUtils.uiImage(fromDataURL: dataURL) {
+                                                    fullImage = img
+                                                    showFullScreenImage = true
+                                                }
+                                            }
+                                    }
+                                }
+                                .padding(.top, 6)
+                            }
+                            .fullScreenCover(
+                                isPresented: Binding(
+                                    get: { fullImage != nil },
+                                    set: { if !$0 { fullImage = nil } }
+                                )
+                            ) {
+                                FullScreenImageView(uiImage: fullImage!)
+                            }
+                        }
+
+                        // Remote URL fallback (persisted images)
+                        else if !message.imageURLList.isEmpty {
+                            ScrollView(.horizontal, showsIndicators: false) {
+                                HStack(spacing: 8) {
+                                    ForEach(message.imageURLList, id: \.self) { urlString in
+                                        if let url = URL(string: urlString) {
+                                            AsyncImage(url: url) { phase in
+                                                switch phase {
+                                                case .empty:
+                                                    ProgressView().frame(height: 140)
+                                                case .success(let image):
+                                                    image
+                                                        .resizable()
+                                                        .scaledToFit()
+                                                        .frame(height: 140)
+                                                        .clipShape(RoundedRectangle(cornerRadius: 12))
+                                                        .onTapGesture {
+                                                            Task {
+                                                                if let (data, _) = try? await URLSession.shared.data(from: url),
+                                                                   let img = UIImage(data: data) {
+                                                                    await MainActor.run { fullImage = img }
+                                                                }
+                                                            }
+                                                        }
+                                                case .failure:
+                                                    Image(systemName: "photo")
+                                                        .resizable()
+                                                        .scaledToFit()
+                                                        .frame(height: 140)
+                                                        .foregroundStyle(.secondary)
+                                                @unknown default:
+                                                    EmptyView()
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                                .padding(.top, 6)
+                            }
+                            .fullScreenCover(
+                                isPresented: Binding(
+                                    get: { fullImage != nil },
+                                    set: { if !$0 { fullImage = nil } }
+                                )
+                            ) {
+                                FullScreenImageView(uiImage: fullImage!)
+                            }
                         }
                     }
                 }

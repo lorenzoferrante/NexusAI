@@ -117,6 +117,18 @@ struct Message: Codable, Identifiable, Hashable {
             ]
         }
         
+        // Tool result message to send back to the model MUST take precedence over any media attachments.
+        if role == .tool,
+           let toolCallId = toolCallId,
+           let toolName = toolName {
+            return [
+                "role": "tool",
+                "tool_call_id": toolCallId,
+                "name": toolName,
+                "content": content ?? ""
+            ]
+        }
+
         let outboundImages = imageURLList
         if !outboundImages.isEmpty {
             var contentParts: [[String: Any]] = []
@@ -172,17 +184,6 @@ struct Message: Codable, Identifiable, Hashable {
                         ]
                     ]
                 ]
-            ]
-        }
-        
-        // Tool result message to send back to the model.
-        if let toolCallId = toolCallId,
-           let toolName = toolName {
-            return [
-                "role": "tool",
-                "tool_call_id": toolCallId,
-                "name": toolName,
-                "content": content ?? ""
             ]
         }
         

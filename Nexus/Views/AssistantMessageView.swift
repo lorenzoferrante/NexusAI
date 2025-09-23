@@ -13,6 +13,8 @@ struct AssistantMessageView: View {
     
     @State var orVM = OpenRouterViewModel.shared
     @State var isReasoningExpanded: Bool = false
+    @State private var fullImage: UIImage? = nil
+    @State private var showFullScreenImage: Bool = false
     
     private let bottomID = "bottomID"
     
@@ -55,13 +57,33 @@ struct AssistantMessageView: View {
                                     .opacity(1.0)
                             }
                             
-                            if let images = message.images {
-                                HStack {
-                                    ScrollView(.horizontal) {
-                                        ForEach(images, id: \.self) { image in
-                                            Image(base64DataString: image.imageURL.url)
+                            if let images = message.images, !images.isEmpty {
+                                ScrollView(.horizontal, showsIndicators: false) {
+                                    HStack(spacing: 8) {
+                                        ForEach(images, id: \.hashValue) { image in
+                                            let dataURL = image.imageURL.url
+                                            Image(base64DataString: dataURL)
+                                                .resizable()
+                                                .scaledToFit()
+                                                .frame(height: 140)
+                                                .clipShape(RoundedRectangle(cornerRadius: 12))
+                                                .onTapGesture {
+                                                    if let img = Base64ImageUtils.uiImage(fromDataURL: dataURL) {
+                                                        fullImage = img
+                                                        self.showFullScreenImage = true
+                                                    }
+                                                }
                                         }
                                     }
+                                }
+                                .fullScreenCover(
+                                    isPresented: Binding(
+                                        get: { fullImage != nil },
+                                        set: { if !$0 { fullImage = nil } }
+                                    )
+                                ) {
+                                    // fullImage is guaranteed non-nil while presented
+                                    FullScreenImageView(uiImage: fullImage!)
                                 }
                             }
                         } else {

@@ -36,7 +36,10 @@ struct ChatView: View {
                                 .padding([.trailing, .leading])
                         }
                     }
-                    .id(bottomID)
+                    
+                    Color.clear
+                        .frame(width: .infinity, height: 1.0)
+                        .id(bottomID)
                     
 //                    chatStats()
 //                        .padding([.leading, .trailing])
