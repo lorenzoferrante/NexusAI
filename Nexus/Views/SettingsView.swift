@@ -48,8 +48,7 @@ struct SettingsView: View {
                         Section(header: Text("Tools")) {
                             toggleCell(icon: "network", title: "Web search", isOn: $isWebSearchEnabled, subtitle: "The model will be able to search the web for up-to-date informations.")
                             toggleCell(icon: "calendar.badge", title: "Calendar access", isOn: $isCalendarEnabled, subtitle: "The model will be able to add events to your calendar.")
-                            toggleCell(icon: "bell.badge.fill", title: "Reminder access", isOn: $isReminderEnabled, subtitle: "The model will be able to add reminders.")
-                                .disabled(true)
+                            toggleCell(icon: "bell.badge.fill", title: "Reminder access", isOn: $isReminderEnabled, subtitle: "The model will be able to view, edit delete add reminders on your behalf.")
                         }
                         
                         Section(header: Text("App Settings")) {
@@ -91,6 +90,7 @@ struct SettingsView: View {
         .onAppear {
             Task {
                 isCalendarEnabled = await CalendarManager.shared.requestAccess()
+                isReminderEnabled = await ReminderManager.shared.requestAccess()
                 credits = try await OpenRouterAPI.shared.getCreditsRequest()
             }
         }

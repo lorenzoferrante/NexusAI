@@ -268,6 +268,25 @@ class OpenRouterViewModel {
                             }
                             try? await SupabaseManager.shared.updateToolMessage(toolMsg)
                         }
+                    } else if call.function?.name == "manage_reminders" {
+                        // Execute reminder tool
+                        do {
+                            try await SupabaseManager.shared.addMessageToChat(toolMsg)
+                            // Pass the arguments directly as they contain all needed info
+                            resultContent = try await ToolsManager().executeTool(
+                                named: "manage_reminders",
+                                arguments: call.function?.arguments ?? "{}"
+                            ).trimmingCharacters(in: .whitespacesAndNewlines)
+                            toolMsg.content = await self.displayContentForTool(name: call.function?.name, fullContent: resultContent)
+                            try await SupabaseManager.shared.updateToolMessage(toolMsg)
+                        } catch {
+                            resultContent = "Error executing reminder operation: \(error.localizedDescription)"
+                            toolMsg.content = resultContent
+                            if await SupabaseManager.shared.currentMessages.firstIndex(where: { $0.id == toolMsg.id }) == nil {
+                                try? await SupabaseManager.shared.addMessageToChat(toolMsg)
+                            }
+                            try? await SupabaseManager.shared.updateToolMessage(toolMsg)
+                        }
                     } else if call.function?.name == "get_webpage_info" {
                         do {
                             try await SupabaseManager.shared.addMessageToChat(toolMsg)

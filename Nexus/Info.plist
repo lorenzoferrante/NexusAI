@@ -8,5 +8,7 @@
 	<string>Voice mode needs the microphone to capture your speech.</string>
 	<key>NSPhotoLibraryAddUsageDescription</key>
 	<string>Nexus needs permission to save generated images to your Photos library.</string>
+	<key>NSRemindersUsageDescription</key>
+	<string>Nexus needs reminders access to manage reminders on your behalf.</string>
 </dict>
 </plist>

@@ -12,6 +12,7 @@ enum ToolType: CaseIterable {
     case webSearch
     case crawlTool
     case calendarTool
+    case reminderTool
     case fileTool
     case genericTool
     case docLookUp
@@ -42,6 +43,7 @@ class ToolsManager {
         self.tools = [
             WebSearchTool(),
             CalendarTool(),
+            ReminderTool(),
             CrawlTool(),
             TextFileTool(),
             ImageGenTool(),
@@ -106,6 +108,8 @@ class ToolsManager {
             return .init(name: "Analyzing document", icon: "text.document", accentColor: .yellow)
         case .calendarTool:
             return .init(name: "Adding calendar event", icon: "calendar.badge", accentColor: .red)
+        case .reminderTool:
+            return .init(name: "Managing reminders", icon: "list.bullet.clipboard.fill", accentColor: .teal)
         case .fileTool:
             return .init(name: "Creating text file", icon: "doc.badge.plus", accentColor: .green)
         case .imageTool:
