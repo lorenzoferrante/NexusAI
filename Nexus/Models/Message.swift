@@ -90,6 +90,7 @@ struct Message: Codable, Identifiable, Hashable {
     var imageURL: String?
     var fileData: String?
     var pdfData: String?
+    var pdfURL: String?
     var fileName: String?
     var toolCallId: String?
     var toolName: String?
@@ -106,11 +107,13 @@ struct Message: Codable, Identifiable, Hashable {
         case chatId = "chat_id"
         case role
         case content
+        case reasoning
         case tokenCount = "token_count"
         case finishReason = "finish_reason"
         case imageURL = "image_url"
         case fileData = "file_data"
         case pdfData = "pdf_data"
+        case pdfURL = "pdf_url"
         case fileName = "file_name"
         case toolCallId = "tool_call_id"
         case toolName = "tool_name"
@@ -198,6 +201,27 @@ struct Message: Codable, Identifiable, Hashable {
             ]
         }
         
+        // Handle PDF URL (preferred for large files)
+        if let pdfURL = pdfURL, !pdfURL.isEmpty {
+            return [
+                "role": role.rawValue,
+                "content": [
+                    [
+                        "type": "text",
+                        "text": content ?? ""
+                    ],
+                    [
+                        "type": "file",
+                        "file": [
+                            "filename": fileName ?? "file.pdf",
+                            "file_data": pdfURL
+                        ]
+                    ]
+                ]
+            ]
+        }
+        
+        // Handle PDF base64 data (fallback for small files)
         if let pdfData = pdfData {
             return [
                 "role": role.rawValue,
@@ -249,6 +273,9 @@ struct Message: Codable, Identifiable, Hashable {
 extension Message {
     /// Returns true when the message carries a PDF attachment that should be parsed by the model.
     var containsPDF: Bool {
+        if let url = pdfURL, !url.isEmpty {
+            return true
+        }
         if let data = pdfData, !data.isEmpty {
             return true
         }

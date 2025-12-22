@@ -483,7 +483,6 @@ class OpenRouterViewModel {
         let messagesPayload = finalizedMessages.map { $0.asDictionary() }
         let hasPDF = sanitized.contains { $0.containsPDF }
         
-        
         var payload: [String: Any] = [
             "model": selectedModel.code,
             "messages": messagesPayload,

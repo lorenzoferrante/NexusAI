@@ -588,6 +588,32 @@ class SupabaseManager {
         }
     }
     
+    public func uploadPDFToBucket(_ data: Data, fileName: String) async throws {
+        print("[DEBUG - uploadPDFToBucket()] Size: \(data.count) bytes")
+        
+        try await client
+            .storage
+            .from("pdf-bucket")
+            .upload(fileName, data: data, options: FileOptions(contentType: "application/pdf"))
+        
+        debugPrint("[DEBUG - uploadPDFToBucket()] Successfully uploaded: \(fileName)")
+    }
+    
+    public func retrievePDFURLFor(_ fileName: String) -> String {
+        do {
+            let pdfURL = try client
+                .storage
+                .from("pdf-bucket")
+                .getPublicURL(path: fileName)
+            
+            debugPrint("[DEBUG - retrievePDFURLFor()] URL: \(pdfURL.absoluteString)")
+            return pdfURL.absoluteString
+        } catch {
+            debugPrint("[DEBUG - retrievePDFURLFor()] Error: \(error)")
+            return ""
+        }
+    }
+    
     public func uploadFileToBucket(_ content: String, fileName: String) async {
         do {
             print("[DEBUG - uploadFileToBucket()] \(fileName)")

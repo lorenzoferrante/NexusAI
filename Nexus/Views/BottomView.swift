@@ -280,14 +280,9 @@ struct BottomView: View {
                 await updateChatTitle(using: trimmedPrompt)
             }
 
-            let fileData = vm.fileContent()
             let fileName = vm.selectedFileURL?.lastPathComponent ?? nil
             let fileExtension = vm.selectedFileURL?.pathExtension.lowercased() ?? ""
-            var pdfFileData: String?
-            
-            if fileExtension == "pdf" {
-                pdfFileData = vm.base64FromFileURL()
-            }
+            let fileData = (fileExtension != "pdf") ? vm.fileContent() : nil
             
             var imageURL: String? = nil
             if let selectedImage = vm.selectedImage {
@@ -301,6 +296,31 @@ struct BottomView: View {
                     }
                 }
             }
+            
+            // Handle PDF upload to storage
+            // Always upload PDFs to storage to avoid payload size issues with base64 encoding
+            var pdfURL: String? = nil
+            if fileExtension == "pdf", let pdfFileURL = vm.selectedFileURL {
+                if let pdfData = try? Data(contentsOf: pdfFileURL) {
+                    let userID = supabaseManager.getUser()?.id.uuidString ?? "uploads"
+                    let remotePDFName = "\(userID)/\(UUID().uuidString).pdf"
+                    
+                    do {
+                        try await supabaseManager.uploadPDFToBucket(pdfData, fileName: remotePDFName)
+                        let remotePDFURL = supabaseManager.retrievePDFURLFor(remotePDFName)
+                        if !remotePDFURL.isEmpty {
+                            pdfURL = remotePDFURL
+                        }
+                    } catch {
+                        debugPrint("[DEBUG - BottomView.generate] PDF upload failed: \(error.localizedDescription)")
+                        throw NSError(
+                            domain: "PDFUpload",
+                            code: -1,
+                            userInfo: [NSLocalizedDescriptionKey: "Failed to upload PDF. Please make sure the pdf-bucket exists in your Supabase Storage."]
+                        )
+                    }
+                }
+            }
 
             let newUserMessage = Message(
                 chatId: chat.id,
@@ -308,7 +328,7 @@ struct BottomView: View {
                 content: originalPrompt,
                 imageURL: imageURL,
                 fileData: fileData,
-                pdfData: pdfFileData,
+                pdfURL: pdfURL,
                 fileName: fileName,
                 createdAt: Date()
             )
