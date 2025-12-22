@@ -16,6 +16,8 @@ public struct ToolCallFragment: Equatable {
     public var argumentsJSON: String = "" // arguments arrive chunked; concatenate strings
 }
 
+public typealias ReasoningDetailsFragment = [ReasoningDetail]
+
 /// A robust SSE client for OpenRouter /chat/completions streaming.
 /// - Handles: partial tokens, tool_calls deltas, stalls, foreground/background, cancel, and resume.
 /// - Policy: auto-retry is allowed only when **no tokens** were received (to avoid double-billing).
@@ -75,6 +77,8 @@ public final class OpenRouterStreamClient: NSObject, URLSessionDataDelegate {
         public var onToken: (String) -> Void
         /// Fires whenever new reasoning tokens arrive.
         public var onReasoningToken: (String) -> Void
+        /// Fires whenever reasoning_details deltas arrive (Gemini/others).
+        public var onReasoningDetails: (ReasoningDetailsFragment) -> Void
         /// Fires whenever new Image data arrive.
         public var onImageDelta: ([ImageStruct]) -> Void
         /// Fires as tool_calls deltas arrive (indexed).
@@ -89,6 +93,7 @@ public final class OpenRouterStreamClient: NSObject, URLSessionDataDelegate {
         public init(
             onToken: @escaping (String) -> Void,
             onReasoningToken: @escaping (String) -> Void,
+            onReasoningDetails: @escaping (ReasoningDetailsFragment) -> Void = { _ in },
             onImageDelta: @escaping ([ImageStruct]) -> Void,
             onToolCallDelta: @escaping (ToolCallFragment) -> Void,
             onFinish: @escaping (String?) -> Void,
@@ -97,6 +102,7 @@ public final class OpenRouterStreamClient: NSObject, URLSessionDataDelegate {
         ) {
             self.onToken = onToken
             self.onReasoningToken = onReasoningToken
+            self.onReasoningDetails = onReasoningDetails
             self.onImageDelta = onImageDelta
             self.onToolCallDelta = onToolCallDelta
             self.onFinish = onFinish
@@ -449,6 +455,7 @@ public final class OpenRouterStreamClient: NSObject, URLSessionDataDelegate {
                     }
                     let role: String?
                     let reasoning: String?
+                    let reasoning_details: [ReasoningDetail]?
                     let content: String?
                     let images: [ImageStruct]?
                     let tool_calls: [ToolCall]?
@@ -477,6 +484,12 @@ public final class OpenRouterStreamClient: NSObject, URLSessionDataDelegate {
                 partialReceived = true
                 anyContent = true
                 handlers?.onReasoningToken(reasoning)
+            }
+            
+            if let reasoningDetails = c.delta?.reasoning_details, !reasoningDetails.isEmpty {
+                partialReceived = true
+                anyContent = true
+                handlers?.onReasoningDetails(reasoningDetails)
             }
             
             if let content = c.delta?.content, !content.isEmpty {

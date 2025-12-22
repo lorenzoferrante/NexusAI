@@ -41,6 +41,30 @@ struct ToolCall: Codable, Identifiable, Hashable {
     }
 }
 
+public struct ReasoningDetail: Codable, Hashable {
+    var id: String?
+    var type: String?
+    var format: String?
+    var index: Int?
+    var data: String?
+    var summary: String?
+    var text: String?
+    var signature: String?
+    
+    func asDictionary() -> [String: Any] {
+        var dict: [String: Any] = [:]
+        if let id { dict["id"] = id }
+        if let type { dict["type"] = type }
+        if let format { dict["format"] = format }
+        if let index { dict["index"] = index }
+        if let data { dict["data"] = data }
+        if let summary { dict["summary"] = summary }
+        if let text { dict["text"] = text }
+        if let signature { dict["signature"] = signature }
+        return dict
+    }
+}
+
 public struct ImageStruct: Decodable, Equatable, Hashable {
     struct ImageURL: Decodable, Hashable { let url: String }
     let type: String
@@ -75,6 +99,7 @@ struct Message: Codable, Identifiable, Hashable {
     var deletedAt: Date?
     var modelName: String?
     var images: [ImageStruct]?
+    var reasoningDetails: [ReasoningDetail]?
     
     private enum CodingKeys: String, CodingKey {
         case id
@@ -94,6 +119,7 @@ struct Message: Codable, Identifiable, Hashable {
         case createdAt = "created_at"
         case deletedAt = "deleted_at"
         case modelName = "model_name"
+        case reasoningDetails = "reasoning_details"
     }
     
 
@@ -121,12 +147,16 @@ struct Message: Codable, Identifiable, Hashable {
         if role == .tool,
            let toolCallId = toolCallId,
            let toolName = toolName {
-            return [
+            var dict: [String: Any] = [
                 "role": "tool",
                 "tool_call_id": toolCallId,
                 "name": toolName,
                 "content": content ?? ""
             ]
+            if let reasoningDetails, !reasoningDetails.isEmpty {
+                dict["reasoning_details"] = reasoningDetails.map { $0.asDictionary() }
+            }
+            return dict
         }
 
         let outboundImages = imageURLList
@@ -201,10 +231,17 @@ struct Message: Codable, Identifiable, Hashable {
                 // Some providers require a string; empty is acceptable.
                 dict["content"] = ""
             }
+            if let reasoningDetails, !reasoningDetails.isEmpty {
+                dict["reasoning_details"] = reasoningDetails.map { $0.asDictionary() }
+            }
             return dict
         }
         
-        return ["role": role.rawValue, "content": content ?? ""]
+        var dict: [String: Any] = ["role": role.rawValue, "content": content ?? ""]
+        if let reasoningDetails, !reasoningDetails.isEmpty {
+            dict["reasoning_details"] = reasoningDetails.map { $0.asDictionary() }
+        }
+        return dict
         
     }
 }

@@ -74,6 +74,9 @@ class OpenRouterViewModel {
                     debugPrint("[DEBUG] Reasoning Token: \(reasoning)")
                     self.appendReasoningToMessage(placeholderId: placeholder.id, reasoning: reasoning)
                 },
+                onReasoningDetails: { details in
+                    self.appendReasoningDetailsToMessage(placeholderId: placeholder.id, details: details)
+                },
                 onImageDelta: { images in
                     
                 },
@@ -153,12 +156,13 @@ class OpenRouterViewModel {
             SupabaseManager.shared.updateLastMessage()
             
             // Create a fresh assistant message that will hold the tool_calls
-            let newAssistantToolCallMessage = Message(
+            var newAssistantToolCallMessage = Message(
                 chatId: SupabaseManager.shared.currentChat!.id,
                 role: .assistant,
                 content: nil,
                 createdAt: Date()
             )
+            newAssistantToolCallMessage.reasoningDetails = message.reasoningDetails
             // Persist so it's available after app relaunch
             try await SupabaseManager.shared.addMessageToChat(newAssistantToolCallMessage)
             newPlaceholderId = newAssistantToolCallMessage.id
@@ -559,5 +563,14 @@ class OpenRouterViewModel {
     private func appendImageToMessage(placeholderId: UUID, images: [ImageStruct]) {
         guard let idx = SupabaseManager.shared.currentMessages.lastIndex(where: { $0.id == placeholderId }) else { return }
         SupabaseManager.shared.currentMessages[idx].images = images
+    }
+    
+    private func appendReasoningDetailsToMessage(placeholderId: UUID, details: [ReasoningDetail]) {
+        guard let idx = SupabaseManager.shared.currentMessages.lastIndex(where: { $0.id == placeholderId }) else { return }
+        if SupabaseManager.shared.currentMessages[idx].reasoningDetails == nil {
+            SupabaseManager.shared.currentMessages[idx].reasoningDetails = details
+        } else {
+            SupabaseManager.shared.currentMessages[idx].reasoningDetails!.append(contentsOf: details)
+        }
     }
 }
