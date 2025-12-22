@@ -754,6 +754,7 @@ class SupabaseManager {
         await MainActor.run {
             self.models = rows
             DefaultsManager.shared.reconcileModelSelection(with: rows)
+            OpenRouterViewModel.shared.selectedModel = DefaultsManager.shared.getModel()
         }
     }
 

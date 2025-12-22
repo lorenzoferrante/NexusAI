@@ -61,8 +61,10 @@ struct BottomView: View {
         }
         .onChange(of: supabaseManager.models) { _, newValue in
             providers = Set(newValue.map { $0.toProvider() })
+            let savedModel = DefaultsManager.shared.getModel()
+            provider = savedModel.toProvider()
             models = newValue.filter { $0.provider == provider.rawValue }
-            if let saved = newValue.first(where: { $0.code == DefaultsManager.shared.getModel().code }) {
+            if let saved = newValue.first(where: { $0.code == savedModel.code }) {
                 selectedModel = saved
             }
         }
